@@ -158,3 +158,17 @@ def test_resolve_chunk_specs() -> None:
     assert got[3:] == ["shard_00/chunk_0000", "shard_00/chunk_0001", "shard_05/chunk_0001"]
     with pytest.raises(ValueError, match="held-out"):
         resolve_chunks(["shard_05/chunk_0084"])
+
+
+def test_limit_negatives() -> None:
+    p = tiny(negs=True)
+    assert p.neg_count is not None
+    p.neg_count[:] = [0, 1, 2, 3, 3, 3, 1, 2, 3, 0]
+    k1 = p.limit_negatives(1)
+    assert k1.negatives is not None
+    assert k1.neg_count is not None
+    assert k1.negatives.shape[1] == 1
+    assert k1.neg_count.tolist() == [0, 1, 1, 1, 1, 1, 1, 1, 1, 0]
+    assert not p.limit_negatives(0).has_negatives
+    with pytest.raises(ValueError, match="no negatives"):
+        tiny().limit_negatives(2)
