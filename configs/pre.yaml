@@ -1,0 +1,10 @@
+# Scaled pre-training: 24 chunks (2.4M pairs) spread over shards 01-04.
+extends: base.yaml
+name: pre
+train:
+  stage: pre
+  max_steps: 3000
+  eval_every: 250
+  full_eval_every: 1000   # the 191k-pair tricky test is read from disk; run it less often
+data:
+  train_chunks: ["spread:24"]

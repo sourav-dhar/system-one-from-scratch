@@ -1,0 +1,11 @@
+# Mid-training: warm start from pre-training, add up to 10 mined hard negatives per pair.
+extends: base.yaml
+name: mid
+train:
+  stage: mid
+  max_steps: 400
+  eval_every: 50
+  init_checkpoint: runs/pre/baseline/best.pt
+data:
+  train_chunks: ["hardneg:6"]
+  hard_negatives: true
