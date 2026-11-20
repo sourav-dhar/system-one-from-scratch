@@ -126,6 +126,8 @@ def run_experiment(config_path: str, overrides: list[str], name: str) -> dict[st
     train = load_chunks(
         ROOT, chunks, negatives=cfg.data.hard_negatives, rows_per_chunk=cfg.data.rows_per_chunk
     )
+    if cfg.data.hard_negatives and cfg.data.max_negatives is not None:
+        train = train.limit_negatives(cfg.data.max_negatives)
     suite = _eval_suite()
     load_min = (time.time() - t0) / 60
     print(
