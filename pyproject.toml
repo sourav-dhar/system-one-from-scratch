@@ -1,0 +1,97 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "systemone"
+version = "0.1.0"
+description = "A System One decision model built from scratch: frozen LLM features, contrastive projection heads, calibrated option probabilities in one forward pass."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+authors = [{ name = "Sourav Dhar" }]
+keywords = ["contrastive-learning", "system-one", "dual-encoder", "decision-models", "pytorch"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+  "torch>=2.3",
+  "numpy>=1.26",
+  "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+data = ["pyarrow>=16", "huggingface_hub>=0.26", "requests>=2.31"]
+encode = ["transformers>=4.51,<5"]
+cloud = ["modal>=1.0"]
+viz = ["matplotlib>=3.8"]
+dev = [
+  "pytest>=8",
+  "pytest-cov>=5",
+  "ruff>=0.6",
+  "mypy>=1.11",
+  "types-PyYAML",
+  "types-requests",
+  "pre-commit>=3.7",
+]
+
+[project.scripts]
+systemone = "systemone.cli:main"
+
+[project.urls]
+Repository = "https://github.com/sourav-dhar/system-one-from-scratch"
+Issues = "https://github.com/sourav-dhar/system-one-from-scratch/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/systemone"]
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+src = ["src", "tests", "cloud", "scripts"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "N", "SIM", "RUF", "PT"]
+ignore = ["N812", "N806", "RUF001", "RUF002", "RUF003"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["B018"]
+
+[tool.mypy]
+python_version = "3.11"
+strict_optional = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+disallow_untyped_defs = true
+ignore_missing_imports = true
+files = ["src/systemone"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+markers = [
+  "slow: longer-running integration tests (deselect with -m 'not slow')",
+  "network: tests that need internet access (skipped in CI)",
+]
+
+[tool.coverage.run]
+source = ["systemone"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+exclude_lines = ["pragma: no cover", "if TYPE_CHECKING:", "raise NotImplementedError"]

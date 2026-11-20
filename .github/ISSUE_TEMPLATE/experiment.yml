@@ -1,0 +1,15 @@
+name: Experiment proposal
+description: A hypothesis to test with a measured run
+labels: ["type:experiment"]
+body:
+  - type: textarea
+    id: hypothesis
+    attributes: {label: Hypothesis, description: What do you expect and why?}
+    validations: {required: true}
+  - type: textarea
+    id: setup
+    attributes: {label: Setup, description: Config diff against the baseline, data, budget.}
+    validations: {required: true}
+  - type: textarea
+    id: metric
+    attributes: {label: Decision metric, description: Which number decides it, and what threshold counts as a result?}
