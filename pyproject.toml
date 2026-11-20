@@ -27,7 +27,7 @@ dependencies = [
 
 [project.optional-dependencies]
 data = ["pyarrow>=16", "huggingface_hub>=0.26", "requests>=2.31"]
-encode = ["transformers>=4.51,<5"]
+encode = ["transformers>=4.51,<6"]
 cloud = ["modal>=1.0"]
 viz = ["matplotlib>=3.8"]
 dev = [
