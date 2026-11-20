@@ -20,8 +20,8 @@ coverage.xml
 htmlcov/
 
 # Data, checkpoints and run outputs (results we publish live in results/, which is tracked)
-data/
-runs/
+/data/
+/runs/
 *.pt
 *.npy
 *.safetensors
