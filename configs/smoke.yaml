@@ -1,0 +1,17 @@
+# CPU-sized synthetic run: exercises the full pipeline in about a minute.
+extends: base.yaml
+name: smoke
+model:
+  head: {in_dim: 256, width: 256, out_dim: 128}
+optim:
+  lr: 0.002
+train:
+  stage: mid
+  batch_size: 1024
+  max_steps: 300
+  eval_every: 100
+  precision: fp32
+  out_dir: runs/smoke
+data:
+  hard_negatives: true
+  synthetic: {}

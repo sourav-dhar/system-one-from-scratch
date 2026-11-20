@@ -9,15 +9,18 @@ candidate *actions*, it returns a probability for every option in a single forwa
 """
 
 from systemone.config import ExperimentConfig, HeadConfig, LossConfig, ModelConfig
+from systemone.inference import Decision, SystemOne
 from systemone.model import DualEncoder, ProjectionHead
 
 __all__ = [
+    "Decision",
     "DualEncoder",
     "ExperimentConfig",
     "HeadConfig",
     "LossConfig",
     "ModelConfig",
     "ProjectionHead",
+    "SystemOne",
     "__version__",
 ]
 

@@ -1,0 +1,21 @@
+# The CLM recipe. Every field is documented in src/systemone/config.py.
+# Values here match the configs stored inside the authors' public checkpoints.
+model:
+  head: {in_dim: 4096, width: 1536, out_dim: 512, depth: 3, activation: gelu, layernorm: true, residual: false}
+  init_temperature: 0.07
+  learn_temperature: true
+  max_scale: 100.0
+loss:
+  direction: both
+  mask_same_document: true
+optim:
+  lr: null              # recipe rule: 2e-3 * sqrt(1024/width) * sqrt(batch/1024) for pre, 1e-3 after
+  weight_decay: 0.0
+  schedule: constant
+  grad_clip: 1.0
+train:
+  batch_size: 16384
+  precision: bf16
+  seed: 1234
+data:
+  root: data
