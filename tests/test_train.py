@@ -97,3 +97,12 @@ def test_lr_schedules(schedule: str, warmup: int, expect: list[float]) -> None:
     f = lr_lambda(cfg)
     got = [f(0), f(50), f(100)]
     assert got == pytest.approx(expect, abs=1e-6)
+
+
+def test_max_negatives_is_applied_when_loading(tmp_path) -> None:
+    cfg = small_cfg(str(tmp_path), "data.max_negatives=2")
+    train, _ = _load_data(cfg)
+    assert train.negatives is not None
+    assert train.neg_count is not None
+    assert train.negatives.shape[1] == 2
+    assert train.neg_count.max() == 2

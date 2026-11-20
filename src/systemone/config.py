@@ -76,6 +76,8 @@ class DataConfig:
     train_chunks: list[str] = field(default_factory=list)
     """Chunk ids such as ``shard_01/chunk_0000``. Ignored when ``synthetic`` is set."""
     hard_negatives: bool = False
+    max_negatives: int | None = None
+    """Use at most this many mined negatives per pair (the k ablation); ``None`` keeps all (up to 10)."""
     rows_per_chunk: int | None = None
     """Use only the first N rows of each chunk (laptop-sized subsets)."""
     eval_general: list[str] = field(default_factory=lambda: ["shard_05/chunk_0083", "shard_05/chunk_0084"])

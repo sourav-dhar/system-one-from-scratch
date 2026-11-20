@@ -22,25 +22,28 @@ def _load_data(cfg: ExperimentConfig):  # type: ignore[no-untyped-def]
     from systemone.data.catalog import resolve_chunks
     from systemone.eval import EvalSuite
 
-    if cfg.data.synthetic is not None:
-        train, held = make_synthetic(cfg.data.synthetic)
+    d = cfg.data
+    if d.synthetic is not None:
+        train, held = make_synthetic(d.synthetic)
         n = len(held) // 2
         suite = EvalSuite(
             general=held.subset(slice(0, n)).without_negatives(), hard=held.subset(slice(n, None))
         )
-        return (train if cfg.data.hard_negatives else train.without_negatives()), suite
-    d = cfg.data
-    chunks = resolve_chunks(d.train_chunks)
-    train = load_chunks(d.root, chunks, negatives=d.hard_negatives, rows_per_chunk=d.rows_per_chunk)
-    general = (
-        load_chunks(d.root, d.eval_general, rows_per_chunk=d.eval_rows_per_chunk) if d.eval_general else None
-    )
-    hard = (
-        load_chunks(d.root, d.eval_hard, negatives=True, rows_per_chunk=d.eval_rows_per_chunk)
-        if d.eval_hard
-        else None
-    )
-    return train, EvalSuite(general=general, hard=hard)
+        if not d.hard_negatives:
+            train = train.without_negatives()
+    else:
+        chunks = resolve_chunks(d.train_chunks)
+        train = load_chunks(d.root, chunks, negatives=d.hard_negatives, rows_per_chunk=d.rows_per_chunk)
+        rows = d.eval_rows_per_chunk
+        suite = EvalSuite(
+            general=load_chunks(d.root, d.eval_general, rows_per_chunk=rows) if d.eval_general else None,
+            hard=load_chunks(d.root, d.eval_hard, negatives=True, rows_per_chunk=rows)
+            if d.eval_hard
+            else None,
+        )
+    if d.hard_negatives and d.max_negatives is not None:
+        train = train.limit_negatives(d.max_negatives)
+    return train, suite
 
 
 def cmd_train(args: argparse.Namespace) -> int:

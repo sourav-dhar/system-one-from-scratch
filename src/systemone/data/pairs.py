@@ -62,6 +62,14 @@ class PairSet:
     def without_negatives(self) -> PairSet:
         return replace(self, negatives=None, neg_count=None)
 
+    def limit_negatives(self, k: int) -> PairSet:
+        """Keep at most the first ``k`` mined negatives per row (``k = 0`` drops them all)."""
+        if self.negatives is None or self.neg_count is None:
+            raise ValueError("no negatives to limit")
+        if k == 0:
+            return self.without_negatives()
+        return replace(self, negatives=self.negatives[:, :k], neg_count=np.minimum(self.neg_count, k))
+
     @staticmethod
     def concat(parts: Sequence[PairSet]) -> PairSet:
         if not parts:
