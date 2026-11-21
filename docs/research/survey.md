@@ -32,7 +32,7 @@ We trace which laboratory's design fixed which other's flaw, at what cost, and w
 
 Three conclusions stand out:
 1. **The weakest system on typed decisions is also the fastest, and the gap is largely architectural.** The contrastive bi-encoder CLM-8B scores 41.4% on System1-Arena against 59.3% for answer-token readout of its own frozen backbone. The gap traces to specific, fixable causes: appending the question to the state before last-token pooling, context-free short option texts, an uncalibrated scale saturated at its cap, and option-independent scoring without a null outcome.
-2. **Late interaction over cached option representations can add set-dependence, null coverage and exact permutation equivariance without giving up caching**, as Jeva and Narrow Decision Models show.
+2. **Late interaction over cached option representations can add set-dependence, null coverage and exact permutation equivariance without giving up caching**, as Jeva shows. Narrow Decision Models corroborates the value of a set head and an adequacy (null) logit, although its option vectors are state-conditioned and therefore cached only within a request.
 3. **For calibration, simple direct objectives match reinforcement-learning variants.** Soft cross-entropy or cross-entropy plus Brier, followed by temperature scaling fitted on held-out *datasets*, matches or beats the RL variants that several systems advertise. Several published calibration choices are tuned to leaderboard scoring rules rather than to calibration.
 
 We complement the literature with our own measurements on the published CLM heads. They show an expected calibration error of 0.065 at the shipped scale, reduced to 0.013 by one fitted scalar. We close with a design space and a benchmark protocol for a from-scratch implementation that targets both cached action selection and typed decisions on a single mid-range GPU.
@@ -162,7 +162,7 @@ flowchart LR
         F7["F7 Frozen-reader head<br/>vegaml"]
     end
     subgraph Late["Late interaction over cached options"]
-        F2["F2 Decision stack / set head<br/>Jeva, NDM"]
+        F2["F2 Decision stack / set head<br/>Jeva (NDM: within-request)"]
     end
     subgraph Joint["Joint encoding of state, question, options"]
         F3["F3 Decoder readout<br/>Kev, Jeff, Strands, decider, StartLux, Clef, Decision 2.0"]
@@ -233,7 +233,7 @@ Per option, the cache stores $u_i$ and every layer's per-head keys and values [@
 
 Jeva-4B (Qwen3.5-4B with LoRA r64) reaches 78.30 on the Typed Decisions test against 43.05 for CLM-8B, with zero order flips (Jev 17.0%) and null-detection AUROC 98.66 [@jeva, Tables 1–2]. The paper has no component ablation, so the stack, LoRA and data contributions cannot be separated [@jeva].
 
-**Narrow Decision Models (NDM)** [@ndm] reach F2-like behaviour from an encoder:
+**Narrow Decision Models (NDM)** [@ndm] reach F2-like behaviour from an encoder. One caveat: under the prefix-tree mask each option attends to its ancestors, i.e. to the state and the question. Its option vectors are therefore *state-conditioned*, and the cache it exploits is the state's K/V within a request, not option representations across requests *(inference from the mask definition)*.
 - A *prefix-tree* attention mask encodes the state once and gives sibling options shared logical positions, so no option sees another.
 - A two-layer position-free **set head** over the per-option vectors replaces independent scoring. It lowers NLL from 1.181 to 0.799 and raises accuracy from 0.655 to 0.705 (§10.4 of the paper).
 - An **adequacy** logit, computed before the set head, provides abstention. Its recall is 0.66 vs. 0.25 for an explicit "none" option.
@@ -417,7 +417,7 @@ Laya's own three-arm ablation on typed-decisions found **no gain from the RL ter
 
 The explanation offered there is exact: soft-CE *is* the expected log score, and the policy-gradient term is a high-variance estimate of a gradient that can be computed in closed form. Independent work agrees:
 - sbert2s1 finds Laya's estimator 3.6–15× too large in scale and fixes it with a leave-one-out baseline (PG-LOO). After temperature scaling, all objectives sit at 3.6–4.4 ECE [@sbert2s1, Tables 4, 6].
-- NanoJev's unbiased sampled-Brier policy gradient matched but did not beat CE or Brier (test L2 0.1184 vs. 0.1242 vs. 0.1384, one seed) [@nanojev].
+- NanoJev's unbiased sampled-Brier policy gradient scored test L2 0.1184 vs. 0.1242 (CE) and 0.1384 (Brier). The numbers are slightly lower than CE, but with one seed the authors describe it as matching rather than beating [@nanojev].
 - SanSi's RL variant gave no gain (71.7 vs. 72.0) [@sansi].
 - Jeeves's CISPO stage "did not improve v2" [@jeeves].
 
@@ -514,7 +514,7 @@ Calibration error has a sign, and it differs by family and checkpoint.
 - *CLM.* Its scale is saturated at the cap. In our measurement, the published mid-training head has ECE 0.064 on the 11-way tricky test at its own scale (this project).
 
 **Under-confident:**
-- Jev's fitted temperatures are below 1 (0.66 and 0.21 on two TypedBench suites) [@typedbench].
+- Jev's fitted temperatures are below 1 (0.66 and 0.21 on two TypedBench suites) [@typedbench]. The sources disagree here: StartLux reports Jev as *over*-confident on its DecisionPivot suite (13.8 pp calibration error) [@startlux], and third-party probing measured MMLU ECE 0.0313 [@jev-hume]. The direction appears to depend on the suite.
 - Strands v19's per-primitive temperatures are 0.91 / 0.77 / 0.96 [@strands].
 
 ### 5.2 Temperature regimes
@@ -548,7 +548,7 @@ Three results converge:
 Several shipped calibration choices optimize a benchmark's scoring rule rather than calibration:
 - **Jeff snaps** $P(\text{yes}) \in (0.2, 0.8)$ to 0.199 or 0.801, because "JevBench counts a yes/no answer with 0.2 < P(yes) < 0.8 as wrong" [@jeff-repo, `model.py`].
 - **decider-12b v2 ships Noul $T = 0.05$** "chosen for JevBench". That gives AUROC 0.878 and ECE 0.151, vs. 0.934 and 0.038 at $T = 1$, and "most answers round to exactly 0 or 1" [@decider].
-- **Von's Noul band rule** $p' = 0.8 + 0.1(p - 0.5)$ was fit on JevBench public [@von].
+- **Von's Noul band rule** $p' = 0.8 + 0.1(p - 0.5)$ was fit on JevBench public [@von]. As transcribed, it would map every probability into [0.75, 0.85]. The condition under which it applies is not in our source notes.
 - **Laya shipped a `choice:11+` temperature of 0.1006**, a 10× sharpener that published coin flips as 1.0 confidence. It was later clamped to [0.5, 5] [@laya-repo, issue #394].
 
 *(Inference)* Any comparison should report ECE and Brier on suites whose scoring rule the model was not tuned to, and flag thresholding rules.
@@ -661,7 +661,7 @@ Repeat runs changed up to 1.33% of decisions.
 
 | System | Flip rate under shuffling / reversal | Source |
 |---|---|---|
-| Jev | 17.0% | [@jeva, Table 2] |
+| Jev | 17.0% (Runoff measures 5.3 under its own protocol) | [@jeva, Table 2; @runoff] |
 | Laya | 30.6% (native) | [@runoff] |
 | Jeff-4B | ~6% on reversal | [@jeff, App. G] |
 | SemIf | 10 / 36 | [@semif] |
@@ -759,12 +759,12 @@ Sources: [@jeva; @ndm; @sbert2s1; @readingright].
 
 | # | Flaw (systems affected) | Fixed by | Evidence | Cost | Option cache kept? |
 |---|---|---|---|---|---|
-| 1 | IIA: no set-dependence (CLM, pure F1) | Jeva decision block; NDM set head; AnyS1 option-interaction layer | Typed 78.30 vs 43.05; nested sets 58/83 vs 7/83; NLL 1.181 → 0.799; +1.1 Dev | One small block (about 9.4M params at d = 768) | **Yes** (Jeva, NDM); no (AnyS1, joint sequence) |
+| 1 | IIA: no set-dependence (CLM, pure F1) | Jeva decision block; NDM set head; AnyS1 option-interaction layer | Typed 78.30 vs 43.05; nested sets 58/83 vs 7/83; NLL 1.181 → 0.799; +1.1 Dev | One small block (about 9.4M params at d = 768) | **Yes** (Jeva); within-request only (NDM, state-conditioned options); no (AnyS1, joint sequence) |
 | 2 | State collapse from the question suffix (CLM) | Separate $h_S$ and $h_Q$, fused late (NDM); question placed on the hypothesis side (sbert2s1) | CLM #15: cosine 0.958 vs 0.452 | One extra short embedding per question | **Yes** |
 | 3 | Label-word and short-option blindness (F1, F4) | Noul from $[h_Q; h_S]$ (NDM); descriptive option texts; contextual readouts (Bongard) | Cosine gaps about 1e-3; sensitivity 0.000 → 1.059 | A small head; option rewriting | **Yes** |
 | 4 | Over-confidence, scale at the cap (CLM; instruct models) | Per-type temperature, fit on held-out data | Our ECE 0.065 → 0.013; NDM 0.188 → 0.033 | Negligible | **Yes** |
 | 5 | No null, or a $\log K$-biased null (CLM, flat softmax) | Coverage gate (Jeva); adequacy head (NDM); none-pairs (Kev) | AUROC 98.66 vs 93.61; recall 0.66 vs 0.25 | One scalar head + BCE | **Yes** |
-| 6 | Order flips (Jev, Laya, causal readouts) | Bi-encoders / Jeva / NDM by construction; isolating masks (Von, Kev); rotation averaging (AnyJev); Runoff | 0 flips; Von 49.5% → 0; Kev isolation −5.8 pp | Free for F1/F2; accuracy or $K$× compute for F3 | Yes for F1/F2 |
+| 6 | Order flips (Jev, Laya, causal readouts) | Bi-encoders, Jeva and NDM by construction; isolating masks (Von, Kev); rotation averaging (AnyJev); Runoff | 0 flips; Von 49.5% → 0; Kev isolation −5.8 pp | Free for F1/F2 and NDM's tree mask; accuracy or $K$× compute for F3 | Yes for F1 and Jeva |
 | 7 | Yes/no swap (Jev 50.5, Laya 91.3) | Fine-tuning with randomized identifiers and polarity twins | 4.2–6.5 flips for fine-tuned checkpoints | Data | Yes *(inference)* |
 | 8 | Large-K collapse (F4 budgets; letter readouts ≤ 16 or 26) | 255-code / pointer readouts; tournaments; cached F1/F2 | Clef BANKING77 94.2; Jeva 69.88% at K = 2,048 | — | F1/F2: yes |
 | 9 | Truncation drops the question (CLM on vLLM ≥ 0.13) | Keep the tail | Cosine −0.0006 → 1.0 | Two lines | Yes |
