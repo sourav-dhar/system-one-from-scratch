@@ -1,0 +1,832 @@
+{
+ "1706.04599": {
+  "title": "On Calibration of Modern Neural Networks",
+  "authors": [
+   "Chuan Guo",
+   "Geoff Pleiss",
+   "Yu Sun",
+   "Kilian Q. Weinberger"
+  ],
+  "published": "2017-06-14",
+  "license": "http://arxiv.org/licenses/nonexclusive-distrib/1.0/"
+ },
+ "1807.03748": {
+  "title": "Representation Learning with Contrastive Predictive Coding",
+  "authors": [
+   "Aaron van den Oord",
+   "Yazhe Li",
+   "Oriol Vinyals"
+  ],
+  "published": "2018-07-10",
+  "license": "http://arxiv.org/licenses/nonexclusive-distrib/1.0/"
+ },
+ "2004.04906": {
+  "title": "Dense Passage Retrieval for Open-Domain Question Answering",
+  "authors": [
+   "Vladimir Karpukhin",
+   "Barlas Oğuz",
+   "Sewon Min",
+   "Patrick Lewis",
+   "Ledell Wu",
+   "Sergey Edunov",
+   "Danqi Chen",
+   "Wen-tau Yih"
+  ],
+  "published": "2020-04-10",
+  "license": "http://arxiv.org/licenses/nonexclusive-distrib/1.0/"
+ },
+ "2004.12832": {
+  "title": "ColBERT: Efficient and Effective Passage Search via Contextualized Late Interaction over BERT",
+  "authors": [
+   "Omar Khattab",
+   "Matei Zaharia"
+  ],
+  "published": "2020-04-27",
+  "license": "http://arxiv.org/licenses/nonexclusive-distrib/1.0/"
+ },
+ "2103.00020": {
+  "title": "Learning Transferable Visual Models From Natural Language Supervision",
+  "authors": [
+   "Alec Radford",
+   "Jong Wook Kim",
+   "Chris Hallacy",
+   "Aditya Ramesh",
+   "Gabriel Goh",
+   "Sandhini Agarwal",
+   "Girish Sastry",
+   "Amanda Askell",
+   "Pamela Mishkin",
+   "Jack Clark",
+   "Gretchen Krueger",
+   "Ilya Sutskever"
+  ],
+  "published": "2021-02-26",
+  "license": "http://arxiv.org/licenses/nonexclusive-distrib/1.0/"
+ },
+ "2106.09685": {
+  "title": "LoRA: Low-Rank Adaptation of Large Language Models",
+  "authors": [
+   "Edward J. Hu",
+   "Yelong Shen",
+   "Phillip Wallis",
+   "Zeyuan Allen-Zhu",
+   "Yuanzhi Li",
+   "Shean Wang",
+   "Lu Wang",
+   "Weizhu Chen"
+  ],
+  "published": "2021-06-17",
+  "license": "http://arxiv.org/licenses/nonexclusive-distrib/1.0/"
+ },
+ "2107.07511": {
+  "title": "A Gentle Introduction to Conformal Prediction and Distribution-Free Uncertainty Quantification",
+  "authors": [
+   "Anastasios N. Angelopoulos",
+   "Stephen Bates"
+  ],
+  "published": "2021-07-15",
+  "license": "http://arxiv.org/licenses/nonexclusive-distrib/1.0/"
+ },
+ "2110.01052": {
+  "title": "Learn then Test: Calibrating Predictive Algorithms to Achieve Risk Control",
+  "authors": [
+   "Anastasios N. Angelopoulos",
+   "Stephen Bates",
+   "Emmanuel J. Candès",
+   "Michael I. Jordan",
+   "Lihua Lei"
+  ],
+  "published": "2021-10-03",
+  "license": "http://arxiv.org/licenses/nonexclusive-distrib/1.0/"
+ },
+ "2205.13147": {
+  "title": "Matryoshka Representation Learning",
+  "authors": [
+   "Aditya Kusupati",
+   "Gantavya Bhatt",
+   "Aniket Rege",
+   "Matthew Wallingford",
+   "Aditya Sinha",
+   "Vivek Ramanujan",
+   "William Howard-Snyder",
+   "Kaifeng Chen",
+   "Sham Kakade",
+   "Prateek Jain",
+   "Ali Farhadi"
+  ],
+  "published": "2022-05-26",
+  "license": "http://arxiv.org/licenses/nonexclusive-distrib/1.0/"
+ },
+ "2212.10947": {
+  "title": "Parallel Context Windows for Large Language Models",
+  "authors": [
+   "Nir Ratner",
+   "Yoav Levine",
+   "Yonatan Belinkov",
+   "Ori Ram",
+   "Inbal Magar",
+   "Omri Abend",
+   "Ehud Karpas",
+   "Amnon Shashua",
+   "Kevin Leyton-Brown",
+   "Yoav Shoham"
+  ],
+  "published": "2022-12-21",
+  "license": "http://creativecommons.org/licenses/by/4.0/"
+ },
+ "2402.05099": {
+  "title": "Hydragen: High-Throughput LLM Inference with Shared Prefixes",
+  "authors": [
+   "Jordan Juravsky",
+   "Bradley Brown",
+   "Ryan Ehrlich",
+   "Daniel Y. Fu",
+   "Christopher Ré",
+   "Azalia Mirhoseini"
+  ],
+  "published": "2024-02-07",
+  "license": "http://creativecommons.org/licenses/by/4.0/"
+ },
+ "2402.14776": {
+  "title": "2D Matryoshka Sentence Embeddings",
+  "authors": [
+   "Xianming Li",
+   "Zongxi Li",
+   "Jing Li",
+   "Haoran Xie",
+   "Qing Li"
+  ],
+  "published": "2024-02-22",
+  "license": "http://arxiv.org/licenses/nonexclusive-distrib/1.0/"
+ },
+ "2404.00242": {
+  "title": "DeFT: Decoding with Flash Tree-attention for Efficient Tree-structured LLM Inference",
+  "authors": [
+   "Jinwei Yao",
+   "Kaiqi Chen",
+   "Kexun Zhang",
+   "Jiaxuan You",
+   "Binhang Yuan",
+   "Zeke Wang",
+   "Tao Lin"
+  ],
+  "published": "2024-03-30",
+  "license": "http://arxiv.org/licenses/nonexclusive-distrib/1.0/"
+ },
+ "2406.15657": {
+  "title": "FIRST: Faster Improved Listwise Reranking with Single Token Decoding",
+  "authors": [
+   "Revanth Gangi Reddy",
+   "JaeHyeok Doo",
+   "Yifei Xu",
+   "Md Arafat Sultan",
+   "Deevya Swain",
+   "Avirup Sil",
+   "Heng Ji"
+  ],
+  "published": "2024-06-21",
+  "license": "http://creativecommons.org/licenses/by/4.0/"
+ },
+ "2407.15831": {
+  "title": "NV-Retriever: Improving text embedding models with effective hard-negative mining",
+  "authors": [
+   "Gabriel de Souza P. Moreira",
+   "Radek Osmulski",
+   "Mengyao Xu",
+   "Ronay Ak",
+   "Benedikt Schifferer",
+   "Even Oldridge"
+  ],
+  "published": "2024-07-22",
+  "license": "http://creativecommons.org/licenses/by-nc-nd/4.0/"
+ },
+ "2407.21787": {
+  "title": "Large Language Monkeys: Scaling Inference Compute with Repeated Sampling",
+  "authors": [
+   "Bradley Brown",
+   "Jordan Juravsky",
+   "Ryan Ehrlich",
+   "Ronald Clark",
+   "Quoc V. Le",
+   "Christopher Ré",
+   "Azalia Mirhoseini"
+  ],
+  "published": "2024-07-31",
+  "license": "http://creativecommons.org/licenses/by/4.0/"
+ },
+ "2409.15254": {
+  "title": "Archon: An Architecture Search Framework for Inference-Time Techniques",
+  "authors": [
+   "Jon Saad-Falcon",
+   "Adrian Gamarra Lafuente",
+   "Shlok Natarajan",
+   "Nahum Maru",
+   "Hristo Todorov",
+   "Etash Guha",
+   "E. Kelly Buchanan",
+   "Mayee Chen",
+   "Neel Guha",
+   "Christopher Ré",
+   "Azalia Mirhoseini"
+  ],
+  "published": "2024-09-23",
+  "license": "http://creativecommons.org/licenses/by/4.0/"
+ },
+ "2412.01007": {
+  "title": "CoRNStack: High-Quality Contrastive Data for Better Code Retrieval and Reranking",
+  "authors": [
+   "Tarun Suresh",
+   "Revanth Gangi Reddy",
+   "Yifei Xu",
+   "Zach Nussbaum",
+   "Andriy Mulyar",
+   "Brandon Duderstadt",
+   "Heng Ji"
+  ],
+  "published": "2024-12-01",
+  "license": "http://creativecommons.org/licenses/by/4.0/"
+ },
+ "2501.14723": {
+  "title": "CodeMonkeys: Scaling Test-Time Compute for Software Engineering",
+  "authors": [
+   "Ryan Ehrlich",
+   "Bradley Brown",
+   "Jordan Juravsky",
+   "Ronald Clark",
+   "Christopher Ré",
+   "Azalia Mirhoseini"
+  ],
+  "published": "2025-01-24",
+  "license": "http://creativecommons.org/licenses/by/4.0/"
+ },
+ "2502.02013": {
+  "title": "Layer by Layer: Uncovering Hidden Representations in Language Models",
+  "authors": [
+   "Oscar Skean",
+   "Md Rifat Arefin",
+   "Dan Zhao",
+   "Niket Patel",
+   "Jalal Naghiyev",
+   "Yann LeCun",
+   "Ravid Shwartz-Ziv"
+  ],
+  "published": "2025-02-04",
+  "license": "http://creativecommons.org/licenses/by-sa/4.0/"
+ },
+ "2506.05176": {
+  "title": "Qwen3 Embedding: Advancing Text Embedding and Reranking Through Foundation Models",
+  "authors": [
+   "Yanzhao Zhang",
+   "Mingxin Li",
+   "Dingkun Long",
+   "Xin Zhang",
+   "Huan Lin",
+   "Baosong Yang",
+   "Pengjun Xie",
+   "An Yang",
+   "Dayiheng Liu",
+   "Junyang Lin",
+   "Fei Huang",
+   "Jingren Zhou"
+  ],
+  "published": "2025-06-05",
+  "license": "http://arxiv.org/licenses/nonexclusive-distrib/1.0/"
+ },
+ "2506.16655": {
+  "title": "Arch-Router: Aligning LLM Routing with Human Preferences",
+  "authors": [
+   "Co Tran",
+   "Salman Paracha",
+   "Adil Hafeez",
+   "Shuguang Chen"
+  ],
+  "published": "2025-06-19",
+  "license": "http://creativecommons.org/licenses/by/4.0/"
+ },
+ "2506.17811": {
+  "title": "RoboMonkey: Scaling Test-Time Sampling and Verification for Vision-Language-Action Models",
+  "authors": [
+   "Jacky Kwok",
+   "Christopher Agia",
+   "Rohan Sinha",
+   "Matt Foutter",
+   "Shulu Li",
+   "Ion Stoica",
+   "Azalia Mirhoseini",
+   "Marco Pavone"
+  ],
+  "published": "2025-06-21",
+  "license": "http://creativecommons.org/licenses/by/4.0/"
+ },
+ "2506.18203": {
+  "title": "Shrinking the Generation-Verification Gap with Weak Verifiers",
+  "authors": [
+   "Jon Saad-Falcon",
+   "E. Kelly Buchanan",
+   "Mayee F. Chen",
+   "Tzu-Heng Huang",
+   "Brendan McLaughlin",
+   "Tanvir Bhathal",
+   "Shang Zhu",
+   "Ben Athiwaratkun",
+   "Frederic Sala",
+   "Scott Linderman",
+   "Azalia Mirhoseini",
+   "Christopher Ré"
+  ],
+  "published": "2025-06-22",
+  "license": "http://creativecommons.org/licenses/by/4.0/"
+ },
+ "2507.18546": {
+  "title": "GLiNER2: An Efficient Multi-Task Information Extraction System with Schema-Driven Interface",
+  "authors": [
+   "Urchade Zaratiana",
+   "Gil Pasternak",
+   "Oliver Boyd",
+   "George Hurn-Maloney",
+   "Ash Lewis"
+  ],
+  "published": "2025-07-24",
+  "license": "http://creativecommons.org/licenses/by/4.0/"
+ },
+ "2510.08731": {
+  "title": "When to Reason: Semantic Router for vLLM",
+  "authors": [
+   "Chen Wang",
+   "Xunzhuo Liu",
+   "Yuhan Liu",
+   "Yue Zhu",
+   "Xiangxi Mo",
+   "Junchen Jiang",
+   "Huamin Chen"
+  ],
+  "published": "2025-10-09",
+  "license": "http://arxiv.org/licenses/nonexclusive-distrib/1.0/"
+ },
+ "2510.26835": {
+  "title": "Category-Aware Semantic Caching for Heterogeneous LLM Workloads",
+  "authors": [
+   "Chen Wang",
+   "Xunzhuo Liu",
+   "Yue Zhu",
+   "Alaa Youssef",
+   "Priya Nagpurkar",
+   "Huamin Chen"
+  ],
+  "published": "2025-10-29",
+  "license": "http://arxiv.org/licenses/nonexclusive-distrib/1.0/"
+ },
+ "2511.23404": {
+  "title": "LFM2 Technical Report",
+  "authors": [
+   "Alexander Amini",
+   "Anna Banaszak",
+   "Harold Benoit",
+   "Arthur Böök",
+   "Tarek Dakhran",
+   "Song Duong",
+   "Alfred Eng",
+   "Fernando Fernandes",
+   "Marc Härkönen",
+   "Anne Harrington",
+   "Ramin Hasani",
+   "Saniya Karwa",
+   "Yuri Khrustalev",
+   "Maxime Labonne",
+   "Mathias Lechner",
+   "Valentine Lechner",
+   "Simon Lee",
+   "Zetian Li",
+   "Noel Loo",
+   "Jacob Marks",
+   "Edoardo Mosca",
+   "Samuel J. Paech",
+   "Paul Pak",
+   "Rom N. Parnichkun",
+   "Alex Quach",
+   "Ryan Rogers",
+   "Daniela Rus",
+   "Nayan Saxena",
+   "Bettina Schlager",
+   "Tim Seyde",
+   "Jimmy T. H. Smith",
+   "Aditya Tadimeti",
+   "Neehal Tumma"
+  ],
+  "published": "2025-11-28",
+  "license": "http://creativecommons.org/licenses/by/4.0/"
+ },
+ "2605.12825": {
+  "title": "Orthrus: Memory-Efficient Parallel Token Generation via Dual-View Diffusion",
+  "authors": [
+   "Chien Van Nguyen",
+   "Chaitra Hegde",
+   "Van Cuong Pham",
+   "Ryan A. Rossi",
+   "Franck Dernoncourt",
+   "Thien Huu Nguyen"
+  ],
+  "published": "2026-05-12",
+  "license": "http://creativecommons.org/licenses/by/4.0/"
+ },
+ "2609.23886": {
+  "title": "this-that-model-1.0: A typed decision model that decides in 30 ms, for a millionth of a cent",
+  "authors": [
+   "Zehua Cheng",
+   "Wei Dai",
+   "Jiahao Sun"
+  ],
+  "published": "2026-09-20",
+  "license": "http://arxiv.org/licenses/nonexclusive-distrib/1.0/"
+ },
+ "2609.28940": {
+  "title": "Calibrated Decision Models for Autonomous Penetration-Testing Harnesses: JEV and Laya as System One Decision Layers for LLM-Driven Pentest Agents",
+  "authors": [
+   "Joas Antonio dos Santos Barbosa"
+  ],
+  "published": "2026-09-24",
+  "license": "http://creativecommons.org/licenses/by/4.0/"
+ },
+ "2609.29283": {
+  "title": "From Text Decisions to Pixels: An Study of Jev-Style Visual Choice Model",
+  "authors": [
+   "Xunlan Zhou",
+   "Xianliang Yang",
+   "Li Zhao"
+  ],
+  "published": "2026-09-24",
+  "license": "http://creativecommons.org/licenses/by/4.0/"
+ },
+ "2609.29769": {
+  "title": "Decision Models vs. LLMs as Rubric Judges: Cheaper, Faster, and Wrong in the Same Places",
+  "authors": [
+   "Delip Rao",
+   "Chris Callison-Burch"
+  ],
+  "published": "2026-09-24",
+  "license": "http://arxiv.org/licenses/nonexclusive-distrib/1.0/"
+ },
+ "2609.30216": {
+  "title": "Jev in the Wild: A Data-Driven Analysis of the Jev Model's Functionality, Applications and Ecosystem",
+  "authors": [
+   "Guoming Ling",
+   "Muen Xue",
+   "Zijian Ye"
+  ],
+  "published": "2026-09-24",
+  "license": "http://arxiv.org/licenses/nonexclusive-distrib/1.0/"
+ },
+ "2609.31142": {
+  "title": "JevAdvBench: A Benchmark and Black-Box Attacks for Reinforcement Learning for Calibrated Decisions Models",
+  "authors": [
+   "Jianyi Hu",
+   "Hangtao Zhang",
+   "Yi Liu",
+   "Yeqi Zeng",
+   "Li Zeng",
+   "Xianlong Wang",
+   "Rui Wang",
+   "Leo Yu Zhang"
+  ],
+  "published": "2026-09-25",
+  "license": "http://creativecommons.org/licenses/by/4.0/"
+ },
+ "2609.32160": {
+  "title": "Typed Decision Models: An Early Evidence Audit and Evaluation Checklist",
+  "authors": [
+   "Lijuan Tang",
+   "Yuemeng Zheng"
+  ],
+  "published": "2026-09-26",
+  "license": "http://creativecommons.org/licenses/by/4.0/"
+ },
+ "2609.33209": {
+  "title": "Beyond Calibration: Do a Typed-Decision Model's Probabilities Obey the Probability Axioms?",
+  "authors": [
+   "Keyi Li",
+   "Yihao He",
+   "Quanyi Li"
+  ],
+  "published": "2026-09-27",
+  "license": "http://creativecommons.org/licenses/by/4.0/"
+ },
+ "2609.33401": {
+  "title": "Evaluating System One Models for Agent Security Decisions: Reliability, Calibration, and Selective Automation",
+  "authors": [
+   "Yixuan Liu"
+  ],
+  "published": "2026-09-27",
+  "license": "http://creativecommons.org/licenses/by-nc-nd/4.0/"
+ },
+ "2609.36965": {
+  "title": "Chinese-Jev: Bringing System One Model to Chinese-Language Tasks",
+  "authors": [
+   "Zexiao Wang",
+   "Zihao Zhang",
+   "Xudong Wang",
+   "Pan Wang",
+   "Ziyi Ye",
+   "Haoyu Zhao",
+   "Zuxuan Wu",
+   "Shuicheng Yan"
+  ],
+  "published": "2026-09-29",
+  "license": "http://creativecommons.org/licenses/by/4.0/"
+ },
+ "2609.37647": {
+  "title": "Evaluating and Benchmarking the System One Model Jev",
+  "authors": [
+   "Tobias Deußer",
+   "Rajkumar Ramamurthy",
+   "Lorenz Sparrenberg",
+   "Rafet Sifa"
+  ],
+  "published": "2026-09-29",
+  "license": "http://arxiv.org/licenses/nonexclusive-distrib/1.0/"
+ },
+ "2609.39111": {
+  "title": "Bongard: Training Machine Intuition",
+  "authors": [
+   "Li Ding",
+   "Haidi Jin",
+   "Chen Ji"
+  ],
+  "published": "2026-09-30",
+  "license": "http://creativecommons.org/licenses/by/4.0/"
+ },
+ "2610.00346": {
+  "title": "Benchmarking System One decision models against trained classifiers and language models for automated decision gates",
+  "authors": [
+   "Amir Rafe",
+   "Subasish Das"
+  ],
+  "published": "2026-09-29",
+  "license": "http://arxiv.org/licenses/nonexclusive-distrib/1.0/"
+ },
+ "2610.00831": {
+  "title": "AnyJev Technical Report",
+  "authors": [
+   "Jiamu Zhang",
+   "Tianze Yang",
+   "Yucheng Shi",
+   "Evan Chen",
+   "Zixiang Nie",
+   "Kelly Wan",
+   "Liangjie Hong",
+   "Ninghao Liu",
+   "Liang Wu"
+  ],
+  "published": "2026-09-30",
+  "license": "http://creativecommons.org/licenses/by/4.0/"
+ },
+ "2610.02486": {
+  "title": "From Retrieval to Typed Decisions: Calibrated System One Models from Biomedical Sentence Encoders",
+  "authors": [
+   "Pritam Deka"
+  ],
+  "published": "2026-10-01",
+  "license": "http://creativecommons.org/licenses/by/4.0/"
+ },
+ "2610.07730": {
+  "title": "SanSi: A Looped Typed Decision Model for System 1.5 Thinking",
+  "authors": [
+   "Shuyu Gan",
+   "Young-Jun Lee",
+   "Dongyeop Kang"
+  ],
+  "published": "2026-10-06",
+  "license": "http://arxiv.org/licenses/nonexclusive-distrib/1.0/"
+ },
+ "2610.11392": {
+  "title": "TypedBench: A Benchmark for Calibration, Framing Sensitivity, and Cost in System One Decision Models",
+  "authors": [
+   "Rahul Sharma",
+   "Andrew B. Duncan",
+   "Gaétan Marceau Caron",
+   "Sebastian J. Vollmer"
+  ],
+  "published": "2026-10-08",
+  "license": "http://arxiv.org/licenses/nonexclusive-distrib/1.0/"
+ },
+ "2610.14112": {
+  "title": "Does System One Transfer? Calibrated Typed-Decision Models, Label Budgets, and Translation for Indonesian Regional Languages",
+  "authors": [
+   "Romi Fadli",
+   "Rusdah",
+   "Wahyu Ramadani Putri Utami",
+   "Zulfa Malika Amana"
+  ],
+  "published": "2026-10-09",
+  "license": "http://arxiv.org/licenses/nonexclusive-distrib/1.0/"
+ },
+ "2610.17016": {
+  "title": "ProbabilityBench: Model Evaluation and Calibration with Exact Ground-Truth Uncertainty",
+  "authors": [
+   "Yuyang Dai",
+   "Yuting Tang",
+   "Futoshi Futami",
+   "Takashi Ishida"
+  ],
+  "published": "2026-10-12",
+  "license": "http://creativecommons.org/licenses/by/4.0/"
+ },
+ "2610.17205": {
+  "title": "Releasing the Inner Jev: A Simple Recipe for Open Decision Models",
+  "authors": [
+   "Jonathan Geuter",
+   "Andrew Cheng",
+   "David Alvarez-Melis"
+  ],
+  "published": "2026-10-12",
+  "license": "http://arxiv.org/licenses/nonexclusive-distrib/1.0/"
+ },
+ "2610.17309": {
+  "title": "StartLux-Decision: AutoThink Decision Models with Reinforcement Learning for Calibrated Deliberative Decisions",
+  "authors": [
+   "Xialie Zhuang",
+   "Zunhai Su",
+   "Jia Pan",
+   "Ngai Wong",
+   "Guanhua Chen",
+   "Chuan-Wei Kuo"
+  ],
+  "published": "2026-10-12",
+  "license": "http://arxiv.org/licenses/nonexclusive-distrib/1.0/"
+ },
+ "2610.18233": {
+  "title": "Consider, Then Choose: Order-Invariant Decisions in System One Models",
+  "authors": [
+   "Jianguo Huang",
+   "Yao Long Teng",
+   "Yanchen Deng",
+   "Bo An"
+  ],
+  "published": "2026-10-13",
+  "license": "http://creativecommons.org/licenses/by/4.0/"
+ },
+ "2610.18579": {
+  "title": "Reading Right, Acting Wrong: Diagnosing Decision Failures of System One Models in Agent Loops",
+  "authors": [
+   "Yubo Li",
+   "Ramayya Krishnan",
+   "Rema Padman"
+  ],
+  "published": "2026-10-13",
+  "license": "http://creativecommons.org/licenses/by/4.0/"
+ },
+ "2610.18610": {
+  "title": "Jev-ToM: Evaluating Theory of Mind in Typed Decision Models",
+  "authors": [
+   "Kawai Chung",
+   "Chunkit Chan",
+   "Yuxuan Liu",
+   "Yauwai Yim",
+   "Xi Yang",
+   "Wenbin Hu",
+   "Huihao Jing",
+   "Chiu Yeung Tang",
+   "Changxuan Fan",
+   "Ki Sen Hung",
+   "Tsun On Kwok",
+   "Haoran Li"
+  ],
+  "published": "2026-10-13",
+  "license": "http://creativecommons.org/licenses/by/4.0/"
+ },
+ "2610.18615": {
+  "title": "VideoJev: System One Model for Video Understanding and Interaction",
+  "authors": [
+   "Yuhan Zhu",
+   "Xiangyu Zeng",
+   "Qingyi Si",
+   "Chenxu Yang",
+   "Yifei Li",
+   "Luozheng Qin",
+   "Junhao Zhou",
+   "Dingyu Yao",
+   "Jun Zhang",
+   "Chuanyu Qin",
+   "Zhiqiu Zhang",
+   "Yuandong Yang",
+   "Yuqi Xu",
+   "Tianyu Zhang",
+   "Hongcheng Guo",
+   "Jiaqi Wang",
+   "Nan Duan",
+   "Limin Wang"
+  ],
+  "published": "2026-10-13",
+  "license": "http://creativecommons.org/licenses/by/4.0/"
+ },
+ "2610.18773": {
+  "title": "Jeva: System One Models from First Principles",
+  "authors": [
+   "Qi Li",
+   "Xinchao Wang"
+  ],
+  "published": "2026-10-13",
+  "license": "http://creativecommons.org/licenses/by/4.0/"
+ },
+ "2610.19811": {
+  "title": "Calibration and Risk-Budgeted Decisions with System One Models",
+  "authors": [
+   "Soundouss Messoudi",
+   "Youness Mansar"
+  ],
+  "published": "2026-10-14",
+  "license": "http://arxiv.org/licenses/nonexclusive-distrib/1.0/"
+ },
+ "2610.21244": {
+  "title": "System1-Arena: Which Decisions Can Be Left to System 1?",
+  "authors": [
+   "Tianyu Chen",
+   "Xinyang Liu",
+   "Ruyi An",
+   "Zhendong Wang",
+   "Mingyuan Zhou"
+  ],
+  "published": "2026-10-15",
+  "license": "http://creativecommons.org/licenses/by/4.0/"
+ },
+ "2610.22131": {
+  "title": "Intern-Decision: Efficient Multimodal Decision Making with Autoregressive Masked Language Modeling",
+  "authors": [
+   "Tong Zhu",
+   "Zhe Xu",
+   "Zefeng He",
+   "Yunkai Chai",
+   "Xuyang Hu",
+   "Dehong Zheng",
+   "Yun Luo",
+   "Yafu Li",
+   "Qi Zhang",
+   "Yu Cheng"
+  ],
+  "published": "2026-10-15",
+  "license": "http://creativecommons.org/licenses/by-sa/4.0/"
+ },
+ "2610.25553": {
+  "title": "Narrow Decision Models: A System-1 Architecture for Calibrated, Typed Decisions",
+  "authors": [
+   "Carlos André Antunes",
+   "Aldry Albuquerque",
+   "Gabriel de Melo Schmith",
+   "Natã Batista",
+   "Pedro Oziel Escobar da Silva",
+   "Stefano Benko Rossi",
+   "Lingrid Dietrich Lorenz da Silva",
+   "Flávia Cristina da Costa",
+   "Thiago Bertotto",
+   "Luis Fernando Fausto"
+  ],
+  "published": "2026-10-18",
+  "license": "http://creativecommons.org/licenses/by/4.0/"
+ },
+ "2611.00911": {
+  "title": "S1CogBench: What System One Decision Models Can and Cannot Do on Cognitive Experiments",
+  "authors": [
+   "Dengzhe Hou",
+   "Kazunori D Yamada"
+  ],
+  "published": "2026-10-31",
+  "license": "http://arxiv.org/licenses/nonexclusive-distrib/1.0/"
+ },
+ "2611.15592": {
+  "title": "Small Heads, Strong Decisions: A Controlled Study of Typed-Decision Models",
+  "authors": [
+   "Ritvik Rastogi"
+  ],
+  "published": "2026-11-11",
+  "license": "http://creativecommons.org/licenses/by/4.0/"
+ },
+ "2611.18655": {
+  "title": "Beveridge: Open Weight System One Decision Models with Calibrated Probabilities",
+  "authors": [
+   "Sathiskumar Jothi"
+  ],
+  "published": "2026-10-17",
+  "license": "http://creativecommons.org/licenses/by/4.0/"
+ },
+ "2611.20699": {
+  "title": "A First Look at System One Decision Models for Malware Detection",
+  "authors": [
+   "Pier Mattia Basciano",
+   "Giovanni Farina",
+   "Salvatore Monteleone"
+  ],
+  "published": "2026-11-16",
+  "license": "http://creativecommons.org/licenses/by/4.0/"
+ },
+ "2611.23751": {
+  "title": "Thinking Fast, Anywhere: One System-1 for the Decision Points of Any Agent Workflow",
+  "authors": [
+   "Rui Li",
+   "Liyang He",
+   "Zheng Zhang",
+   "Zhenya Huang",
+   "Qi Liu"
+  ],
+  "published": "2026-11-18",
+  "license": "http://creativecommons.org/licenses/by/4.0/"
+ }
+}
