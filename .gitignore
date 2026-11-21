@@ -36,3 +36,6 @@ wandb/
 Thumbs.db
 .idea/
 .vscode/
+
+# Research PDFs (licences vary; see research/papers/MANIFEST.md)
+research/papers/pdf/
