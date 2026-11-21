@@ -1,0 +1,145 @@
+# Research library for the System One survey (docs/research/survey.md).
+#
+# arXiv entries list only the id plus our classification. Title, authors, date and licence are fetched
+# from arXiv by scripts/fetch_papers.py; `expect` is a word that must appear in the fetched title,
+# which guards against a mistyped id. Non-arXiv sources are link-only (`url`).
+#
+# family: biencoder | late-interaction | decoder-readout | encoder | encoder-decoder | looped |
+#         frozen-reader | evaluation | serving | foundations | generative | data
+# role:   implementation | benchmark | background | dataset | product
+
+arxiv:
+  # --- System One implementations with papers ---------------------------------------------------
+  - {key: jeva, id: "2610.18773", expect: Jeva, system: Jeva, family: late-interaction, role: implementation}
+  - {key: jeff, id: "2610.17205", expect: Inner, system: Jeff-1.1, family: decoder-readout, role: implementation}
+  - {key: bongard, id: "2609.39111", expect: Bongard, system: Bongard, family: encoder-decoder, role: implementation}
+  - {key: sansi, id: "2610.07730", expect: SanSi, system: SanSi, family: looped, role: implementation}
+  - {key: startlux, id: "2610.17309", expect: StartLux, system: StartLux-Decision, family: decoder-readout, role: implementation}
+  - {key: anyjev, id: "2610.00831", expect: AnyJev, system: AnyJev/Tacit, family: decoder-readout, role: implementation}
+  - {key: interndecision, id: "2610.22131", expect: Intern, system: Intern-Decision, family: decoder-readout, role: implementation}
+  - {key: videojev, id: "2610.18615", expect: VideoJev, system: VideoJev, family: decoder-readout, role: implementation}
+  - {key: thisthat, id: "2609.23886", expect: this-that, system: this-that-model-1.0, family: decoder-readout, role: implementation}
+  - {key: beveridge, id: "2611.18655", expect: Beveridge, system: Beveridge, family: encoder, role: implementation}
+  - {key: chinesejev, id: "2609.36965", expect: Chinese, system: Chinese-Jev, family: decoder-readout, role: implementation}
+  - {key: pixeljev, id: "2609.29283", expect: Pixels, system: PixelJev, family: decoder-readout, role: implementation}
+  - {key: ndm, id: "2610.25553", expect: Narrow, system: Narrow Decision Models, family: encoder, role: implementation}
+  - {key: anys1, id: "2611.23751", expect: Anywhere, system: AnyS1, family: decoder-readout, role: implementation}
+  - {key: smallheads, id: "2611.15592", expect: Heads, system: Small Heads, family: decoder-readout, role: implementation}
+  - {key: sbert2s1, id: "2610.02486", expect: Typed, system: sbert2s1, family: biencoder, role: implementation}
+  - {key: gliner2, id: "2507.18546", expect: GLiNER2, system: GLiNER2 (GLiNER2.5-Decide), family: encoder, role: background}
+  - {key: lfm2, id: "2511.23404", expect: LFM2, system: Liquid d1 backbone, family: decoder-readout, role: background}
+
+  # --- Evaluations and failure analyses ---------------------------------------------------------
+  - {key: s1arena, id: "2610.21244", expect: System1-Arena, system: S1-Arena / NanoJev, family: evaluation, role: benchmark}
+  - {key: typedbench, id: "2610.11392", expect: TypedBench, system: TypedBench, family: evaluation, role: benchmark}
+  - {key: rafedas, id: "2610.00346", expect: System, system: DeBERTa vs System One, family: evaluation, role: benchmark}
+  - {key: runoff, id: "2610.18233", expect: Consider, system: Runoff, family: evaluation, role: benchmark}
+  - {key: readingright, id: "2610.18579", expect: Reading, system: Reading Right Acting Wrong, family: evaluation, role: benchmark}
+  - {key: axioms, id: "2609.33209", expect: Calibration, system: Probability axioms, family: evaluation, role: benchmark}
+  - {key: jevadvbench, id: "2609.31142", expect: JevAdvBench, system: JevAdvBench, family: evaluation, role: benchmark}
+  - {key: probabilitybench, id: "2610.17016", expect: ProbabilityBench, system: ProbabilityBench, family: evaluation, role: benchmark}
+  - {key: riskbudget, id: "2610.19811", expect: Risk, system: Risk-budgeted decisions, family: evaluation, role: benchmark}
+  - {key: tdmaudit, id: "2609.32160", expect: Audit, system: Evidence audit, family: evaluation, role: benchmark}
+  - {key: jevtom, id: "2610.18610", expect: Theory, system: Jev-ToM, family: evaluation, role: benchmark}
+  - {key: s1cogbench, id: "2611.00911", expect: S1CogBench, system: S1CogBench, family: evaluation, role: benchmark}
+  - {key: malware, id: "2611.20699", expect: Malware, system: System One for malware, family: evaluation, role: benchmark}
+  - {key: s1transfer, id: "2610.14112", expect: Transfer, system: Indonesian transfer, family: evaluation, role: benchmark}
+  - {key: rubricjudges, id: "2609.29769", expect: Rubric, system: Rubric judges, family: evaluation, role: benchmark}
+  - {key: jevwild, id: "2609.30216", expect: Wild, system: Jev in the Wild, family: evaluation, role: benchmark}
+  - {key: evaljev, id: "2609.37647", expect: Jev, system: Evaluating Jev, family: evaluation, role: benchmark}
+  - {key: agentsecurity, id: "2609.33401", expect: Security, system: Agent security decisions, family: evaluation, role: benchmark}
+  - {key: pentest, id: "2609.28940", expect: Pentest, system: Pentest harnesses, family: evaluation, role: benchmark}
+
+  # --- Lineage of the CLM authors and techniques systems cite ----------------------------------
+  - {key: robomonkey, id: "2506.17811", expect: RoboMonkey, system: CLM lineage, family: foundations, role: background}
+  - {key: weaver, id: "2506.18203", expect: Verifiers, system: CLM lineage, family: foundations, role: background}
+  - {key: archon, id: "2409.15254", expect: Archon, system: CLM lineage, family: foundations, role: background}
+  - {key: cornstack, id: "2412.01007", expect: CoRNStack, system: CLM lineage, family: foundations, role: background}
+  - {key: monkeys, id: "2407.21787", expect: Monkeys, system: CLM lineage, family: foundations, role: background}
+  - {key: codemonkeys, id: "2501.14723", expect: CodeMonkeys, system: CLM lineage, family: foundations, role: background}
+  - {key: hydragen, id: "2402.05099", expect: Hydragen, system: shared-prefix attention, family: serving, role: background}
+  - {key: deft, id: "2404.00242", expect: DeFT, system: tree attention, family: serving, role: background}
+  - {key: first, id: "2406.15657", expect: FIRST, system: single-token listwise reranking, family: decoder-readout, role: background}
+  - {key: pcw, id: "2212.10947", expect: Parallel, system: parallel context windows, family: serving, role: background}
+  - {key: orthrus, id: "2605.12825", expect: Orthrus, system: Jeeves drafter, family: serving, role: background}
+  - {key: vllmsr, id: "2510.08731", expect: Semantic, system: vLLM Semantic Router, family: serving, role: background}
+  - {key: semcache, id: "2510.26835", expect: Caching, system: vLLM Semantic Router, family: serving, role: background}
+
+  # --- Representation, calibration and retrieval foundations -------------------------------------
+  - {key: cpc, id: "1807.03748", expect: Contrastive, system: InfoNCE, family: foundations, role: background}
+  - {key: clip, id: "2103.00020", expect: Transferable, system: CLIP, family: foundations, role: background}
+  - {key: dpr, id: "2004.04906", expect: Passage, system: DPR, family: biencoder, role: background}
+  - {key: colbert, id: "2004.12832", expect: ColBERT, system: ColBERT, family: late-interaction, role: background}
+  - {key: nvretriever, id: "2407.15831", expect: NV-Retriever, system: positive-aware negative mining, family: foundations, role: background}
+  - {key: guo2017, id: "1706.04599", expect: Calibration, system: temperature scaling, family: foundations, role: background}
+  - {key: ltt, id: "2110.01052", expect: Learn, system: Learn-then-Test, family: foundations, role: background}
+  - {key: conformal, id: "2107.07511", expect: Conformal, system: conformal prediction, family: foundations, role: background}
+  - {key: lora, id: "2106.09685", expect: LoRA, system: LoRA, family: foundations, role: background}
+  - {key: mrl, id: "2205.13147", expect: Matryoshka, system: Matryoshka representations, family: foundations, role: background}
+  - {key: 2dmse, id: "2402.14776", expect: Matryoshka, system: 2D Matryoshka, family: foundations, role: background}
+  - {key: layerbylayer, id: "2502.02013", expect: Layer, system: intermediate-layer embeddings, family: foundations, role: background}
+  - {key: qwen3emb, id: "2506.05176", expect: Qwen3, system: Qwen3-Embedding / Reranker, family: biencoder, role: background}
+  - {key: archrouter, id: "2506.16655", expect: Arch-Router, system: Arch-Router, family: decoder-readout, role: background}
+
+links:
+  # --- Primary sources without an arXiv paper (link-only; never mirrored) -------------------------
+  - {key: clm-repo, url: "https://github.com/Contrastive-LM/CLM", title: "CLM: Contrastive Language Models (code, README, issues)", system: CLM, family: biencoder, role: implementation}
+  - {key: clm-blog, url: "https://contrastive-lm.notion.site", title: "Contrastive Language Models (Notion blog)", system: CLM, family: biencoder, role: implementation}
+  - {key: clm-card, url: "https://huggingface.co/Contrastive-LM/CLM-v0.1-8B", title: "CLM-v0.1-8B model card", system: CLM, family: biencoder, role: implementation}
+  - {key: clm-heads, url: "https://huggingface.co/jackyk02/qwen3_8b_head", title: "Published pre/mid/post-trained CLM heads", system: CLM, family: biencoder, role: implementation}
+  - {key: kev-repo, url: "https://github.com/jaredpalmer/kev", title: "Kev: Jev-like decision models (code, PLAN.md, model cards)", system: Kev, family: decoder-readout, role: implementation}
+  - {key: jeff-repo, url: "https://github.com/j-geuter/Jeff", title: "Jeff code", system: Jeff-1.1, family: decoder-readout, role: implementation}
+  - {key: strands, url: "https://github.com/strands-labs/strands-decider", title: "Strands Decider", system: Strands Decider, family: decoder-readout, role: implementation}
+  - {key: strands-blog, url: "https://strandsagents.com/blog/introducing-strands-decider", title: "Introducing Strands Decider", system: Strands Decider, family: decoder-readout, role: implementation}
+  - {key: jeeves, url: "https://github.com/PostHog/jeeves", title: "Jeeves", system: Jeeves, family: decoder-readout, role: implementation}
+  - {key: decider, url: "https://github.com/Mapika/decider", title: "decider", system: decider, family: decoder-readout, role: implementation}
+  - {key: startlux-repo, url: "https://github.com/StartLuxLabs/StartLux-Decision", title: "StartLux-Decision inference code", system: StartLux-Decision, family: decoder-readout, role: implementation}
+  - {key: anyjev-repo, url: "https://github.com/nokia-applied-research/AnyJev", title: "AnyJev / Tacit", system: AnyJev/Tacit, family: decoder-readout, role: implementation}
+  - {key: nanojev, url: "https://github.com/TianyuCodings/NanoJev", title: "NanoJev", system: NanoJev, family: decoder-readout, role: implementation}
+  - {key: semif, url: "https://github.com/TheoLeeCJ/SemIf-OpenJev", title: "SemIf (OpenJev)", system: SemIf, family: decoder-readout, role: implementation}
+  - {key: decision2, url: "https://vllm-sr.ai/docs/model-runtime/supported-models/decision-2/overview/", title: "vLLM-SR Decision 2.0 docs", system: Decision 2.0, family: decoder-readout, role: implementation}
+  - {key: decision2-kai, url: "https://huggingface.co/vllm-sr/Decision-2.0-Kai-0.6B", title: "Decision 2.0 Kai-0.6B (remote code)", system: Decision 2.0, family: decoder-readout, role: implementation}
+  - {key: s1auto, url: "https://modelsystem.one/news/vllm-sr-decision-2-family/", title: "Decision 2.0 family and System One Auto", system: Decision 2.0, family: decoder-readout, role: implementation}
+  - {key: pplx, url: "https://huggingface.co/perplexity-ai/pplx-decider-v1.1-27b", title: "pplx-decider v1.1 27B", system: pplx-decider, family: decoder-readout, role: implementation}
+  - {key: liquid-d1, url: "https://www.liquid.ai/blog/d1-open", title: "Liquid d1 open models", system: Liquid d1, family: decoder-readout, role: implementation}
+  - {key: clef, url: "https://huggingface.co/Cloudflare/clef", title: "Cloudflare Clef", system: Clef, family: decoder-readout, role: implementation}
+  - {key: clef-blog, url: "https://blog.cloudflare.com/clef-decision-models", title: "Introducing Clef", system: Clef, family: decoder-readout, role: implementation}
+  - {key: jeva-repo, url: "https://github.com/LiQiiiii/Jeva", title: "Jeva code", system: Jeva, family: late-interaction, role: implementation}
+  - {key: bongard-repo, url: "https://github.com/AgentBull/bongard", title: "Bongard code", system: Bongard, family: encoder-decoder, role: implementation}
+  - {key: sansi-repo, url: "https://github.com/minnesotanlp/Sansi", title: "SanSi code", system: SanSi, family: looped, role: implementation}
+  - {key: sbert2s1-repo, url: "https://github.com/pritamdeka/sbert2s1", title: "sbert2s1 code", system: sbert2s1, family: biencoder, role: implementation}
+  - {key: laya-repo, url: "https://github.com/NandhaKishorM/laya", title: "Laya code (model, RLCD trainer, calibration, server, issues)", system: Laya, family: encoder, role: implementation}
+  - {key: laya-card, url: "https://huggingface.co/convaiinnovations/laya", title: "Laya model card", system: Laya, family: encoder, role: implementation}
+  - {key: laya-paper, url: "https://doi.org/10.20944/preprints202611.0781.v1", title: "From Laya to Vega: Open Non-Autoregressive Decision Models with Calibrated Probabilities (preprint; not retrievable, 403)", system: Laya, family: encoder, role: implementation}
+  - {key: vegaml, url: "https://github.com/NandhaKishorM/vegaml", title: "vegaml / vega-U frozen-reader engine", system: vegaml, family: frozen-reader, role: implementation}
+  - {key: von, url: "https://github.com/wfzyx/von", title: "Von (archived) incl. von-2 post-mortem", system: Von, family: encoder, role: implementation}
+  - {key: phocinae, url: "https://github.com/Phocinae/Phocinae-Largha-150M-v1", title: "Phocinae-Largha-150M", system: Phocinae, family: encoder, role: implementation}
+  - {key: gliner-decide, url: "https://huggingface.co/fastino/GLiNER2.5-Decide", title: "GLiNER2.5-Decide", system: GLiNER2.5-Decide, family: encoder, role: implementation}
+  - {key: interndecision-repo, url: "https://github.com/InternLM/Intern-Decision", title: "Intern-Decision code", system: Intern-Decision, family: decoder-readout, role: implementation}
+  - {key: inkling, url: "https://thinkingmachines.ai/news/introducing-inkling/", title: "Introducing Inkling", system: Inkling, family: generative, role: background}
+  - {key: inkling2small, url: "https://thinkingmachines.ai/news/inkling-2-small/", title: "Inkling 2 Small", system: Inkling, family: generative, role: background}
+  - {key: inkling2mini, url: "https://huggingface.co/thinkingmachines/Inkling-2-Mini", title: "Inkling 2 Mini model card", system: Inkling, family: generative, role: background}
+  - {key: tml-lora, url: "https://thinkingmachines.ai/blog/lora/", title: "LoRA Without Regret", system: Thinking Machines, family: foundations, role: background}
+  - {key: tml-opd, url: "https://thinkingmachines.ai/blog/on-policy-distillation/", title: "On-Policy Distillation", system: Thinking Machines, family: foundations, role: background}
+  - {key: tinker-pricing, url: "https://thinkingmachines.ai/tinker/pricing/", title: "Tinker pricing", system: Inkling, family: generative, role: product}
+  - {key: jev-docs, url: "https://docs.typesafe.ai/concepts/system-one.md", title: "TypeSafe System One concepts", system: Jev, family: decoder-readout, role: product}
+  - {key: jev-api, url: "https://docs.typesafe.ai/api/system-one.md", title: "TypeSafe /v1/systemone API", system: Jev, family: decoder-readout, role: product}
+  - {key: jev-primer, url: "https://docs.typesafe.ai/introduction/machine-learning-primer.md", title: "TypeSafe machine-learning primer (RLCD)", system: Jev, family: decoder-readout, role: product}
+  - {key: jev-launch, url: "https://typesafe.ai/blog/introducing-system-one-models-and-jev", title: "Introducing System One models and Jev", system: Jev, family: decoder-readout, role: product}
+  - {key: jev-hume, url: "https://archerhume.com/posts/jevs-architecture-unmasked/", title: "Jev's architecture unmasked (third-party probing)", system: Jev, family: decoder-readout, role: background}
+  - {key: msdecision, url: "https://commandline.microsoft.com/microsoft-decision-1-model-foundry/", title: "Microsoft-Decision-1", system: MS-Decision-1, family: decoder-readout, role: product}
+  - {key: openai-decisions, url: "https://developers.openai.com/api/docs/guides/decisions", title: "OpenAI Decisions API guide", system: OpenAI Decisions, family: decoder-readout, role: product}
+  - {key: s1arena-repo, url: "https://github.com/TianyuCodings/S1-Arena", title: "System1-Arena harness", system: S1-Arena, family: evaluation, role: benchmark}
+  - {key: jevbench, url: "https://github.com/fstandhartinger/jevbench", title: "JevBench harness", system: JevBench, family: evaluation, role: benchmark}
+  - {key: jdi, url: "https://huggingface.co/spaces/multimodalart/jev-decision-index", title: "Jev Decision Index", system: Jev Decision Index, family: evaluation, role: benchmark}
+  - {key: awesome-decision, url: "https://github.com/AnotiaWang/awesome-decision-models", title: "awesome-decision-models catalog", system: catalog, family: evaluation, role: background}
+  - {key: decisionbank, url: "https://huggingface.co/datasets/jgeuter/DecisionBank", title: "DecisionBank", system: Jeff-1.1, family: data, role: dataset}
+  - {key: opendecisions, url: "https://huggingface.co/datasets/jgeuter/OpenDecisions", title: "OpenDecisions", system: Jeff-1.1, family: data, role: dataset}
+  - {key: typed-decisions, url: "https://huggingface.co/datasets/LocalLLaMA/typed-decisions", title: "typed-decisions", system: typed-decisions, family: data, role: dataset}
+  - {key: kev-suites, url: "https://huggingface.co/datasets/jaredpalmer/kev-suites", title: "kev-suites", system: Kev, family: data, role: dataset}
+  - {key: s1arena-data, url: "https://huggingface.co/datasets/C-Tianyu/S1-Arena", title: "S1-Arena data", system: S1-Arena, family: data, role: dataset}
+  - {key: nemotron-text, url: "https://huggingface.co/datasets/jackyk02/Nemotron-CC-2.1-HQA-Doc-Negatives", title: "Nemotron-CC-2.1 HQA text with Gemini hard negatives", system: CLM, family: data, role: dataset}
+  - {key: clm-vectors, url: "https://huggingface.co/datasets/Contrastive-LM/CLM-v0.1-Pretrain-Nemotron", title: "CLM pre-training vectors (Qwen3-8B)", system: CLM, family: data, role: dataset}
+  - {key: clm-negs, url: "https://huggingface.co/datasets/jackyk02/nemotron_dqa_qwen3_8b_neg_embeddings", title: "CLM hard-negative vectors (shard_00)", system: CLM, family: data, role: dataset}
+  - {key: adp, url: "https://huggingface.co/datasets/neulab/adp-v2", title: "Agent Data Protocol v2", system: CLM, family: data, role: dataset}
+  - {key: decisionbench, url: "https://huggingface.co/datasets/Hanno-Labs/decision-bench", title: "DecisionBench", system: DecisionBench, family: data, role: dataset}
