@@ -1,0 +1,132 @@
+{
+ "source": "contrastive-lm 0.1.0, clm.schema.build_pairs",
+ "cases": [
+  {
+   "request": {
+    "state": {
+     "text": "The movie was a joyless slog.",
+     "meta": {
+      "source": "imdb",
+      "tags": [
+       "review",
+       "en"
+      ]
+     }
+    },
+    "questions": {
+     "sentiment": {
+      "type": "boolean",
+      "instructions": "The review is positive."
+     },
+     "rating": {
+      "type": "score",
+      "instructions": "Rate the review.",
+      "criteria": [
+       "bad",
+       "ok",
+       "great"
+      ]
+     }
+    }
+   },
+   "texts": {
+    "sentiment": {
+     "state": "text: The movie was a joyless slog.\n\nmeta:\n  source: imdb\n  tags:\n    - review\n    - en\n\nThe review is positive.",
+     "keys": [
+      "false",
+      "true"
+     ],
+     "candidates": [
+      "false: No. This is false: The review is positive.",
+      "true: Yes. This is true: The review is positive."
+     ]
+    },
+    "rating": {
+     "state": "text: The movie was a joyless slog.\n\nmeta:\n  source: imdb\n  tags:\n    - review\n    - en\n\nRate the review.",
+     "keys": [
+      "0",
+      "1",
+      "2"
+     ],
+     "candidates": [
+      "bad",
+      "ok",
+      "great"
+     ]
+    }
+   }
+  },
+  {
+   "request": {
+    "state": {
+     "steps": [
+      {
+       "action": "click",
+       "target": "#buy"
+      },
+      "scrolled",
+      3,
+      true,
+      null
+     ],
+     "goal": "  Buy it  "
+    },
+    "questions": {
+     "next": {
+      "type": "choice",
+      "instructions": "  Which action comes next?  ",
+      "criteria": {
+       "submit": "Submit the form",
+       "back": "",
+       "wait": "Wait 2 s"
+      }
+     }
+    }
+   },
+   "texts": {
+    "next": {
+     "state": "steps:\n  -\n    action: click\n    target: #buy\n  - scrolled\n  - 3\n  - true\n  - \n\ngoal:   Buy it\n\nWhich action comes next?",
+     "keys": [
+      "submit",
+      "back",
+      "wait"
+     ],
+     "candidates": [
+      "Submit the form",
+      "back",
+      "Wait 2 s"
+     ]
+    }
+   }
+  },
+  {
+   "request": {
+    "state": {
+     "empty": {},
+     "list": [],
+     "n": 1.5,
+     "flag": false
+    },
+    "questions": {
+     "q": {
+      "type": "boolean",
+      "instructions": ""
+     }
+    }
+   },
+   "texts": {
+    "q": {
+     "state": "empty: \n\nlist: \n\nn: 1.5\n\nflag: false",
+     "keys": [
+      "false",
+      "true"
+     ],
+     "candidates": [
+      "false: false",
+      "true: true"
+     ]
+    }
+   }
+  }
+ ]
+}
