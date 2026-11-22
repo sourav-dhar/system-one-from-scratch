@@ -58,3 +58,12 @@ def test_link_entries() -> None:
         assert e["url"].startswith("https://"), e
         assert e["family"] in FAMILIES, e
         assert e["role"] in ROLES, e
+
+
+def test_metadata_and_bibliography_are_clean_utf8() -> None:
+    """Regression: re-reading the cache with the platform encoding double-encoded author names."""
+    root = INDEX.parent.parent.parent
+    for path in (root / "research/papers/metadata.json", root / "docs/research/survey.bib"):
+        text = path.read_text(encoding="utf-8")
+        assert "Ã" not in text, f"mojibake in {path.name}"
+        assert "â€" not in text, f"mojibake in {path.name}"
