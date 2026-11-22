@@ -7,7 +7,7 @@ I checked 40 claims against primary sources and left out everything already list
 - **GitHub:** read-only `gh api` GET calls. Kev's research log came from tag `research-archive-2026-09-24`.
 - **Hugging Face:** model and dataset cards fetched with plain GET requests.
 
-No project files were changed and no git commands were run. Extracted texts and downloads are in `C:\Users\dhars\AppData\Local\Temp\claude\e3bad9d5fd4b315f\777241e1-0588-4c74-940a-4d72bf5420d9\scratchpad\` (`txt\`, `dl\`).
+No project files were changed and no git commands were run. Extracted texts and downloads are in a local scratch directory (not in the repo) (`txt\`, `dl\`).
 
 | # | Survey location (short quote) | Claim | Primary source checked | Verdict | Correct value / note |
 |---|---|---|---|---|---|
