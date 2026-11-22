@@ -24,16 +24,16 @@ This page tracks every finding.
 | 7 | The ">65 %, <100 ms" frontier region is not empty: four open-LLM answer-token readouts sit there | **Fixed** in 68c1019. Table 11 now has all 22 rows; abstract conclusion 1 and §9.2 are rewritten; Fig. 2 and the README frontier are rebuilt (70dfdf6) |
 | 8 | CLM is the fastest only among System-1-native rows; its own backbone's readout is faster and more accurate | **Fixed** in 68c1019 (abstract, §1.1) |
 | 10 | Jeva's AUROC comes from §4.2 / Fig. 6b, not Tables 1–2 | **Fixed** in 68c1019 |
-| 14 | Gemma-4-31B with Jeff's chat prompt fits temperatures of 5.96 / 7.24 / 7.24, not 2.7–6.0 (Table 19) | **Open** (§5.1) |
+| 14 | Gemma-4-31B with Jeff's chat prompt fits temperatures of 5.96 / 7.24 / 7.24, not 2.7–6.0 (Table 19) | **Fixed** in 23bf3ac (§5.1) |
 | 16 | Jeff reports its order-invariance cost as within noise, and option sorting as free | **Fixed** in 68c1019 (FM1, H4, Table 10 row 6) |
 | 17 | Jeff is bidirectional for every model except Gemma-4-31B | **Fixed** in 68c1019 (mask table) |
 | 20 | Kev-27B decontamination used exact match, 8-gram Jaccard > 0.2 or containment ≥ 0.5 | **Fixed** in 68c1019 |
 | 21 | Kev's buried-state gains are synthetic; real documents moved only ±1 pp | **Fixed** in 68c1019 (FM6, Table 10 row 10) |
-| 22 | Laya's option budget includes the question text | **Open** (§3.4) |
+| 22 | Laya's option budget includes the question text | **Fixed** in 23bf3ac (§3.4) |
 | 23 | Laya issue #741 was a single-seed third-party run; the three-seed PR #1012 found a tie | **Fixed** in 68c1019 (§4.3, Table 10 row 14) |
 | 25 | Laya's evidence-position cells have n = 20 (±0.22) | **Fixed** in 68c1019 (FM6) |
-| 26 | Appendix A's θ = 4.6423 belongs to a different head | **Open** (Appendix A; see 01 #24) |
-| 28 | CLM truncation: on real vLLM 0.30.0, issue #29 measures −0.1169 (the −0.0006 is from an MLX emulation) | **Open** (FM6 wording) |
+| 26 | Appendix A's θ = 4.6423 belongs to a different head | **Fixed** in 23bf3ac (Appendix A) |
+| 28 | CLM truncation: on real vLLM 0.30.0, issue #29 measures −0.1169 (the −0.0006 is from an MLX emulation) | **Fixed** in 23bf3ac (FM6, Table 10 row 9) |
 | 29 | Strands' question-ignoring persists from v7 to v19 (92–95 %) | **Fixed** in 68c1019 (FM7) |
 | 30 | StartLux throughput figures are in App. D.4, not §6 | **Fixed** in 68c1019 (mask table) |
 | 32 | Jev's fitted temperatures of 0.66 and 0.21 both come from Suite A | **Fixed** in 68c1019 |
@@ -48,16 +48,16 @@ This page tracks every finding.
 
 | # | Severity | Finding | Status |
 |---|---|---|---|
-| 1 | Critical | B's question-blind state tower is not what NDM or Jeva do (NDM's question attends to the state) | **At lock.** The recommended rewrite is one causal state⊕question pass with state-KV reuse, keeping towers as an ablation. Survey H1, §11 A and Table 10 row 2 are **Open** |
-| 2 | Critical | The abstract asserts causes for CLM's gap; the scale cap explains Brier, not accuracy; the truncation and training-data confounds are omitted | **Partly.** Conclusion 1 was reframed around the full frontier in 68c1019. Causal wording, the confounds and M0 arms are open |
-| 3 | Critical | Table 10 mostly cites evidence that a flaw exists, not that a fix works | **Partly.** Rows 5, 6, 7, 10, 11, 14 and 16 were revised in 68c1019. Restructuring (flaw measured / fix measured / status / citations) is open |
-| 4 | Major | Reproduction and calibration claims lack provenance; the low-confidence bin is anomalous | **Partly.** The tie bug was found and fixed in PR #41. Wording ("within 0.4 pp, different n"), split provenance, randomised gold position and a cross-dataset fit are open or M0 |
+| 1 | Critical | B's question-blind state tower is not what NDM or Jeva do (NDM's question attends to the state) | **At lock.** The recommended rewrite is one causal state⊕question pass with state-KV reuse, keeping towers as an ablation. Survey H1, Candidate A and Table 10 row 2 were **fixed** in 23bf3ac |
+| 2 | Critical | The abstract asserts causes for CLM's gap; the scale cap explains Brier, not accuracy; the truncation and training-data confounds are omitted | **Fixed** in the survey (68c1019, 23bf3ac): candidate causes, not established ones; truncation and training-data confounds; the scale cap moved to Brier. M0 arms (full context vs tail cut) are **At lock** |
+| 3 | Critical | Table 10 mostly cites evidence that a flaw exists, not that a fix works | **Partly.** Rows 5, 6, 7, 10, 11, 14 and 16 were revised in 68c1019, and rows 2, 4 and 9 in 23bf3ac. Restructuring (flaw measured / fix measured / status / citations) is open |
+| 4 | Major | Reproduction and calibration claims lack provenance; the low-confidence bin is anomalous | **Partly.** The tie bug is fixed in PR #41; the wording ("within 0.4 pp", different sample) and the in-distribution and tie caveats are in 23bf3ac. Split provenance is open; randomised gold position and a cross-dataset fit are M0 |
 | 5 | Major | P3 misstates the IIA trade-off | **Open** |
 | 6 | Major | Four equations are wrong or overstated (null formula, Bongard REINFORCE identity, AnyJev "exact", soft-CE "exact") | **Open** |
 | 7 | Major | Four equations are unsourced or incomplete (InfoNCE mask, RLCD std, vegaml E_k, Jeva attention terms) | **Open** |
 | 8 | Major | Taxonomy families overlap and several systems are misplaced | **Open.** Planned: two axes (interaction/cache pattern × readout) plus attributes |
 | 9 | Major | Table 1's caching columns are wrong for F1, F2, F3 and F5 | **Open** |
-| 10 | Major | Calibration is presented as free, but the sources record trade-offs | **Open** |
+| 10 | Major | Calibration is presented as free, but the sources record trade-offs | **Partly.** Table 10 row 4 and §5.6 state the costs (23bf3ac); a §5 paragraph and the §4 loss wording are open |
 | 11 | Major | K-aware calibration is misattributed; the ADRs adopt fitting rules that the sources contradict | **Open** (survey), **At lock** (ADR 0001, ADR 0002) |
 | 12 | Major | The "RL earns its keep" examples are CE or closed-form proper-score losses | **Open** |
 | 13 | Major | The adaptation and scale claims do not follow (Qwen3.5 keeps rising after 4B; head-only arm within noise) | **Open** |
