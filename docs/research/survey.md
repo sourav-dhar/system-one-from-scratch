@@ -546,10 +546,11 @@ Calibration error has a sign, and it differs by family and checkpoint.
 |---|---|---|
 | One global $T$ | Kev ($T$ = 2.41 for 4B), Intern-Decision (1.99–2.75), pplx-decider (1.0087) | Kev 4B: transfer-v4 ECE 0.017; hard-v1 0.084; documents 0.101 [@kev-repo] |
 | Per type (choice / noul / score), with $T \ge 1$ | Jeff (Large: 1.49 / 1.57 / 1.11) | Temperature scaling alone took zero-shot Gemma-31B Capability from 72.9 to 79.6 [@jeff] |
-| Per (type, $K$-bucket) | Laya ($K \in \{2, 3\text{–}5, 6\text{–}10, 11+\}$), sbert2s1, NDM (bounded $T$) | Laya: as-shipped ECE 0.466 → 0.081 after refit [@laya-repo]. NDM choice ECE 0.188 → 0.033 [@ndm]. **Kev: per-(type, K) made calibration *worse* OOD** [@kev-repo] |
+| Per (type, $K$-bucket) | Laya ($K \in \{2, 3\text{–}5, 6\text{–}10, 11+\}$), Bongard (per primitive, and per $K$ where data allow; 1.2–2.15), sbert2s1 | Laya: as-shipped ECE 0.466 → 0.081 after refit [@laya-repo]. Bongard: external ECE 0.141 → 0.030 together with stage-3 training [@bongard]. **Kev: per-(type, $K$) made calibration *worse* out of distribution, and its held-out-dataset refit failed its adoption rule** [@kev-repo] |
+| Per primitive, no $K$ | NDM (bounded $T \in [0.25, 10]$, plus a domain temperature shrunk toward the synthetic one) | NDM choice ECE 0.188 → 0.033 [@ndm] |
 | A function of $\log K$ | decider: $T(n) = \max(T_{\min}, a + b \ln n)$ | — [@decider] |
 | Input-conditioned | Von ($T$ from entropy, state length, $K$); vegaml "thermal" $\log\tau = b + w\cdot[\text{kinetic}, \text{distance}, \text{steps}, \log K]$ | vegaml held-out NLL 0.48719 (scalar) vs 0.48476 (thermal) [@vegaml]. Von's map is fit in-sample and "does not carry to other distributions" [@von] |
-| Separate pre- and post-reasoning $T$ | Jeeves, StartLux | Required: reasoning makes answers over-confident [@jeeves; @startlux] |
+| Separate pre- and post-reasoning $T$ | Jeeves (1.52 direct, 5.42 after reasoning) | Required: training only on chains that reach the right answer makes post-reasoning answers over-confident [@jeeves]. StartLux instead fits one $T$ per question type and fuses its two passes, $p = 0.25\,p^{(0)} + 0.75\,p^{(1)}$, with the weight chosen by held-out Brier [@startlux] |
 
 ### 5.3 Where to fit
 
