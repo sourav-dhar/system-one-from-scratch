@@ -1,6 +1,6 @@
 # Method-level deep dive: System One decision models and what each means for our CLM-style bi-encoder
 
-**What I read.** I read the primary sources: the arXiv HTML pages, the repo code and READMEs, and the HF cards. The prior study is [landscape.md](a local scratch directory (not in the repo)
+**What I read.** I read the primary sources: the arXiv HTML pages, the repo code and READMEs, and the HF cards. The prior study is [landscape.md](00-landscape-full.md).
 
 **What I could not fetch:**
 - The CLM Notion blog returned only the word "Notion".
