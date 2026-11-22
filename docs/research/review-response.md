@@ -56,7 +56,7 @@ This page tracks every finding.
 | 6 | Major | Four equations are wrong or overstated (null formula, Bongard REINFORCE identity, AnyJev "exact", soft-CE "exact") | **Fixed.** Bongard identity removed in 3516adf; null formula, AnyJev and soft-CE in 2e5b364 |
 | 7 | Major | Four equations are unsourced or incomplete (InfoNCE mask, RLCD std, vegaml E_k, Jeva attention terms) | **Fixed.** RLCD std in 2e5b364; InfoNCE mask, vegaml E_k and Jeva attention terms in 46660c4 |
 | 8 | Major | Taxonomy families overlap and several systems are misplaced | **Open.** Planned: two axes (interaction/cache pattern × readout) plus attributes |
-| 9 | Major | Table 1's caching columns are wrong for F1, F2, F3 and F5 | **Open** |
+| 9 | Major | Table 1's caching columns are wrong for F1, F2, F3 and F5 | **Fixed** in 7d6f736 |
 | 10 | Major | Calibration is presented as free, but the sources record trade-offs | **Partly.** Table 10 row 4 and §5.6 state the costs (23bf3ac); the §4.2 objective wording and the Jeff locator are fixed in 3516adf; a dedicated §5 paragraph is open |
 | 11 | Major | K-aware calibration is misattributed; the ADRs adopt fitting rules that the sources contradict | **Partly.** H3 was fixed in 3516adf; Table 5 is open. **At lock** for ADR 0001 and ADR 0002 |
 | 12 | Major | The "RL earns its keep" examples are CE or closed-form proper-score losses | **Fixed** in 3516adf (conclusion 3, §4.3) |
