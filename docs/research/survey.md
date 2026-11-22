@@ -31,11 +31,11 @@ We catalogue fourteen failure modes that independent evaluations have quantified
 We trace which laboratory's design fixed which other's flaw, at what cost, and whether the fix preserves the cacheability that makes contrastive bi-encoders fast.
 
 Three conclusions stand out:
-1. **The fastest System-1-native model is the least accurate, and the gap is largely fixable.** The contrastive bi-encoder CLM-8B scores 41.4% on System1-Arena at 41 ms. Zero-shot answer-token readout of its own frozen backbone scores 59.3% at 30 ms. The gap traces to specific causes: appending the question to the state before last-token pooling, context-free short option texts, an uncalibrated scale saturated at its cap, option-independent scoring without a null outcome, and no training on typed decisions. More broadly, zero-shot readouts of mid-size open LLMs (e.g. Gemma-4-31B, 73.9% at 60 ms) are the fastest *accurate* models on that benchmark. Specialized System-1 models still lead on calibration (Brier 0.34 vs 0.46–0.54).
+1. **The fastest System-1-native model is the least accurate, and its gap has plausible, fixable causes that are not yet isolated.** The contrastive bi-encoder CLM-8B scores 41.4% on System1-Arena at 41 ms. Zero-shot answer-token readout of its own frozen backbone scores 59.3% at 30 ms. The gap is consistent with several candidate causes, none tested in isolation on that benchmark: the question appended to the state before last-token pooling, context-free short option texts, option-independent scoring without a null outcome, no training on typed decisions, and a 2,048-token tail cut that the readout did not face. The scale saturated at its cap explains CLM's Brier score, not its accuracy: rescaling cannot change an argmax. More broadly, zero-shot readouts of mid-size open LLMs (e.g. Gemma-4-31B, 73.9% at 60 ms) are the fastest *accurate* models on that benchmark. Specialized System-1 models still lead on calibration (Brier 0.34 vs 0.46–0.54).
 2. **Late interaction over cached option representations can add set-dependence, null coverage and exact permutation equivariance without giving up caching**, as Jeva shows. Narrow Decision Models corroborates the value of a set head and an adequacy (null) logit, although its option vectors are state-conditioned and therefore cached only within a request.
 3. **For calibration, simple direct objectives match reinforcement-learning variants.** Soft cross-entropy or cross-entropy plus Brier, followed by temperature scaling fitted on held-out *datasets*, matches or beats the RL variants that several systems advertise. Several published calibration choices are tuned to leaderboard scoring rules rather than to calibration.
 
-We complement the literature with our own measurements on the published CLM heads. They show an expected calibration error of 0.065 at the shipped scale, reduced to 0.013 by one fitted scalar. We close with a design space and a benchmark protocol for a from-scratch implementation that targets both cached action selection and typed decisions on a single mid-range GPU.
+We complement the literature with our own measurements on the published CLM heads. They show an expected calibration error of 0.065 at the shipped scale, reduced to 0.013 by one scalar fitted in-distribution; a cross-dataset fit and a tie-corrected re-measurement are pending (§5.6). We close with a design space and a benchmark protocol for a from-scratch implementation that targets both cached action selection and typed decisions on a single mid-range GPU.
 
 ---
 
@@ -284,7 +284,7 @@ They pay for joint encoding with order sensitivity (§7.1), with no option cachi
 
 **Laya** [@laya-repo] fine-tunes ModernBERT-large (421M) on the layout
 `[CLS] "{type} question: {ι}" [SEP] [MASK] o1 [MASK] o2 … [SEP] state [SEP]`.
-It adds a type embedding and a 2-layer transformer head, then scores each `[MASK]` with a small MLP. Each option is capped at 48 tokens, and the whole option block must fit in a 192-token "head budget" (256 for the multilingual model). When it overflows, every option is cut to $\max(4, (192-16)/K)$ tokens [@laya-repo, `common.py`].
+It adds a type embedding and a 2-layer transformer head, then scores each `[MASK]` with a small MLP. Each option is capped at 48 tokens, and the whole option block must fit in a 192-token "head budget" (256 for the multilingual and typed-decisions models). The budget also counts the question text. When it overflows, every option is cut to $\max(4, (192-16)/K)$ tokens [@laya-repo, `common.py`].
 
 Derivatives include:
 - **Von**: order-invariant masks with restarted position ids reduce its flip rate from 49.5% to 0 [@von].
@@ -362,7 +362,7 @@ The terms are:
 
 The recipe stored in the checkpoints is batch 16,384, a constant learning rate of 0.00653 (pre-training) or 0.001 (mid-training), an initial temperature of 0.07, and a scale cap of 100.
 
-**Table 3. The curriculum's ablations** (≈100k held-out questions, 10 negatives each) [@clm-repo]. Our evaluation code reproduces the published heads exactly: 51.73 / 69.16 / 68.63% on $n$ = 191,161 (this project, `results/benchmark/heads.json`).
+**Table 3. The curriculum's ablations** (≈100k held-out questions, 10 negatives each) [@clm-repo]. Our evaluation code reproduces the published heads to within 0.4 pp: 51.73 / 69.16 / 68.63% on $n$ = 191,161, against the README's 52.1 / 69.2 / 68.5 on about 100k (a different sample; this project, `results/benchmark/heads.json`).
 
 | Setting | Top-1 |
 |---|---|
@@ -514,7 +514,7 @@ Liquid's summary is representative: "long inputs, shuffled answer options, and f
 Calibration error has a sign, and it differs by family and checkpoint.
 
 **Over-confident:**
-- *Instruct models.* Gemma-4 needs temperatures of 2.7–6.0, while the pretrained checkpoint is close to calibrated [@jeff, App. I]. Every StartLux fitted temperature exceeds 1 [@startlux]. Gemma-4-31B puts ≥ 0.999 on its chosen option in 87% of System1-Arena questions [@s1arena].
+- *Instruct models.* With a plain prompt Gemma-4 needs temperatures of 2.7–6.0; with Jeff's chat prompt, zero-shot Gemma-4-31B fits 5.96 / 7.24 / 7.24. The pretrained checkpoint is close to calibrated [@jeff, App. I, Table 19]. Every StartLux fitted temperature exceeds 1 [@startlux]. Gemma-4-31B puts ≥ 0.999 on its chosen option in 87% of System1-Arena questions [@s1arena].
 - *Answers after reasoning.* Jeeves needs $T = 5.42$ after a reasoning trace vs. 1.52 for direct answers [@jeeves].
 - *CLM.* Its scale is saturated at the cap. In our measurement, the published mid-training head has ECE 0.064 on the 11-way tricky test at its own scale (this project).
 
@@ -578,7 +578,7 @@ For each of the authors' published CLM heads, we fit one inverse temperature on 
 | mid | 100 → 69.6 | 0.065 → **0.013** | 0.938 → 0.886 | 0.407 → 0.399 | 0.691 (unchanged) |
 | post | 100 → 69.4 | 0.067 → **0.014** | 0.957 → 0.903 | 0.414 → 0.406 | 0.686 (unchanged) |
 
-One scalar removes 79–90% of the calibration error at no accuracy cost. The cap of 100 is tuned for retrieval among about 16k in-batch candidates, not for 11-way decisions *(inference)*.
+One scalar removes 79–90% of the calibration error; top-1 cannot change, because rescaling preserves the argmax. Two caveats apply. The fit and the evaluation are two chunks of the same distribution, the in-distribution setting that §5.3 warns may not transfer. And this ECE (15 equal-width top-label bins) counted exact ties between the gold option and a negative as hits, a bug fixed in PR #41. Table 6 will be re-measured in M0 with tie-correct scoring, a randomised gold position and a cross-dataset fit. The cap of 100 is tuned for retrieval among about 16k in-batch candidates, not for 11-way decisions *(inference)*.
 
 ---
 
@@ -696,7 +696,7 @@ Whether exact invariance costs accuracy in joint models is unsettled:
 
 **FM6: Long context and truncation.**
 - *Burying.* Hiding the evidence among 1–4k tokens of unrelated records cost Kev 22–43 pp; training on such states recovered 17–20 pp. Kev's own conclusion is that "buried synthetic states are not real documents": on real CFPB documents the long-state training moved accuracy by only ±1 pp [@kev-repo, PLAN.md #11]. For laya-multilingual, accuracy falls from 0.85 to 0.40 as evidence moves to the end of a 7,000-token filler document (n = 20 per cell, ±0.22; at 4,000 tokens the end position is the best cell) [@laya-repo, `research/README.md`].
-- *Truncation.* CLM's server truncates at 2,048 tokens. Since vLLM 0.13 truncation keeps the *head*, which drops the question; the cosine to the correct embedding falls to −0.0006 [@clm-repo, issues #6, #29].
+- *Truncation.* CLM's server truncates at 2,048 tokens. Since vLLM 0.13 truncation keeps the *head*, which drops the question; the cosine to the correct embedding falls to −0.0006 in an MLX emulation (#6) and to −0.1169 on real vLLM 0.30.0 (#29); both issues are open [@clm-repo, issues #6, #29].
 
 **FM7: Question-ignoring and state collapse.**
 - Strands v7: the same answer to a changed question 94–99% of the time. The project's own notes show every model from v7 to v19 still around 92–95% [@strands, `research/generations.md`].
@@ -768,14 +768,14 @@ Sources: [@jeva; @ndm; @sbert2s1; @readingright].
 | # | Flaw (systems affected) | Fixed by | Evidence | Cost | Option cache kept? |
 |---|---|---|---|---|---|
 | 1 | IIA: no set-dependence (CLM, pure F1) | Jeva decision block; NDM set head; AnyS1 option-interaction layer | Typed 78.30 vs 43.05; nested sets 58/83 vs 7/83; NLL 1.181 → 0.799; +1.1 Dev | One small block (about 9.4M params at d = 768) | **Yes** (Jeva); within-request only (NDM, state-conditioned options); no (AnyS1, joint sequence) |
-| 2 | State collapse from the question suffix (CLM) | Separate $h_S$ and $h_Q$, fused late (NDM); question placed on the hypothesis side (sbert2s1) | CLM #15: cosine 0.958 vs 0.452 | One extra short embedding per question | **Yes** |
+| 2 | State collapse from the question suffix (CLM) | Pool the state before the question and read the question in a block that attends to the state (NDM, prefix-tree mask); put the question on the option side (sbert2s1) | Flaw: CLM #15, cosine 0.958 vs 0.452. Fix: not measured in isolation | NDM: question tokens over the cached state, per question; sbert2s1: $K$ new option embeddings per question | Partly: state reused within a request (NDM); option cache keyed by question (sbert2s1) |
 | 3 | Label-word and short-option blindness (F1, F4) | Noul from $[h_Q; h_S]$ (NDM); descriptive option texts; contextual readouts (Bongard) | Cosine gaps about 1e-3; sensitivity 0.000 → 1.059 | A small head; option rewriting | **Yes** |
-| 4 | Over-confidence, scale at the cap (CLM; instruct models) | Per-type temperature, fit on held-out data | Our ECE 0.065 → 0.013; NDM 0.188 → 0.033 | Negligible | **Yes** |
+| 4 | Over-confidence, scale at the cap (CLM; instruct models) | Temperature scaling: one global scalar (ours, in-distribution); per-primitive temperatures (NDM) | Our ECE 0.065 → 0.013 (re-measure pending); NDM 0.188 → 0.033 | Can hurt other metrics: Jeff's score items 64.5 → 54.1 [@jeff]; Phocinae Brier 0.0207 → 0.1218 [@phocinae] | **Yes** |
 | 5 | No null, or a $\log K$-biased null (CLM, flat softmax) | Coverage gate (Jeva); adequacy head (NDM); none-pairs (Kev) | AUROC 98.66 vs 93.61 (Jeva); NDM adequacy is a trade-off (recall 0.66 vs 0.25, false alarms 0.29 vs 0.025) | One scalar head + BCE | **Yes** |
 | 6 | Order flips (Jev, Laya, causal readouts) | Bi-encoders, Jeva and NDM by construction; isolating masks (Von, Kev); rotation averaging (AnyJev); Runoff | 0 flips; Von 49.5% → 0; Jeff: sorting options is invariant at no cost; Kev isolation −5.8 pp (single 4B run) | Free for F1/F2 and NDM's tree mask; for F3, $K$× compute (averaging) or option sorting | Yes for F1 and Jeva |
 | 7 | Yes/no swap (Jev 50.5, Laya 91.3) | Fine-tuned decision checkpoints (the mechanism is not isolated; randomized identifiers and polarity twins are our inference) | 4.2–6.5 flips for four fine-tuned checkpoints; Kev-0.8B 14.3 | Data | Yes *(inference)* |
 | 8 | Large-K collapse (F4 budgets; letter readouts ≤ 16 or 26) | 255-code / pointer readouts; tournaments; cached F1/F2 | Clef BANKING77 94.2; Jeva 69.88% at K = 2,048 | — | F1/F2: yes |
-| 9 | Truncation drops the question (CLM on vLLM ≥ 0.13) | Keep the tail | Cosine −0.0006 → 1.0 | Two lines | Yes |
+| 9 | Truncation drops the question (CLM on vLLM ≥ 0.13) | Keep the tail | Cosine −0.0006 (emulated) / −0.1169 (vLLM 0.30.0) → 1.0 | Two lines | Yes |
 | 10 | Long-context burying (Kev, Laya) | Training on buried states; longer training contexts | +17–20 pp on synthetic burying, ±1 pp on real documents | Data | — |
 | 11 | Question-ignoring (Strands v7) | Many questions per state in data (proposed) | Strands' fix attempts v11a/b lost on JevBench; v7–v19 all still ~92–95% question-insensitive | Data | — |
 | 12 | Anisotropic readouts (Bongard, CLM) | Pack centring | 2.3% → 56.6% retrieval | Training only | **Yes** |
@@ -891,8 +891,8 @@ On a 24 GB card (L4 / A10), an 8B frozen encoder fits in bf16 with modest headro
 
 We state the gaps as testable hypotheses, each grounded in the evidence above.
 
-- **H1 Most of CLM's typed-decision gap is fixable without losing option caching.** Evidence: the state-collapse and short-label pathologies (FM7, FM14); the 0.900 logistic regression on frozen embeddings; NDM's and sbert2s1's separations. The fixes:
-  - encode state and question separately and fuse them late;
+- **H1 Most of CLM's typed-decision gap is fixable without losing option caching.** Evidence: the state-collapse and short-label pathologies (FM7, FM14); the 0.900 logistic regression on frozen embeddings; NDM's state/question pooling and sbert2s1's question placement. The fixes:
+  - pool the state and the question separately from one causal pass in which the question tokens attend to the cached state (NDM's prefix-tree mask), rather than question-blind towers;
   - render options descriptively, with question context on the option side where caching allows;
   - add a Noul head that does not depend on option text;
   - calibrate.
@@ -918,7 +918,7 @@ These are *inputs* to the architecture decision, not the decision itself. All th
 - the evaluation harness (§12).
 
 **Candidate A: "CLM++", a revised cached bi-encoder** on a frozen backbone (Qwen3-8B as the reproduction anchor). Changes from CLM:
-- separate state and question embeddings, fused late;
+- state and question pooled separately from one causal pass that reuses the state's KV cache, so the question still reads the state (question-blind towers become an ablation);
 - descriptive, question-conditioned option rendering;
 - a Noul head that does not use option text;
 - a coverage scalar;
@@ -957,7 +957,7 @@ These are *inputs* to the architecture decision, not the decision itself. All th
 ## 12. Benchmark and ablation protocol
 
 **Harness validation.** We first reproduce published numbers.
-- Our CLM evaluation already reproduces the authors' heads to four digits: 51.73 / 69.16 / 68.63% on n = 191,161.
+- Our CLM evaluation already reproduces the authors' heads to within 0.4 pp: 51.73 / 69.16 / 68.63% on n = 191,161, vs. 52.1 / 69.2 / 68.5 on the README's sample of about 100k.
 - For System1-Arena we will reproduce CLM-v0.1-8B's 41.4% through the official adapter before scoring anything else [@s1arena-repo].
 
 **Reference implementations run on the same harness** (single seed unless stated; budget ≤ $60):
@@ -1027,7 +1027,7 @@ These load-bearing numbers were re-checked by us directly against the primary so
 | CLM issue #15: state cosines 0.958 / 0.452 / 0.947 | GitHub API | confirmed |
 | Kev repo: Apache-2.0, created 2026-09-17, about 10k stars, model cards 0.5B–27B | GitHub API | confirmed |
 | Laya weights Apache-2.0 on Hugging Face | HF API | confirmed |
-| Authors' CLM heads load with `weights_only=True`; per-head params 9,443,840; logit scale 4.6423 (exp > 100) | local inspection of `qwen3_8b_pretrained_head.pt` | confirmed |
+| Authors' CLM heads load with `weights_only=True`; per-head params 9,443,840; logit scale 4.6423 (exp > 100); this is the pretrained-stage head, while §3.1's θ = 4.6132 is the released `CLM_v0.1-8B.pt` (rev e939398d) | local inspection of `qwen3_8b_pretrained_head.pt` | confirmed |
 | Re-scored authors' heads 0.5173 / 0.6916 / 0.6863 on n = 191,161 | this project, Modal run | measured |
 | Calibration study (Table 6) and Matryoshka truncation (§4.5) | this project | measured |
 
