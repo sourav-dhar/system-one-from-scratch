@@ -38,7 +38,7 @@ This page tracks every finding.
 | 30 | StartLux throughput figures are in App. D.4, not §6 | **Fixed** in 68c1019 (mask table) |
 | 32 | Jev's fitted temperatures of 0.66 and 0.21 both come from Suite A | **Fixed** in 68c1019 |
 | 33 | The yes/no flip range covers four checkpoints; Kev-0.8B flips 14.3 | **Fixed** in 68c1019 (FM2, Table 10 row 7) |
-| 36 | Reading-right-acting-wrong spans 73–78 % for System One models; 85 % is GPT-6.1 | **Partly.** Survey fixed in 68c1019 (FM8); README tile open |
+| 36 | Reading-right-acting-wrong spans 73–78 % for System One models; 85 % is GPT-6.1 | **Fixed.** Survey in 68c1019 (FM8); README tile regenerated with the same commit as this entry |
 | 37 | Reading Right's +16.3 needs the oracle sub-goal; JEV's own sub-goals give +6.4 | **Fixed** in 68c1019 (Table 10 row 16) |
 | 38 | NDM's adequacy head is a trade-off: recall 0.66 vs 0.25, but false alarms 0.29 vs 0.025 and AUROC 0.76 vs 0.79 | **Fixed** in 68c1019 (§3.2, §4.4, Table 10 row 5) |
 | 39 | Risk-budget rates are over 250 / 209 / 153 settings, and the baseline is Qwen3-Embedding-8B | **Fixed** in 68c1019 (§5.5) |
