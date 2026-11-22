@@ -8,7 +8,7 @@ Before locking the architecture, on 2026-11-22, we commissioned three independen
 | [02 · Fact-check](reviews/02-fact-check.md) | 40 survey claims checked against primary sources (papers, code, issues, model cards) | 27 verified, 7 minor mismatches, 6 context mismatches, **no wrong digits** |
 | [03 · Architecture review](reviews/03-architecture-review.md) | Devil's-advocate stress test of ADR 0001 ("build B, designed for C"), ADR 0002 and plan v2 | "Modify and re-sequence, do not replace": 12 changes before locking |
 
-This page tracks every finding. **Outcome:** the architecture was locked on 2026-11-22 as the re-sequenced design in [ADR 0003](../adr/0003-architecture-resequenced.md): the typed-decision model on a forked state first, and the cached-option path behind a pre-registered go/no-go.
+This page tracks every finding; commit hashes refer to `main`. **Outcome:** the architecture was locked on 2026-11-22 as the re-sequenced design in [ADR 0003](../adr/0003-architecture-resequenced.md): the typed-decision model on a forked state first, and the cached-option path behind a pre-registered go/no-go.
 
 **Status values**
 - **Fixed** names the commit.
@@ -21,61 +21,61 @@ This page tracks every finding. **Outcome:** the architecture was locked on 2026
 
 | # | Finding | Status |
 |---|---|---|
-| 7 | The ">65 %, <100 ms" frontier region is not empty: four open-LLM answer-token readouts sit there | **Fixed** in 68c1019. Table 11 now has all 22 rows; abstract conclusion 1 and §9.2 are rewritten; Fig. 2 and the README frontier are rebuilt (70dfdf6) |
-| 8 | CLM is the fastest only among System-1-native rows; its own backbone's readout is faster and more accurate | **Fixed** in 68c1019 (abstract, §1.1) |
-| 10 | Jeva's AUROC comes from §4.2 / Fig. 6b, not Tables 1–2 | **Fixed** in 68c1019 |
-| 14 | Gemma-4-31B with Jeff's chat prompt fits temperatures of 5.96 / 7.24 / 7.24, not 2.7–6.0 (Table 19) | **Fixed** in 23bf3ac (§5.1) |
-| 16 | Jeff reports its order-invariance cost as within noise, and option sorting as free | **Fixed** in 68c1019 (FM1, H4, Table 10 row 6) |
-| 17 | Jeff is bidirectional for every model except Gemma-4-31B | **Fixed** in 68c1019 (mask table) |
-| 20 | Kev-27B decontamination used exact match, 8-gram Jaccard > 0.2 or containment ≥ 0.5 | **Fixed** in 68c1019 |
-| 21 | Kev's buried-state gains are synthetic; real documents moved only ±1 pp | **Fixed** in 68c1019 (FM6, Table 10 row 10) |
-| 22 | Laya's option budget includes the question text | **Fixed** in 23bf3ac (§3.4) |
-| 23 | Laya issue #741 was a single-seed third-party run; the three-seed PR #1012 found a tie | **Fixed** in 68c1019 (§4.3, Table 10 row 14) |
-| 25 | Laya's evidence-position cells have n = 20 (±0.22) | **Fixed** in 68c1019 (FM6) |
-| 26 | Appendix A's θ = 4.6423 belongs to a different head | **Fixed** in 23bf3ac (Appendix A) |
-| 28 | CLM truncation: on real vLLM 0.30.0, issue #29 measures −0.1169 (the −0.0006 is from an MLX emulation) | **Fixed** in 23bf3ac (FM6, Table 10 row 9) |
-| 29 | Strands' question-ignoring persists from v7 to v19 (92–95 %) | **Fixed** in 68c1019 (FM7) |
-| 30 | StartLux throughput figures are in App. D.4, not §6 | **Fixed** in 68c1019 (mask table) |
-| 32 | Jev's fitted temperatures of 0.66 and 0.21 both come from Suite A | **Fixed** in 68c1019 |
-| 33 | The yes/no flip range covers four checkpoints; Kev-0.8B flips 14.3 | **Fixed** in 68c1019 (FM2, Table 10 row 7) |
-| 36 | Reading-right-acting-wrong spans 73–78 % for System One models; 85 % is GPT-6.1 | **Fixed.** Survey in 68c1019 (FM8); README tile regenerated with the same commit as this entry |
-| 37 | Reading Right's +16.3 needs the oracle sub-goal; JEV's own sub-goals give +6.4 | **Fixed** in 68c1019 (Table 10 row 16) |
-| 38 | NDM's adequacy head is a trade-off: recall 0.66 vs 0.25, but false alarms 0.29 vs 0.025 and AUROC 0.76 vs 0.79 | **Fixed** in 68c1019 (§3.2, §4.4, Table 10 row 5) |
-| 39 | Risk-budget rates are over 250 / 209 / 153 settings, and the baseline is Qwen3-Embedding-8B | **Fixed** in 68c1019 (§5.5) |
-| 40 | AnyJev uses 7.3 of 18 on tuned data and 10.6 of 18 on disjoint data (Table 3) | **Fixed** in 68c1019 (§3.6) |
+| 7 | The ">65 %, <100 ms" frontier region is not empty: four open-LLM answer-token readouts sit there | **Fixed** in f1d7797. Table 11 now has all 22 rows; abstract conclusion 1 and §9.2 are rewritten; Fig. 2 and the README frontier are rebuilt (12c0983) |
+| 8 | CLM is the fastest only among System-1-native rows; its own backbone's readout is faster and more accurate | **Fixed** in f1d7797 (abstract, §1.1) |
+| 10 | Jeva's AUROC comes from §4.2 / Fig. 6b, not Tables 1–2 | **Fixed** in f1d7797 |
+| 14 | Gemma-4-31B with Jeff's chat prompt fits temperatures of 5.96 / 7.24 / 7.24, not 2.7–6.0 (Table 19) | **Fixed** in f0de233 (§5.1) |
+| 16 | Jeff reports its order-invariance cost as within noise, and option sorting as free | **Fixed** in f1d7797 (FM1, H4, Table 10 row 6) |
+| 17 | Jeff is bidirectional for every model except Gemma-4-31B | **Fixed** in f1d7797 (mask table) |
+| 20 | Kev-27B decontamination used exact match, 8-gram Jaccard > 0.2 or containment ≥ 0.5 | **Fixed** in f1d7797 |
+| 21 | Kev's buried-state gains are synthetic; real documents moved only ±1 pp | **Fixed** in f1d7797 (FM6, Table 10 row 10) |
+| 22 | Laya's option budget includes the question text | **Fixed** in f0de233 (§3.4) |
+| 23 | Laya issue #741 was a single-seed third-party run; the three-seed PR #1012 found a tie | **Fixed** in f1d7797 (§4.3, Table 10 row 14) |
+| 25 | Laya's evidence-position cells have n = 20 (±0.22) | **Fixed** in f1d7797 (FM6) |
+| 26 | Appendix A's θ = 4.6423 belongs to a different head | **Fixed** in f0de233 (Appendix A) |
+| 28 | CLM truncation: on real vLLM 0.30.0, issue #29 measures −0.1169 (the −0.0006 is from an MLX emulation) | **Fixed** in f0de233 (FM6, Table 10 row 9) |
+| 29 | Strands' question-ignoring persists from v7 to v19 (92–95 %) | **Fixed** in f1d7797 (FM7) |
+| 30 | StartLux throughput figures are in App. D.4, not §6 | **Fixed** in f1d7797 (mask table) |
+| 32 | Jev's fitted temperatures of 0.66 and 0.21 both come from Suite A | **Fixed** in f1d7797 |
+| 33 | The yes/no flip range covers four checkpoints; Kev-0.8B flips 14.3 | **Fixed** in f1d7797 (FM2, Table 10 row 7) |
+| 36 | Reading-right-acting-wrong spans 73–78 % for System One models; 85 % is GPT-6.1 | **Fixed.** Survey in f1d7797 (FM8); README tile regenerated with the same commit as this entry |
+| 37 | Reading Right's +16.3 needs the oracle sub-goal; JEV's own sub-goals give +6.4 | **Fixed** in f1d7797 (Table 10 row 16) |
+| 38 | NDM's adequacy head is a trade-off: recall 0.66 vs 0.25, but false alarms 0.29 vs 0.025 and AUROC 0.76 vs 0.79 | **Fixed** in f1d7797 (§3.2, §4.4, Table 10 row 5) |
+| 39 | Risk-budget rates are over 250 / 209 / 153 settings, and the baseline is Qwen3-Embedding-8B | **Fixed** in f1d7797 (§5.5) |
+| 40 | AnyJev uses 7.3 of 18 on tuned data and 10.6 of 18 on disjoint data (Table 3) | **Fixed** in f1d7797 (§3.6) |
 
 ## 01 · Technical review
 
 | # | Severity | Finding | Status |
 |---|---|---|---|
-| 1 | Critical | B's question-blind state tower is not what NDM or Jeva do (NDM's question attends to the state) | **Resolved.** Survey fixed in 23bf3ac. The locked design ([ADR 0003](../adr/0003-architecture-resequenced.md)) reads the state through exact state forking; question-blind towers survive only as an M2 ablation |
-| 2 | Critical | The abstract asserts causes for CLM's gap; the scale cap explains Brier, not accuracy; the truncation and training-data confounds are omitted | **Fixed** in the survey (68c1019, 23bf3ac): candidate causes, not established ones; truncation and training-data confounds; the scale cap moved to Brier. M0 arms (CLM with full context vs the tail cut) are **open** for M0 |
-| 3 | Critical | Table 10 mostly cites evidence that a flaw exists, not that a fix works | **Partly.** Rows 5, 6, 7, 10, 11, 14 and 16 were revised in 68c1019, and rows 2, 4 and 9 in 23bf3ac. Restructuring (flaw measured / fix measured / status / citations) is open |
-| 4 | Major | Reproduction and calibration claims lack provenance; the low-confidence bin is anomalous | **Partly.** The tie bug is fixed in PR #41; the wording ("within 0.4 pp", different sample) and the in-distribution and tie caveats are in 23bf3ac. Split provenance is open; randomised gold position and a cross-dataset fit are M0 |
-| 5 | Major | P3 misstates the IIA trade-off | **Fixed** in 3516adf |
-| 6 | Major | Four equations are wrong or overstated (null formula, Bongard REINFORCE identity, AnyJev "exact", soft-CE "exact") | **Fixed.** Bongard identity removed in 3516adf; null formula, AnyJev and soft-CE in 2e5b364 |
-| 7 | Major | Four equations are unsourced or incomplete (InfoNCE mask, RLCD std, vegaml E_k, Jeva attention terms) | **Fixed.** RLCD std in 2e5b364; InfoNCE mask, vegaml E_k and Jeva attention terms in 46660c4 |
+| 1 | Critical | B's question-blind state tower is not what NDM or Jeva do (NDM's question attends to the state) | **Resolved.** Survey fixed in f0de233. The locked design ([ADR 0003](../adr/0003-architecture-resequenced.md)) reads the state through exact state forking; question-blind towers survive only as an M2 ablation |
+| 2 | Critical | The abstract asserts causes for CLM's gap; the scale cap explains Brier, not accuracy; the truncation and training-data confounds are omitted | **Fixed** in the survey (f1d7797, f0de233): candidate causes, not established ones; truncation and training-data confounds; the scale cap moved to Brier. M0 arms (CLM with full context vs the tail cut) are **open** for M0 |
+| 3 | Critical | Table 10 mostly cites evidence that a flaw exists, not that a fix works | **Partly.** Rows 5, 6, 7, 10, 11, 14 and 16 were revised in f1d7797, and rows 2, 4 and 9 in f0de233. Restructuring (flaw measured / fix measured / status / citations) is open |
+| 4 | Major | Reproduction and calibration claims lack provenance; the low-confidence bin is anomalous | **Partly.** The tie bug is fixed in PR #41; the wording ("within 0.4 pp", different sample) and the in-distribution and tie caveats are in f0de233. Split provenance is open; randomised gold position and a cross-dataset fit are M0 |
+| 5 | Major | P3 misstates the IIA trade-off | **Fixed** in b5a9573 |
+| 6 | Major | Four equations are wrong or overstated (null formula, Bongard REINFORCE identity, AnyJev "exact", soft-CE "exact") | **Fixed.** Bongard identity removed in b5a9573; null formula, AnyJev and soft-CE in d65b251 |
+| 7 | Major | Four equations are unsourced or incomplete (InfoNCE mask, RLCD std, vegaml E_k, Jeva attention terms) | **Fixed.** RLCD std in d65b251; InfoNCE mask, vegaml E_k and Jeva attention terms in 3309a6f |
 | 8 | Major | Taxonomy families overlap and several systems are misplaced | **Open.** Planned: two axes (interaction/cache pattern × readout) plus attributes |
-| 9 | Major | Table 1's caching columns are wrong for F1, F2, F3 and F5 | **Fixed** in 7d6f736 |
-| 10 | Major | Calibration is presented as free, but the sources record trade-offs | **Partly.** Table 10 row 4 and §5.6 state the costs (23bf3ac); the §4.2 objective wording and the Jeff locator are fixed in 3516adf; a dedicated §5 paragraph is open |
-| 11 | Major | K-aware calibration is misattributed; the ADRs adopt fitting rules that the sources contradict | **Fixed.** H3 in 3516adf, Table 5 in fd4b1fb; leave-source-out fitting and $K$-conditioning as an experiment in [ADR 0004](../adr/0004-data-calibration-and-decontamination-amendments.md) |
-| 12 | Major | The "RL earns its keep" examples are CE or closed-form proper-score losses | **Fixed** in 3516adf (conclusion 3, §4.3) |
-| 13 | Major | The adaptation and scale claims do not follow (Qwen3.5 keeps rising after 4B; head-only arm within noise) | **Fixed** in 3516adf (Table 4 caption, §4.5, H6). **Declined in part:** the review's "frozen 9B 82.2 vs LoRA-adapted Jeff-Qwen-4B 79.3" compares accuracy on Jeff's seven held-out sets (App. F) with OpenDecisions Capability (Table 3), which are different benchmarks |
+| 9 | Major | Table 1's caching columns are wrong for F1, F2, F3 and F5 | **Fixed** in 281cc98 |
+| 10 | Major | Calibration is presented as free, but the sources record trade-offs | **Partly.** Table 10 row 4 and §5.6 state the costs (f0de233); the §4.2 objective wording and the Jeff locator are fixed in b5a9573; a dedicated §5 paragraph is open |
+| 11 | Major | K-aware calibration is misattributed; the ADRs adopt fitting rules that the sources contradict | **Fixed.** H3 in b5a9573, Table 5 in abc91bb; leave-source-out fitting and $K$-conditioning as an experiment in [ADR 0004](../adr/0004-data-calibration-and-decontamination-amendments.md) |
+| 12 | Major | The "RL earns its keep" examples are CE or closed-form proper-score losses | **Fixed** in b5a9573 (conclusion 3, §4.3) |
+| 13 | Major | The adaptation and scale claims do not follow (Qwen3.5 keeps rising after 4B; head-only arm within noise) | **Fixed** in b5a9573 (Table 4 caption, §4.5, H6). **Declined in part:** the review's "frozen 9B 82.2 vs LoRA-adapted Jeff-Qwen-4B 79.3" compares accuracy on Jeff's seven held-out sets (App. F) with OpenDecisions Capability (Table 3), which are different benchmarks |
 | 14 | Major | Strong baselines and benchmark-validity caveats are missing | **Partly.** The [start-here guide](README.md) adds baselines and a benchmark card; they are part of M0 in [plan v3](plan.md) |
-| 15 | Major | W2 and the latency frontier are argued one-sidedly | **Fixed.** The "empty region" in 68c1019; W2 counter-evidence and measured latency anchors in Table 12 in 7d0ad66 |
-| 16 | Major | Metric conventions (ECE bins, Brier scale) are unspecified | **Fixed** in e899364 (§2.2 conventions). [plan v3](plan.md) reports both estimators |
-| 17 | Major | The single-pass trajectory shortcut breaks under CLM's layout | **Fixed** in 3516adf (§6.2); [plan v3](plan.md) replaces the shortcut with exact state forking plus a parity test |
-| 18 | Major | Failure-mode provenance is overstated; FM6, FM11 and FM13 are mismeasured | **Mostly fixed.** FM2 in 68c1019; provenance, FM6, FM11 and FM13 in c39e048. A per-mode provenance column and FM1's protocol column are open |
+| 15 | Major | W2 and the latency frontier are argued one-sidedly | **Fixed.** The "empty region" in f1d7797; W2 counter-evidence and measured latency anchors in Table 12 in ac446a2 |
+| 16 | Major | Metric conventions (ECE bins, Brier scale) are unspecified | **Fixed** in 3563a9b (§2.2 conventions). [plan v3](plan.md) reports both estimators |
+| 17 | Major | The single-pass trajectory shortcut breaks under CLM's layout | **Fixed** in b5a9573 (§6.2); [plan v3](plan.md) replaces the shortcut with exact state forking plus a parity test |
+| 18 | Major | Failure-mode provenance is overstated; FM6, FM11 and FM13 are mismeasured | **Mostly fixed.** FM2 in f1d7797; provenance, FM6, FM11 and FM13 in 3c50782. A per-mode provenance column and FM1's protocol column are open |
 | 19 | Major | ADR 0001 has unestablished hardware feasibility (Inkling 2 Mini; `prefix_bidir` on DeltaNet layers) | **Resolved** in [ADR 0003](../adr/0003-architecture-resequenced.md): causal throughout; Inkling through Tinker plus an off-target H100 reader arm (the owner's decision); per-GPU measurements in M1.4 |
 | 20 | Major | ADR 0001 lacks a training specification and acceptance criteria | **Resolved:** pre-registered criteria in [ADR 0003](../adr/0003-architecture-resequenced.md); per-stage data and arms in [plan v3](plan.md) |
 | 21 | Major | ADR 0002 has gaps: releasable-weights licensing, closed-model provenance, registry, dedup unit | **Resolved** in [ADR 0004](../adr/0004-data-calibration-and-decontamination-amendments.md) |
 | 22 | Major | The plan's success criteria are vague and it bundles factors | **Resolved** in [plan v3](plan.md): baseline-anchored factorial with drop-ones, numeric criteria, pre-registered go/no-go |
-| 23 | Major | Four figures are unused; three have defects | **Fixed.** Frontier rebuilt in 68c1019; all figures embedded with corrected captions in c399b9f |
-| 24 | Minor | Internal inconsistencies | **Partly.** Table 11 has all rows (68c1019); the rest is open |
-| 25 | Minor | Smaller faithfulness errors | **Partly.** AnyJev's "7 of 18" was fixed (68c1019); the rest is open |
-| 26 | Minor | Notation collisions | **Partly.** The [start-here guide](README.md) fixes a notation table (cd6449c); aligning the survey is open |
+| 23 | Major | Four figures are unused; three have defects | **Fixed.** Frontier rebuilt in f1d7797; all figures embedded with corrected captions in cb17b62 |
+| 24 | Minor | Internal inconsistencies | **Partly.** Table 11 has all rows (f1d7797); the rest is open |
+| 25 | Minor | Smaller faithfulness errors | **Partly.** AnyJev's "7 of 18" was fixed (f1d7797); the rest is open |
+| 26 | Minor | Notation collisions | **Partly.** The [start-here guide](README.md) fixes a notation table (45c8acc); aligning the survey is open |
 | 27 | Nit | Naming, undefined terms, small wording issues | **Open** |
-| §3 | Missing | The 12 missing pieces for a one-stop guide (reading paths, decision guide, worked example, glossary, disambiguation, baselines, benchmark card, evidence grades, contradictions register, history, hardware primer) | **Fixed** in cd6449c: the [start-here guide](README.md) |
+| §3 | Missing | The 12 missing pieces for a one-stop guide (reading paths, decision guide, worked example, glossary, disambiguation, baselines, benchmark card, evidence grades, contradictions register, history, hardware primer) | **Fixed** in 45c8acc: the [start-here guide](README.md) |
 
 ## 03 · Architecture review: changes before locking
 
@@ -100,7 +100,7 @@ This page tracks every finding. **Outcome:** the architecture was locked on 2026
 |---|---|---|
 | The inference encoder truncated long inputs from the wrong end. CLM and S1-Arena keep the *last* 2,048 tokens | Architecture review, §4.1 | **Fixed** in PR #41 (`configure_tokenizer`, with a regression test) |
 | ECE counted exact ties between the gold option and a negative as hits | Architecture review, §4.3 item 11; technical review #4(d) independently flagged the symptom (anomalous lowest-confidence bin) | **Fixed** in PR #41 (strict `gold > max(negatives)`, with a regression test). The calibration numbers in the survey will be re-measured in M0 |
-| The README's findings tile showed our own rounded numbers (51.7 / 69.2 / 68.6) as the published reference; the CLM README reports 52.1 / 69.2 / 68.5 | Found while applying fact-check corrections | **Fixed** in 8abc4b2 ("reproduced within 0.4 pp") |
+| The README's findings tile showed our own rounded numbers (51.7 / 69.2 / 68.6) as the published reference; the CLM README reports 52.1 / 69.2 / 68.5 | Found while applying fact-check corrections | **Fixed** in eb6f2f5 ("reproduced within 0.4 pp") |
 
 ## Library sweep (2026-11-22): gaps in the survey
 
