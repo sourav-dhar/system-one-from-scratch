@@ -464,6 +464,10 @@ Kev's ordinal CDF penalty was a reported negative [@kev-repo, PLAN.md].
 - **Matryoshka training** [@mrl] makes prefixes of an embedding usable on their own. The published CLM heads were not trained this way. Truncating the mid-training head's 512-d output to 256 / 128 / 64 dimensions drops tricky-Q&A top-1 from 69.16% to 63.28 / 56.69 / 51.02% (this project).
 - **Anisotropy.** Bongard found raw readout cosines between unrelated items of 0.93–0.996 and fixed this with *pack centring*, subtracting a stop-gradient batch mean per view before normalizing. With $\lambda = 0.004$ this moved within-source retrieval from 2.3% to 56.6% [@bongard, §4.2]. CLM's state embeddings show the same pathology after the state head (cosine 0.947) [@clm-repo, issue #15].
 
+![Accuracy of truncated prefixes of the mid-training CLM head's embeddings](figures/clm_truncation.png)
+
+*Figure 3. Untrained truncation of the published mid-training CLM head (this project, n = 191,161). Prefixes are re-normalised before the cosine.*
+
 ### 4.6 What to adapt: head-only, LoRA or full fine-tuning
 
 The strongest finding in the literature concerns *where* to spend trainable parameters.
@@ -592,6 +596,14 @@ For each of the authors' published CLM heads, we fit one inverse temperature on 
 
 One scalar removes 79–90% of the calibration error; top-1 cannot change, because rescaling preserves the argmax. Two caveats apply. The fit and the evaluation are two chunks of the same distribution, the in-distribution setting that §5.3 warns may not transfer. And this ECE (15 equal-width top-label bins) counted exact ties between the gold option and a negative as hits, a bug fixed in PR #41. Table 6 will be re-measured in M0 with tie-correct scoring, a randomised gold position and a cross-dataset fit. The cap of 100 is tuned for retrieval among about 16k in-batch candidates, not for 11-way decisions *(inference)*.
 
+![ECE of the three published CLM heads before and after one fitted temperature](figures/clm_calibration.png)
+
+*Figure 4. One temperature per head, fitted in-distribution (this project). Values will be re-measured with tie-correct scoring in M0.*
+
+![Reliability diagram of the mid-training CLM head before and after temperature scaling](figures/clm_reliability.png)
+
+*Figure 5. Reliability of the mid-training head. The leftmost bin is consistent with exact ties resolved to the gold's index, which PR #41 fixes.*
+
 ---
 
 ## 6. Training data
@@ -690,6 +702,10 @@ Whether exact invariance costs accuracy in joint models is unsettled:
 - Kev's option isolation cost −5.8 pp in a single 4B run, but nothing at 0.6B [@kev-repo].
 - Jeff's order-invariant encodings scored 0.6–2.4 points lower, which the authors call "within noise" with one run per variant.
 - Jeff also notes that sorting options by text gives the same invariance at no cost (+1.0 / −0.4) [@jeff, App. G].
+
+![Option-order flip rates reported for System One designs](figures/order_flips.png)
+
+*Figure 6. Reported order sensitivity. Protocols differ, so do not compare across rows.*
 
 **FM2: Yes/no polarity.** Swapping which identifier means "yes" flips 50.5 of 100 answers for Jev (AUC 0.89 → 0.31) and 91.3 for Laya. Four fine-tuned decision checkpoints (Kev-9B, Nimble-9B, decider-2b, this-that) flip 4.2–6.5, while fine-tuned Kev-0.8B flips 14.3 [@rafedas]. Laya's own tracker shows Noul returning the negative label in both polarities at confidence 1.0 [@laya-repo, issue #156].
 
@@ -855,7 +871,9 @@ Four things follow:
 - **CLM is the fastest System-1-native model but not the fastest model.** Its own backbone read at the answer token is faster (30 ms) and 17.9 points more accurate. Per §7 (FM7, FM14), the deficit plausibly reflects *what* CLM encodes rather than the frozen backbone, although S1-Arena also cut CLM's inputs to the last 2,048 tokens (the readout saw full inputs) and CLM never trained on typed decisions.
 - **Cached designs (F1/F2) are the most direct route to millisecond decisions under reuse, but not the only one** (§9.1). NDM adds 0.8–4.9 ms per extra question over a cached state [@ndm], Laya answers one question in 4.6 ms on an RTX 4070 Ti S [@laya-repo], and Beveridge runs in 4.9 ms on an H200 [@beveridge]. The advantage is specific to workloads with reused option sets and revisited states (W2), and there CLM is weak too: over 29,852 commands its `/v1/rank` scores 0/20 top-1 against BM25's 8/20 [@clm-repo, issue #15]. Latencies above come from different hardware and are not directly comparable.
 
-Figure 2 (`figures/s1arena_frontier.png`) plots all rows.
+![System1-Arena accuracy against p50 latency for every System-1 and open-LLM row](figures/s1arena_frontier.png)
+
+*Figure 2. System1-Arena accuracy against p50 latency for all 22 System-1 and open-LLM rows of Table 1 [@s1arena]. Local models ran on an idle H100; hosted models include network time.*
 
 ### 9.3 Kernels, graphs and quantization
 

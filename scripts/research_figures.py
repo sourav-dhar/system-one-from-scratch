@@ -181,12 +181,13 @@ def calibration(heads: dict) -> None:
     ax.set_ylabel("Expected calibration error")
     ax.grid(axis="x", visible=False)
     ax.set_ylim(0, 0.185)
-    ax.set_title("One temperature removes 79–90% of CLM's calibration error")
+    ax.set_title("One temperature, fitted in-distribution,\nremoves 79–90% of CLM's calibration error")
     ax.legend(fontsize=8.5)
     fig.text(
         0.0,
-        -0.05,
-        "This project: fit on tricky-Q&A chunk 0028, evaluated on chunk 0029 (n = 95,929); top-1 unchanged.",
+        -0.10,
+        "This project: fit on tricky-Q&A chunk 0028, evaluated on chunk 0029 of the same test (n = 95,929);\n"
+        "top-1 unchanged. ECE uses 15 equal-width bins and counted exact ties as hits (fixed in PR #41).",
         fontsize=7.5,
         color=INK2,
     )
@@ -220,9 +221,9 @@ def reliability(heads: dict) -> None:
     ax.legend(loc="upper left", fontsize=8.5)
     fig.text(
         0.0,
-        -0.06,
-        "This project; bins with ≥ 200 decisions; dashed = perfect calibration. The leftmost bin "
-        "(n = 409, confidence ≈ 1/11) is anomalous, likely near-tied rows (not investigated).",
+        -0.10,
+        "This project; bins with ≥ 200 decisions; dashed = perfect calibration. The leftmost bin\n"
+        "(n = 409, confidence ≈ 1/11) is consistent with exact ties resolved to the gold (fixed in PR #41).",
         fontsize=7.5,
         color=INK2,
     )
@@ -253,7 +254,13 @@ def matryoshka(heads: dict) -> None:
     ax.set_ylabel("Tricky-Q&A top-1 (%)")
     ax.set_title("Untrained truncation is lossy: no Matryoshka training")
     ax.legend(fontsize=8.5, loc="lower right")
-    fig.text(0.0, -0.05, "This project: full held-out test, n = 191,161.", fontsize=7.5, color=INK2)
+    fig.text(
+        0.0,
+        -0.05,
+        "This project: full held-out test, n = 191,161; prefixes are re-normalised before the cosine.",
+        fontsize=7.5,
+        color=INK2,
+    )
     save(fig, "clm_truncation")
 
 
@@ -282,9 +289,9 @@ def order_flips() -> None:
     ax.set_title("Order sensitivity across System One designs")
     fig.text(
         0.0,
-        -0.06,
-        "Sources: Von, AnyJev, Runoff (2610.18233), SemIf, Jeva (2610.18773), Jeff (2610.17205), "
-        "JevAdvBench (2609.31142). Protocols differ; compare within rows.",
+        -0.10,
+        "Sources: Von, AnyJev, Runoff (2610.18233), SemIf, Jeva (2610.18773), Jeff (2610.17205),\n"
+        "JevAdvBench (2609.31142). Protocols differ, so do not compare across rows.",
         fontsize=7.5,
         color=INK2,
     )
