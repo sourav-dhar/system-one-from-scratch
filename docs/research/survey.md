@@ -229,6 +229,8 @@ The option template contains only the decision type and the option, so $u_i$ is 
 
 $$\tilde z = z + \alpha\, W^O\, \mathrm{Concat}_h \textstyle\sum_i a_i^h v_i^h, \qquad z' = \tilde z + L^{-1/2}\, \mathrm{SwiGLU}(\mathrm{RMSNorm}(\tilde z)).$$
 
+Here $a_i^h$ is head $h$'s attention weight on option $i$: cosine attention, with queries and keys L2-normalised and divided by a learned $\tau_\ell$ initialised at 0.15. The step size is $\alpha = \tau\,\sigma(\gamma)/\sqrt{L}$, with $\alpha/\tau$ initialised at 0.6; the q, k, v and o projections start at the identity and the FFN output at zero [@jeva, Eq. 10; @jeva-repo].
+
 Scores and outputs follow:
 - $s_i = z_L^\top u_i$ with $u_i$ normalized but $z_L$ *not*, so $\lVert z_L\rVert$ acts as a per-request inverse temperature *(inference)*;
 - $q = \mathrm{softmax}(s/\tau_{\text{dec}})$;
@@ -311,7 +313,9 @@ where $h_i$ is the hidden state at the candidate-end marker and $g$ the one at t
 
 **vegaml** [@vegaml], the engine behind Laya 0.5, runs a frozen causal LM only up to its deepest tapped layer; for a 24-layer 0.8B reader, layers 13 and 19. It pools state, question, last-token and option spans, then settles a 64-d "particle" among option-specific Gaussian wells:
 
-$$U(z) = \tfrac12 \kappa \lVert z\rVert^2 - \sum_k a_k \exp\!\left(-\frac{\lVert z - c_k\rVert^2}{2\sigma_k^2}\right), \qquad p_k \propto \exp(-E_k/\tau).$$
+$$U(z) = \tfrac12 \kappa \lVert z\rVert^2 - \sum_k a_k \exp\!\left(-\frac{\lVert z - c_k\rVert^2}{2\sigma_k^2}\right), \qquad E_k = \frac{\lVert z_T - c_k\rVert^2}{2\sigma_k^2} - \log a_k, \qquad p_k = \mathrm{softmax}(-E/\tau)_k,$$
+
+where $z_T$ is the particle after it settles. Because $z_T$ settles in the landscape of all the wells, $p_k$ depends on the whole option set: vegaml is not an independent scorer [@vegaml].
 
 It is the closest published analogue to a frozen-reader head with intermediate-layer taps, a cheap latency lever (§9). Its reported gains over a scalar temperature are about 0.002 NLL (§5).
 
@@ -357,7 +361,7 @@ CLM trains its heads with symmetric InfoNCE over a batch of $B$ (state, action) 
 $$\mathcal{L} = -\frac{1}{2B}\sum_{i}\left[\log\frac{e^{\lambda\, s_i^\top a_i}}{\sum_{j\notin D(i)} e^{\lambda\, s_i^\top a_j} + \sum_{k} e^{\lambda\, s_i^\top n_{ik}}} + \log\frac{e^{\lambda\, a_i^\top s_i}}{\sum_{j\notin D(i)} e^{\lambda\, a_i^\top s_j}}\right],$$
 
 The terms are:
-- $D(i)$: the other pairs from the same source document, masked from the denominators;
+- $D(i)$: rows masked from the denominators. CLM's `finetune.py` masks the rows that share `(task_id, step_idx)` with row $i$ (the same-document mask); the README states the pre- and mid-training objective without a mask, so whether those stages masked is not documented [@clm-repo];
 - $n_{ik}$: up to 10 mined hard negatives, used only from mid-training onward [@clm-repo].
 
 The recipe stored in the checkpoints is batch 16,384, a constant learning rate of 0.00653 (pre-training) or 0.001 (mid-training), an initial temperature of 0.07, and a scale cap of 100.
