@@ -57,19 +57,37 @@ class LastTokenEncoder:
         self.max_tokens = max_tokens
 
     @torch.no_grad()
-    def __call__(self, texts: Sequence[str], batch_size: int = 8) -> Tensor:
-        out = []
-        for i in range(0, len(texts), batch_size):
-            enc = self.tok(
-                list(texts[i : i + batch_size]),
-                padding=True,
-                truncation=True,
-                max_length=self.max_tokens,
-                return_tensors="pt",
-            ).to(self.device)
-            hidden = self.model(**enc).last_hidden_state[:, -1]
-            out.append(F.normalize(hidden.float(), dim=-1).cpu())
-        return torch.cat(out)
+    def __call__(self, texts: Sequence[str], batch_size: int = 64, max_batch_tokens: int = 32768) -> Tensor:
+        """L2-normalised last-token vectors ``[n, hidden]`` (float32, CPU), in input order.
+
+        Texts run longest first, in batches of at most ``batch_size`` rows and ``max_batch_tokens``
+        padded tokens. Positions are given explicitly, so left padding cannot shift them.
+        """
+        ids: list[list[int]] = self.tok(list(texts), truncation=True, max_length=self.max_tokens)["input_ids"]
+        if any(not x for x in ids):
+            raise ValueError("cannot embed an empty text (it has no last token)")
+        order = sorted(range(len(ids)), key=lambda i: -len(ids[i]))
+        out = torch.empty(len(ids), self.model.config.hidden_size)
+        pad = self.tok.pad_token_id
+        start = 0
+        while start < len(order):
+            width = len(ids[order[start]])
+            rows = max(1, min(batch_size, max_batch_tokens // width))
+            batch = order[start : start + rows]
+            start += len(batch)
+            tokens = torch.full((len(batch), width), pad, dtype=torch.long)
+            mask = torch.zeros((len(batch), width), dtype=torch.long)
+            for r, i in enumerate(batch):
+                tokens[r, width - len(ids[i]) :] = torch.tensor(ids[i])
+                mask[r, width - len(ids[i]) :] = 1
+            positions = (mask.cumsum(-1) - 1).clamp(min=0)
+            hidden = self.model(
+                input_ids=tokens.to(self.device),
+                attention_mask=mask.to(self.device),
+                position_ids=positions.to(self.device),
+            ).last_hidden_state[:, -1]
+            out[batch] = F.normalize(hidden.float(), dim=-1).cpu()
+        return out
 
 
 @dataclass
