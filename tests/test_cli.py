@@ -112,3 +112,17 @@ def test_system_one_without_encoder_needs_vectors() -> None:
     assert s1.probs(torch.randn(16), torch.randn(3, 16)).shape == (3,)
     with pytest.raises(RuntimeError, match="encoder"):
         s1.decide("question", ["a", "b"])
+
+
+def test_tokenizer_keeps_the_end_of_long_inputs() -> None:
+    """Regression for CLM issues #6/#29: right truncation drops the question at the end of the state."""
+    from types import SimpleNamespace
+
+    from systemone.inference import configure_tokenizer
+
+    tok = configure_tokenizer(
+        SimpleNamespace(padding_side="right", truncation_side="right", pad_token=None, eos_token="<eos>")
+    )
+    assert tok.padding_side == "left"
+    assert tok.truncation_side == "left"
+    assert tok.pad_token == "<eos>"

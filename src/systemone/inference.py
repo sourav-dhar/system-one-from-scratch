@@ -23,6 +23,21 @@ from torch import Tensor
 from systemone.model import DualEncoder
 
 
+def configure_tokenizer(tok: Any) -> Any:
+    """Set up a tokenizer for last-token pooling.
+
+    * ``padding_side="left"``: position -1 is every sequence's last real token;
+    * ``truncation_side="left"``: over-long inputs keep their **end**. The question (and the answer
+      cue) sit at the end of a state text, so right truncation would silently pool a vector that
+      never saw the question. This is the failure documented in CLM issues #6 and #29.
+    """
+    tok.padding_side = "left"
+    tok.truncation_side = "left"
+    if tok.pad_token is None:
+        tok.pad_token = tok.eos_token
+    return tok
+
+
 class LastTokenEncoder:
     """Frozen Hugging Face decoder used as a feature extractor (needs the ``encode`` extra)."""
 
@@ -37,10 +52,7 @@ class LastTokenEncoder:
         from transformers import AutoModel, AutoTokenizer
 
         self.device = torch.device(device or ("cuda" if torch.cuda.is_available() else "cpu"))
-        self.tok = AutoTokenizer.from_pretrained(name)
-        self.tok.padding_side = "left"  # so position -1 is every sequence's last real token
-        if self.tok.pad_token is None:
-            self.tok.pad_token = self.tok.eos_token
+        self.tok = configure_tokenizer(AutoTokenizer.from_pretrained(name))
         self.model = AutoModel.from_pretrained(name, torch_dtype=dtype, **kwargs).to(self.device).eval()
         self.max_tokens = max_tokens
 
