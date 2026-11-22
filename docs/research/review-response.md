@@ -70,7 +70,7 @@ This page tracks every finding.
 | 20 | Major | ADR 0001 lacks a training specification and acceptance criteria | **At lock** |
 | 21 | Major | ADR 0002 has gaps: releasable-weights licensing, closed-model provenance, registry, dedup unit | **At lock** |
 | 22 | Major | The plan's success criteria are vague and it bundles factors | **At lock** (pre-registered go/no-go, factorial ladder) |
-| 23 | Major | Four figures are unused; three have defects | **Partly.** The frontier was rebuilt on all 22 rows in 68c1019; embedding the other four figures and fixing their captions is open |
+| 23 | Major | Four figures are unused; three have defects | **Fixed.** Frontier rebuilt in 68c1019; all figures embedded with corrected captions in c399b9f |
 | 24 | Minor | Internal inconsistencies | **Partly.** Table 11 has all rows (68c1019); the rest is open |
 | 25 | Minor | Smaller faithfulness errors | **Partly.** AnyJev's "7 of 18" was fixed (68c1019); the rest is open |
 | 26 | Minor | Notation collisions | **Partly.** The [start-here guide](README.md) fixes a notation table; aligning the survey is open |
