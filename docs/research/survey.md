@@ -31,7 +31,7 @@ We catalogue fourteen failure modes that independent evaluations have quantified
 We trace which laboratory's design fixed which other's flaw, at what cost, and whether the fix preserves the cacheability that makes contrastive bi-encoders fast.
 
 Three conclusions stand out:
-1. **The weakest system on typed decisions is also the fastest, and the gap is largely architectural.** The contrastive bi-encoder CLM-8B scores 41.4% on System1-Arena against 59.3% for answer-token readout of its own frozen backbone. The gap traces to specific, fixable causes: appending the question to the state before last-token pooling, context-free short option texts, an uncalibrated scale saturated at its cap, and option-independent scoring without a null outcome.
+1. **The fastest System-1-native model is the least accurate, and the gap is largely fixable.** The contrastive bi-encoder CLM-8B scores 41.4% on System1-Arena at 41 ms. Zero-shot answer-token readout of its own frozen backbone scores 59.3% at 30 ms. The gap traces to specific causes: appending the question to the state before last-token pooling, context-free short option texts, an uncalibrated scale saturated at its cap, option-independent scoring without a null outcome, and no training on typed decisions. More broadly, zero-shot readouts of mid-size open LLMs (e.g. Gemma-4-31B, 73.9% at 60 ms) are the fastest *accurate* models on that benchmark. Specialized System-1 models still lead on calibration (Brier 0.34 vs 0.46–0.54).
 2. **Late interaction over cached option representations can add set-dependence, null coverage and exact permutation equivariance without giving up caching**, as Jeva shows. Narrow Decision Models corroborates the value of a set head and an adequacy (null) logit, although its option vectors are state-conditioned and therefore cached only within a request.
 3. **For calibration, simple direct objectives match reinforcement-learning variants.** Soft cross-entropy or cross-entropy plus Brier, followed by temperature scaling fitted on held-out *datasets*, matches or beats the RL variants that several systems advertise. Several published calibration choices are tuned to leaderboard scoring rules rather than to calibration.
 
@@ -68,7 +68,12 @@ Two workloads hide under one name, and they pull architectures in opposite direc
 - **Typed decisions (W1).** Classification, intent routing, yes/no policy checks, rubric scoring and triage. States are documents or conversations. Options are few and often short labels. Every request is new, and accuracy depends on reading the state *in light of the question*. Jev's API surface and most leaderboards measure W1.
 - **Cached action selection (W2).** Agent loops, verifiers, game controllers and retrieval over a tool catalog. The candidate set is large and *reused across requests*, and the agent revisits states. Latency per step and the ability to cache option representations dominate.
 
-CLM-8B (Stanford and NVIDIA) was designed for W2. It is a frozen Qwen3-8B encoder with two small contrastive heads. Its option embeddings are cached in a GPU arena, so a revisited state is scored in 0.6–0.7 ms on an RTX 4090 [@clm-repo]. It beats Jev as a fine-tuned verifier on DeepSWE (31/38 vs 27/38 tasks) at 79 ms vs 449 ms [@clm-repo]. Yet on System1-Arena, a broad W1 benchmark, CLM is the least accurate of nine System-1 models: 41.4% accuracy and Brier 0.749. It is also the fastest, at 41 ms. Vega-27B scores 73.0% and Jev 72.6% [@s1arena, Table 1].
+CLM-8B (Stanford and NVIDIA) was designed for W2. It is a frozen Qwen3-8B encoder with two small contrastive heads. Its option embeddings are cached in a GPU arena, so a revisited state is scored in 0.6–0.7 ms on an RTX 4090 [@clm-repo]. It beats Jev as a fine-tuned verifier on DeepSWE (31/38 vs 27/38 tasks) at 79 ms vs 449 ms, measured on an H100 [@clm-repo].
+
+On System1-Arena, a broad W1 benchmark, the picture is different [@s1arena, Table 1]:
+- CLM is the least accurate of the nine System-1-native models (41.4%, Brier 0.749). It is also the fastest of them, at 41 ms.
+- Vega-27B scores 73.0% and Jev 72.6%.
+- The same table reads open LLMs zero-shot at the answer token. Several are faster *and* more accurate than CLM: CLM's own backbone Qwen3-8B scores 59.3% at 30 ms, and Gemma-4-31B 73.9% at 60 ms. They are less well calibrated than the best System-1 models (§9.2).
 
 The tension between the two workloads, and whether one model family can serve both, is the organizing question of this survey.
 
@@ -231,7 +236,7 @@ Scores and outputs follow:
 
 Per option, the cache stores $u_i$ and every layer's per-head keys and values [@jeva-repo, `matrix_decision.py`]. Options never attend to each other; all set-dependence flows through the state, so the output is permutation-*equivariant* (Prop. 3).
 
-Jeva-4B (Qwen3.5-4B with LoRA r64) reaches 78.30 on the Typed Decisions test against 43.05 for CLM-8B, with zero order flips (Jev 17.0%) and null-detection AUROC 98.66 [@jeva, Tables 1–2]. The paper has no component ablation, so the stack, LoRA and data contributions cannot be separated [@jeva].
+Jeva-4B (Qwen3.5-4B with LoRA r64) reaches 78.30 on the Typed Decisions test against 43.05 for CLM-8B, with zero order flips (Jev 17.0%; Table 2) and null-detection AUROC 98.66 (§4.2, Fig. 6b) [@jeva]. The paper has no component ablation, so the stack, LoRA and data contributions cannot be separated [@jeva].
 
 **Narrow Decision Models (NDM)** [@ndm] reach F2-like behaviour from an encoder. One caveat: under the prefix-tree mask each option attends to its ancestors, i.e. to the state and the question. Its option vectors are therefore *state-conditioned*, and the cache it exploits is the state's K/V within a request, not option representations across requests *(inference from the mask definition)*.
 - A *prefix-tree* attention mask encodes the state once and gives sibling options shared logical positions, so no option sees another.
@@ -262,9 +267,9 @@ The **attention mask** decides what can be cached.
 |---|---|---|
 | Causal with per-question rows continuing from a cached state prefix | Kev, Strands v1, Decision 2.0 | State reuse across questions |
 | Block / branch masks plus position-id restarts | Kev (packed mode) | All questions sit at identical positions after the state |
-| Option isolation, where options share positions and see only the state | Kev (flag) | Exact order invariance. Costs 5.8 pp at 4B; flip rate 0.0 at 0.6B with no accuracy gain [@kev-repo, PLAN.md] |
+| Option isolation, where options share positions and see only the state | Kev (flag) | Exact order invariance. In earlier Qwen3-generation runs it cost 5.8 pp in a single 4B run; at 0.6B it gave flip rate 0.0 at parity [@kev-repo, archived PLAN.md] |
 | **`prefix_bidir`**: the state attends bidirectionally within itself and never sees the question; each question is bidirectional within itself | Strands v2 | The state is encoded once and reused [@strands] |
-| Full bidirectional attention in global layers | pplx-decider, StartLux Instant, Jeff (Qwen variants) | Gains are small: StartLux up to +2.4 Decision-Index points; Jeff −0.2 ± 1.1; serving pplx causally changed the top answer on 101 of 2,167 items. Prevents prefix reuse: SGLang disables the radix cache for pplx; StartLux reports 2.8 → 27 decisions/s when document representations *are* reused [@startlux, §6; @pplx] |
+| Full bidirectional attention in global layers | pplx-decider, StartLux Instant, Jeff (every model except Gemma-4-31B) | Gains are small and mixed: StartLux up to +2.4 Decision-Index points; Jeff −0.2 ± 1.1; Small Heads reports bidirectional attention *costs* 3.5–6.0 points in distribution. Serving pplx causally changed the top answer on 101 of 2,167 items. It also prevents prefix reuse: SGLang disables the radix cache for pplx; StartLux reports 2.8 → 27 decisions/s when document representations *are* reused [@startlux, App. D.4; @pplx; @smallheads] |
 
 On hybrid linear-attention backbones (Qwen3.5's Gated DeltaNet layers), block masks cannot be honoured. Kev therefore runs each question as one causal row that *continues* from the cached state, forking the convolution and recurrent state. This equals the packed form to fp32 noise [@kev-repo].
 
@@ -314,7 +319,7 @@ It is the closest published analogue to a frozen-reader head with intermediate-l
 
 **SemIf** [@semif] reads frozen Qwen3.5-4B letter logits for 2–16 options (balanced accuracy 0.813). Its prompt became Jeff's.
 
-**AnyJev**'s L0 readout averages label log-probabilities over all $K$ cyclic rotations of the options, which is exact under an additive position-bias model, and divides by a running label prior. At $K = 20$ the flip rate falls from 0.328 to 0.138 at the cost of $K$ prefills; adaptive stopping uses about 7 of 18 [@anyjev, Table 1].
+**AnyJev**'s L0 readout averages label log-probabilities over all $K$ cyclic rotations of the options, which is exact under an additive position-bias model, and divides by a running label prior. At $K = 20$ the flip rate falls from 0.328 to 0.138 at the cost of $K$ prefills [@anyjev, Table 1]. On an 18-option serving task, adaptive stopping used 7.3 rotations on average; verified on disjoint data it uses 10.6 of 18 [@anyjev, Table 3].
 
 **Runoff** [@runoff] scores options *pointwise*, keeps the top set holding 99% of the mass (at least 3 options), and runs cyclic listwise averaging only on that shortlist. This takes flips to 0.0 at 3–4× the speed of full averaging at $K = 20$; pointwise-only scoring costs about 6 points (63.3 vs. 69.0). These methods matter as *baselines*: the evidence audit found that only 5 of 26 papers compared against a same-backbone label log-probability readout [@tdmaudit].
 
@@ -407,7 +412,7 @@ $$\mathcal{L} = -\overline{A \log \pi(\tilde z\mid z)} + \mathrm{CE}_{\text{soft
 
 The defaults are 4 samples, $\sigma$ annealed from 0.4 to 0.1, $w_{\text{sph}} = 0.75$ and $w_{\text{rps}} = 1$. This differs from the author's blog, which describes pure policy gradient with 8 samples and $\sigma$ from 1.0 to 0.3 [@laya-repo].
 
-Laya's own three-arm ablation on typed-decisions found **no gain from the RL term** (issue #741):
+A three-arm ablation of Laya's objective on typed-decisions (issue #741, a single-seed run by an external contributor) found **no gain from the RL term**:
 
 | Arm | Accuracy | ECE | Brier |
 |---|---|---|---|
@@ -415,7 +420,7 @@ Laya's own three-arm ablation on typed-decisions found **no gain from the RL ter
 | RLCD (PG + soft-CE) | 79.08% | **11.18%** | 0.0543 |
 | Direct proper-score gradient | 79.92% | 12.04% | 0.0516 |
 
-The explanation offered there is exact: soft-CE *is* the expected log score, and the policy-gradient term is a high-variance estimate of a gradient that can be computed in closed form. Independent work agrees:
+The merged three-seed follow-up (PR #1012) found the arms tied: 0.7763 vs 0.7762 accuracy, per-seed differences −0.0145, +0.0135 and +0.0015. So the single-seed soft-CE lead did not replicate, but neither did any RL gain [@laya-repo]. The explanation offered in the issue is exact: soft-CE *is* the expected log score, and the policy-gradient term is a high-variance estimate of a gradient that can be computed in closed form. Independent work agrees:
 - sbert2s1 finds Laya's estimator 3.6–15× too large in scale and fixes it with a leave-one-out baseline (PG-LOO). After temperature scaling, all objectives sit at 3.6–4.4 ECE [@sbert2s1, Tables 4, 6].
 - NanoJev's unbiased sampled-Brier policy gradient scored test L2 0.1184 vs. 0.1242 (CE) and 0.1384 (Brier). The numbers are slightly lower than CE, but with one seed the authors describe it as matching rather than beating [@nanojev].
 - SanSi's RL variant gave no gain (71.7 vs. 72.0) [@sansi].
@@ -437,7 +442,7 @@ Kev's ordinal CDF penalty was a reported negative [@kev-repo, PLAN.md].
 
 **Null outcomes.** Three approaches:
 - **Coverage gate** with BCE on "any candidate correct": Jeva, AUROC 98.66 vs. Kev's 93.61 [@jeva].
-- **Adequacy logit before set interaction**: NDM, recall 0.66 vs. 0.25 for an explicit "none" option [@ndm].
+- **Adequacy logit before set interaction**: NDM. It catches more absent answers than an explicit "none" option (recall 0.66 vs. 0.25), but with more false alarms (0.29 vs. 0.025) and a slightly lower AUROC (0.76 vs. 0.79). The paper presents it as a trade-off [@ndm, §10.4].
 - **Data augmentation**: Kev's "none-pair" minimal pairs present the same question with and without the true option [@kev-repo]. StartLux shows that even an *untrained* appended "None of the above" letter gives AUROC 0.920 [@startlux-repo, `docs/none_probability.md`].
 
 **Coherence.** NDM computes Noul from $[h_Q; h_S]$ *without option embeddings*, avoiding the label-word pathology of F1/F4 (§7.14) [@ndm].
@@ -514,7 +519,7 @@ Calibration error has a sign, and it differs by family and checkpoint.
 - *CLM.* Its scale is saturated at the cap. In our measurement, the published mid-training head has ECE 0.064 on the 11-way tricky test at its own scale (this project).
 
 **Under-confident:**
-- Jev's fitted temperatures are below 1 (0.66 and 0.21 on two TypedBench suites) [@typedbench]. The sources disagree here: StartLux reports Jev as *over*-confident on its DecisionPivot suite (13.8 pp calibration error) [@startlux], and third-party probing measured MMLU ECE 0.0313 [@jev-hume]. The direction appears to depend on the suite.
+- Jev's fitted temperatures are below 1 (0.66 for ticket priority and 0.21 for phishing, both in TypedBench Suite A; its other fits are degenerate) [@typedbench, Table 8]. The sources disagree here: StartLux reports Jev as *over*-confident on its DecisionPivot suite (13.8 pp calibration error) [@startlux], and third-party probing measured MMLU ECE 0.0313 [@jev-hume]. The direction appears to depend on the suite.
 - Strands v19's per-primitive temperatures are 0.91 / 0.77 / 0.96 [@strands].
 
 ### 5.2 Temperature regimes
@@ -557,7 +562,7 @@ Several shipped calibration choices optimize a benchmark's scoring rule rather t
 
 **Bayes cost.** Calibration is instrumentally valuable only if it improves decisions. TypedBench finds Bayes-optimal decisions from Jev's probabilities cost *more* than argmax: −1,220 per 10⁴ decisions on one suite [@typedbench].
 
-**Risk budgets.** Under a false-omission budget, naive thresholds ($\tau = \alpha$) exceed the budget in 42.0% of 282 settings and empirical thresholds in 51.7%. Learn-then-Test [@ltt] exceeds it in only 7.8%, but returns no policy in 129 cases [@riskbudget, Table 3]. A logistic regression on PCA-reduced Qwen3-8B embeddings is competitive there [@riskbudget, Table 4], echoing CLM issue #13.
+**Risk budgets.** Under a false-omission budget, naive thresholds ($\tau = \alpha$) exceed the budget in 42.0% of settings (105 of the 250 with a defined risk) and empirical thresholds in 51.7% (108 of 209). Learn-then-Test [@ltt] exceeds it in only 7.8% (12 of the 153 that return a policy), but returns no policy in 129 of 282 cases [@riskbudget, Table 3]. A ridge classifier on PCA-reduced *Qwen3-Embedding-8B* vectors, a retrieval-trained embedding model, is a competitive baseline there [@riskbudget, Table 4].
 
 **Conformal sets.** vegaml ships split-conformal thresholds per type at α = 0.10 / 0.05, plus selective-risk abstention [@vegaml]. Laya fits abstention thresholds at a 10% target error [@laya-repo].
 
@@ -587,7 +592,7 @@ One scalar removes 79–90% of the calibration error at no accuracy cost. The ca
 |---|---|---|
 | CLM | 62.45M Nemotron-CC v2.1 HQ document-Q&A pairs (pre); Gemini-2.5-Flash-Lite hard negatives (mid, 3M pairs public as vectors); about 1M ADP v2 / Endless-Terminals / LiteCoder trajectories with 40% replay (post) | NVIDIA synthetic Q&A; Gemini negatives; agent rollouts |
 | Kev-4B | 30k records in 4 stages (decision-v7, dates/missing evidence, CFPB, hard/devtools) | Native labels, code, agreement of two open teachers |
-| Kev-27B | 145,840 records / 337,130 questions, states ≤ 32k tokens | Code or open models (GLM-5.3, DeepSeek-V4-Pro, Inkling, Mistral Large 3, gpt-oss-120b, MiMo); 8-gram Jaccard decontamination removed 6,388 records |
+| Kev-27B | 145,840 records / 337,130 questions, states ≤ 32k tokens | Code or open models (GLM-5.3, DeepSeek-V4-Pro, Inkling, Mistral Large 3, gpt-oss-120b, MiMo); decontamination (exact match, 8-gram Jaccard > 0.2, or containment ≥ 0.5 against 102 evaluation partitions) removed 6,388 records |
 | Jeff-1.1 | DecisionBank-260k: decider public/custom 163,732; human votes 9,168; LLM-written 60,219; programmatic 28,442 | 50/50 label + Qwen3.8-27B teacher; exact for programmatic |
 | decider | about 95 public datasets, 1.47M examples per epoch | Labels + local Qwen3.5-27B teacher |
 | Strands v1 / v2 | 246,678 rows / 17.48M rows (not released) | gemma-4-31B teacher where it agrees with gold |
@@ -669,9 +674,12 @@ Repeat runs changed up to 1.33% of decisions.
 | Von 1.1 | 49.5% | [@von] |
 | Bi-encoders and Jeva | 0 (by construction) | JevAdvBench option-order attack on CLM: 0.0 [@jevadvbench]; Jeva 0.00% [@jeva] |
 
-Exact fixes in joint models cost accuracy: Kev's option isolation −5.8 pp at 4B; order-invariant encodings in Jeff −0.6 to −2.4 [@kev-repo; @jeff].
+Whether exact invariance costs accuracy in joint models is unsettled:
+- Kev's option isolation cost −5.8 pp in a single 4B run, but nothing at 0.6B [@kev-repo].
+- Jeff's order-invariant encodings scored 0.6–2.4 points lower, which the authors call "within noise" with one run per variant.
+- Jeff also notes that sorting options by text gives the same invariance at no cost (+1.0 / −0.4) [@jeff, App. G].
 
-**FM2: Yes/no polarity.** Swapping which identifier means "yes" flips 50.5 of 100 answers for Jev (AUC 0.89 → 0.31) and 91.3 for Laya. Fine-tuned decision checkpoints flip 4.2–6.5 [@rafedas]. Laya's own tracker shows Noul returning the negative label in both polarities at confidence 1.0 [@laya-repo, issue #156].
+**FM2: Yes/no polarity.** Swapping which identifier means "yes" flips 50.5 of 100 answers for Jev (AUC 0.89 → 0.31) and 91.3 for Laya. Four fine-tuned decision checkpoints (Kev-9B, Nimble-9B, decider-2b, this-that) flip 4.2–6.5, while fine-tuned Kev-0.8B flips 14.3 [@rafedas]. Laya's own tracker shows Noul returning the negative label in both polarities at confidence 1.0 [@laya-repo, issue #156].
 
 **FM3: Large-K collapse.**
 - Laya: 0.852 at 20 options → 0.020 at 50 [@rafedas], because options share a fixed token budget.
@@ -687,14 +695,14 @@ Exact fixes in joint models cost accuracy: Kev's option isolation −5.8 pp at 4
 **FM5: Ordinal compression.** Laya keeps level order on 1 of 4 ladders at 5 and 10 levels [@typedbench].
 
 **FM6: Long context and truncation.**
-- *Burying.* Hiding the evidence among 1–4k tokens of unrelated records cost Kev 22–43 pp; training on such states recovered 17–20 pp [@kev-repo, PLAN.md]. Laya's accuracy falls from 0.85 to 0.40 as evidence moves to the end of a 7,000-token filler document [@laya-repo, `research/README.md`].
+- *Burying.* Hiding the evidence among 1–4k tokens of unrelated records cost Kev 22–43 pp; training on such states recovered 17–20 pp. Kev's own conclusion is that "buried synthetic states are not real documents": on real CFPB documents the long-state training moved accuracy by only ±1 pp [@kev-repo, PLAN.md #11]. For laya-multilingual, accuracy falls from 0.85 to 0.40 as evidence moves to the end of a 7,000-token filler document (n = 20 per cell, ±0.22; at 4,000 tokens the end position is the best cell) [@laya-repo, `research/README.md`].
 - *Truncation.* CLM's server truncates at 2,048 tokens. Since vLLM 0.13 truncation keeps the *head*, which drops the question; the cosine to the correct embedding falls to −0.0006 [@clm-repo, issues #6, #29].
 
 **FM7: Question-ignoring and state collapse.**
-- Strands v7: the same answer to a changed question 94–99% of the time [@strands].
+- Strands v7: the same answer to a changed question 94–99% of the time. The project's own notes show every model from v7 to v19 still around 92–95% [@strands, `research/generations.md`].
 - CLM: appending the question to the state raises the mean cosine between different states to 0.958. BoolQ Noul is then ≈ 0.133 on every item (498/500 "no"), and Emotion answers "sadness" on 460/500 [@clm-repo, issue #15].
 
-**FM8: Reading right, acting wrong.** The six most accurate systems make 73–85% of their errors *after* correctly answering fact probes about the state. Composing narrow fact questions in code lifts Jev from 0.791 to 0.996 on rule states. CLM fails earlier, at reading (decision accuracy 0.123; 79.6% of items wrong on both probe and decision) [@readingright].
+**FM8: Reading right, acting wrong.** The six most accurate systems make 73–85% of their errors *after* correctly answering fact probes about the state: 73–78% for the System One models, 85% for the reasoning reference. Composing narrow fact questions in code lifts Jev from 0.791 to 0.996 on rule states. CLM fails earlier, at reading (decision accuracy 0.123; 79.6% of items wrong on both probe and decision) [@readingright].
 
 **FM9: Adversarial states.**
 - Attack success rate is 46.3% on Jev and 34.0–51.7% on open models.
@@ -763,18 +771,18 @@ Sources: [@jeva; @ndm; @sbert2s1; @readingright].
 | 2 | State collapse from the question suffix (CLM) | Separate $h_S$ and $h_Q$, fused late (NDM); question placed on the hypothesis side (sbert2s1) | CLM #15: cosine 0.958 vs 0.452 | One extra short embedding per question | **Yes** |
 | 3 | Label-word and short-option blindness (F1, F4) | Noul from $[h_Q; h_S]$ (NDM); descriptive option texts; contextual readouts (Bongard) | Cosine gaps about 1e-3; sensitivity 0.000 → 1.059 | A small head; option rewriting | **Yes** |
 | 4 | Over-confidence, scale at the cap (CLM; instruct models) | Per-type temperature, fit on held-out data | Our ECE 0.065 → 0.013; NDM 0.188 → 0.033 | Negligible | **Yes** |
-| 5 | No null, or a $\log K$-biased null (CLM, flat softmax) | Coverage gate (Jeva); adequacy head (NDM); none-pairs (Kev) | AUROC 98.66 vs 93.61; recall 0.66 vs 0.25 | One scalar head + BCE | **Yes** |
-| 6 | Order flips (Jev, Laya, causal readouts) | Bi-encoders, Jeva and NDM by construction; isolating masks (Von, Kev); rotation averaging (AnyJev); Runoff | 0 flips; Von 49.5% → 0; Kev isolation −5.8 pp | Free for F1/F2 and NDM's tree mask; accuracy or $K$× compute for F3 | Yes for F1 and Jeva |
-| 7 | Yes/no swap (Jev 50.5, Laya 91.3) | Fine-tuning with randomized identifiers and polarity twins | 4.2–6.5 flips for fine-tuned checkpoints | Data | Yes *(inference)* |
+| 5 | No null, or a $\log K$-biased null (CLM, flat softmax) | Coverage gate (Jeva); adequacy head (NDM); none-pairs (Kev) | AUROC 98.66 vs 93.61 (Jeva); NDM adequacy is a trade-off (recall 0.66 vs 0.25, false alarms 0.29 vs 0.025) | One scalar head + BCE | **Yes** |
+| 6 | Order flips (Jev, Laya, causal readouts) | Bi-encoders, Jeva and NDM by construction; isolating masks (Von, Kev); rotation averaging (AnyJev); Runoff | 0 flips; Von 49.5% → 0; Jeff: sorting options is invariant at no cost; Kev isolation −5.8 pp (single 4B run) | Free for F1/F2 and NDM's tree mask; for F3, $K$× compute (averaging) or option sorting | Yes for F1 and Jeva |
+| 7 | Yes/no swap (Jev 50.5, Laya 91.3) | Fine-tuned decision checkpoints (the mechanism is not isolated; randomized identifiers and polarity twins are our inference) | 4.2–6.5 flips for four fine-tuned checkpoints; Kev-0.8B 14.3 | Data | Yes *(inference)* |
 | 8 | Large-K collapse (F4 budgets; letter readouts ≤ 16 or 26) | 255-code / pointer readouts; tournaments; cached F1/F2 | Clef BANKING77 94.2; Jeva 69.88% at K = 2,048 | — | F1/F2: yes |
 | 9 | Truncation drops the question (CLM on vLLM ≥ 0.13) | Keep the tail | Cosine −0.0006 → 1.0 | Two lines | Yes |
-| 10 | Long-context burying (Kev, Laya) | Training on buried states; longer training contexts | +17–20 pp | Data | — |
-| 11 | Question-ignoring (Strands v7) | Many questions per state in data | Fix attempts v11a/b lost on JevBench | Data | — |
+| 10 | Long-context burying (Kev, Laya) | Training on buried states; longer training contexts | +17–20 pp on synthetic burying, ±1 pp on real documents | Data | — |
+| 11 | Question-ignoring (Strands v7) | Many questions per state in data (proposed) | Strands' fix attempts v11a/b lost on JevBench; v7–v19 all still ~92–95% question-insensitive | Data | — |
 | 12 | Anisotropic readouts (Bongard, CLM) | Pack centring | 2.3% → 56.6% retrieval | Training only | **Yes** |
 | 13 | Prefix reuse lost to bidirectional masks (pplx, StartLux) | `prefix_bidir` (Strands v2) | State encoded once | Mask engineering | — |
-| 14 | RLCD estimator variance and scale (Laya) | Soft-CE; PG-LOO | #741: soft-CE best accuracy and Brier | Free | Yes |
+| 14 | RLCD estimator variance and scale (Laya) | Soft-CE; PG-LOO | #741 (single seed) favoured soft-CE; the three-seed PR #1012 found a tie; sbert2s1's PG-LOO fixes the scale | Free | Yes |
 | 15 | In-distribution temperature fitting (Kev v1; many) | Fit on held-out datasets; workload refit | Hard-v1 ECE 0.137 → 0.067 (4B) | Calibration data | Yes |
-| 16 | Reading right, acting wrong (Jev, Gemma) | Fact probes composed in code; next-sub-goal block | 0.791 → 0.996; ALFWorld +16.3 | More questions per step | Yes (orchestration) |
+| 16 | Reading right, acting wrong (Jev, Gemma) | Fact probes composed in code; next-sub-goal block | 0.791 → 0.996 on rule states; ALFWorld +16.3 with an *oracle* sub-goal, but +6.4 with Jev's own sub-goal answers (66.8% correct) and no gain for Clef or Gemma | More questions per step | Yes (orchestration) |
 | 17 | Multi-step reasoning in one pass | Loops (SanSi); exact-fact features (Beveridge); gated reasoning (StartLux, Jeeves) | +13.5; −17.4 without facts | 7.7× compute; hand-built features; reasoning latency | No / yes / — |
 | 18 | Weak held-out generalization of pure F1 | LoRA'd dual encoder + late interaction (Jeva); joint encoding (Small Heads) | sbert2s1 B −9.4 held-out | LoRA invalidates the cache per checkpoint | Jeva: **yes** |
 | 19 | Adversarial states | **None demonstrated** | JevAdvBench | — | — |
@@ -800,26 +808,42 @@ Using the cost decomposition of §2.2, the families differ in which terms they p
 
 ### 9.2 The latency–accuracy frontier
 
-**Table 11. System1-Arena (non-agentic) p50 latency vs accuracy** [@s1arena, Table 1].
+**Table 11. System1-Arena (non-agentic): every System-1 model and every open LLM read zero-shot at the answer token** [@s1arena, Table 1]. Closed LLMs that reason (up to 81.1% for Claude Opus 5.5) take 1.3–6.7 s and are omitted.
 
-| Model | Family | p50 (ms) | Accuracy | Brier |
+| Model | Group | p50 (ms) | Accuracy | Brier |
 |---|---|---|---|---|
-| CLM-v0.1-8B | F1 | **41** | 41.4 | 0.749 |
-| Decision 2.0 Kai-0.6B | F3 | 72 | 50.3 | 0.537 |
-| Laya | F4 | 136 | 44.5 | 0.660 |
-| OpenAI Decisions | hosted | 140 | 68.6 | 0.424 |
-| Decision 2.0 Vega-27B | F3 | 228 | **73.0** | **0.343** |
-| Microsoft-Decision-1 | hosted | 304 | 70.9 | 0.369 |
-| Jev 1.13 | hosted | 321 | 72.6 | 0.349 |
+| Decision-2.0-Vega-27B | System-1 (F3) | 228 | 73.0 | **0.343** |
+| Jev 1.13 | System-1 (hosted) | 321 | 72.6 | 0.349 |
+| Microsoft-Decision-1 | System-1 (hosted) | 304 | 70.9 | 0.369 |
+| OpenAI Decisions API | System-1 (hosted) | 140 | 68.6 | 0.424 |
+| Decision-2.0-Lux-9B | System-1 (F3) | 104 | 67.0 | 0.397 |
+| Decision-2.0-Nox-4B | System-1 (F3) | 114 | 65.1 | 0.414 |
+| Decision-2.0-Kai-0.6B | System-1 (F3) | 72 | 50.3 | 0.537 |
+| Laya (421M) | System-1 (F4) | 136 | 44.5 | 0.660 |
+| CLM-v0.1-8B | System-1 (F1) | 41 | 41.4 | 0.749 |
+| Gemma-4-31B | open LLM readout (F8) | 60 | **73.9** | 0.474 |
+| gpt-oss-120b | open LLM readout (reasons first) | 284 | 71.8 | 0.534 |
+| Qwen3.8-27B | open LLM readout | 105 | 70.2 | 0.391 |
+| Gemma-4-26B-A4B | open LLM readout | 47 | 69.9 | 0.528 |
+| DiffusionGemma-26B-A4B | open LLM readout | 68 | 69.7 | 0.465 |
+| gpt-oss-20b | open LLM readout (reasons first) | 183 | 68.7 | 0.589 |
+| Qwen3.5-9B | open LLM readout | 77 | 65.3 | 0.461 |
+| Qwen3-32B | open LLM readout | 50 | 65.0 | 0.543 |
+| Llama-3.3-70B | open LLM readout | 46 | 64.8 | 0.640 |
+| Gemma-4-E4B | open LLM readout | 29 | 62.8 | 0.602 |
+| Qwen3-8B (CLM's backbone) | open LLM readout | 30 | 59.3 | 0.715 |
+| Llama-3.1-8B | open LLM readout | **21** | 53.1 | 0.645 |
+| Qwen3-0.6B | open LLM readout | 27 | 39.2 | 0.937 |
 
-Local models ran on an idle H100. Hosted models include network time.
+Local models ran on an idle H100 (A100 for agentic runs); hosted models include network time. Latency on our target GPUs (L4 / A10 / L40S) will be higher, roughly 2–4× for prefill-bound requests *(inference)*.
 
-Three things follow *(inference)*:
-- The empty region is the upper left: above 65% accuracy below 100 ms. No published system occupies it on S1-Arena.
-- Cached designs (F1/F2) are the only route to single-digit milliseconds under reuse.
-- The F1 accuracy deficit is, per §7.7 and §7.14, largely a property of *what* is encoded rather than of the frozen backbone. A same-backbone answer-token readout scores 59.3.
+Four things follow:
+- **The fastest accurate models on this benchmark are zero-shot answer-token readouts of mid-size open LLMs, not System-1 models.** Gemma-4-31B reaches 73.9% at 60 ms, and Gemma-4-26B-A4B 69.9% at 47 ms. No System-1-native model reaches 65% under 100 ms.
+- **System-1-native models win on calibration.** Vega and Jev reach Brier 0.343–0.349, against 0.46–0.54 for the fast readouts, which are over-confident (Gemma-4-31B puts ≥ 0.999 on its choice for 87% of questions). Temperature scaling is the obvious first fix *(inference; it removed 79–90% of CLM's calibration error, §5.6)*. The open target is therefore *fast, accurate and calibrated at once*.
+- **CLM is the fastest System-1-native model but not the fastest model.** Its own backbone read at the answer token is faster (30 ms) and 17.9 points more accurate. Per §7 (FM7, FM14), the deficit is largely a property of *what* CLM encodes, not of the frozen backbone.
+- **Cached designs (F1/F2) remain the only route to single-digit milliseconds under reuse** (§9.1). Their advantage is specific to workloads with reused option sets and revisited states (W2).
 
-Figure 2 (`figures/s1arena_frontier.png`) plots this frontier.
+Figure 2 (`figures/s1arena_frontier.png`) plots all rows.
 
 ### 9.3 Kernels, graphs and quantization
 
@@ -876,7 +900,7 @@ We state the gaps as testable hypotheses, each grounded in the evidence above.
   *Test:* the same frozen Qwen3-8B, CLM heads vs. a revised F1, on S1-Arena and typed suites.
 - **H2 Late interaction helps on frozen backbones too.** Jeva reports results only with LoRA. The frozen mode exists in code but is unreported [@jeva-repo]. *Test:* a Jeva block over frozen-encoder option memories, vs. F1, vs. LoRA.
 - **H3 Calibration should condition on $K$, fitted on held-out datasets.** The evidence is mixed: Kev found per-(type, K) worse out of distribution, while Laya, NDM and decider use $K$. *Test:* global vs. per-type vs. $T(\text{type}, \log K)$, all fit on held-out *datasets* and scored on others.
-- **H4 Exact order invariance is free for F1/F2 on typed suites.** Joint decoders pay 0.6–5.8 pp for it. *Test:* flip rates and accuracy at matched backbones.
+- **H4 Exact order invariance is free for F1/F2 on typed suites.** For joint decoders the cost is unsettled: Kev's isolation cost 5.8 pp in a single 4B run, while Jeff finds its invariant encodings within noise and option sorting free. *Test:* flip rates and accuracy at matched backbones, including a sorted-options joint baseline.
 - **H5 `prefix_bidir` gives most of the bidirectional gain with full state reuse.** It has been tested only within Strands. *Test:* causal vs. `prefix_bidir` vs. full bidirectional on a joint path, measuring accuracy and cache hit latency.
 - **H6 On one mid GPU, a 4B adapted backbone beats a frozen 8B.** Evidence: Small Heads (4B ≈ 8B out of distribution) and Jeff's level-off around 4B. *Test:* Qwen3.5-4B with LoRA vs. frozen Qwen3-8B vs. frozen Inkling 2 Mini, same head and data.
 - **H7 Intermediate-layer taps cut prefill with little loss** [@layerbylayer; @vegaml]. *Test:* layers L/2, 3L/4 and L.

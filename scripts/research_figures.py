@@ -14,6 +14,7 @@ import math
 from pathlib import Path
 
 import matplotlib
+import matplotlib.patches
 import matplotlib.ticker
 
 matplotlib.use("Agg")
@@ -60,58 +61,96 @@ def save(fig: plt.Figure, name: str) -> None:
 
 
 def frontier() -> None:
-    """System1-Arena non-agentic p50 vs accuracy [@s1arena, Table 1]."""
+    """System1-Arena non-agentic p50 vs accuracy, every System-1 and open-LLM row [@s1arena, Table 1]."""
     rows = [  # name, group, p50 ms, accuracy %
-        ("CLM-v0.1-8B", "Cached bi-encoder", 41, 41.4),
-        ("Decision 2.0 Kai-0.6B", "Open joint models", 72, 50.3),
-        ("Laya", "Open joint models", 136, 44.5),
-        ("Decision 2.0 Vega-27B", "Open joint models", 228, 73.0),
-        ("OpenAI Decisions", "Hosted APIs", 140, 68.6),
-        ("Microsoft-Decision-1", "Hosted APIs", 304, 70.9),
-        ("Jev 1.13", "Hosted APIs", 321, 72.6),
+        ("CLM-v0.1-8B", 0, 41, 41.4),
+        ("Decision-2.0-Vega-27B", 1, 228, 73.0),
+        ("Jev 1.13", 1, 321, 72.6),
+        ("Microsoft-Decision-1", 1, 304, 70.9),
+        ("OpenAI Decisions API", 1, 140, 68.6),
+        ("Decision-2.0-Lux-9B", 1, 104, 67.0),
+        ("Decision-2.0-Nox-4B", 1, 114, 65.1),
+        ("Decision-2.0-Kai-0.6B", 1, 72, 50.3),
+        ("Laya", 1, 136, 44.5),
+        ("Gemma-4-31B", 2, 60, 73.9),
+        ("gpt-oss-120b", 2, 284, 71.8),
+        ("Qwen3.8-27B", 2, 105, 70.2),
+        ("Gemma-4-26B-A4B", 2, 47, 69.9),
+        ("DiffusionGemma-26B-A4B", 2, 68, 69.7),
+        ("gpt-oss-20b", 2, 183, 68.7),
+        ("Qwen3.5-9B", 2, 77, 65.3),
+        ("Qwen3-32B", 2, 50, 65.0),
+        ("Llama-3.3-70B", 2, 46, 64.8),
+        ("Gemma-4-E4B", 2, 29, 62.8),
+        ("Qwen3-8B", 2, 30, 59.3),
+        ("Llama-3.1-8B", 2, 21, 53.1),
+        ("Qwen3-0.6B", 2, 27, 39.2),
     ]
-    colors = {"Cached bi-encoder": S1, "Open joint models": S2, "Hosted APIs": S3}
-    fig, ax = plt.subplots(figsize=(7.2, 4.4))
-    ax.axhline(59.3, color=INK2, lw=1, ls=(0, (4, 3)))
-    ax.text(36, 60.2, "Qwen3-8B answer-token readout (59.3%)", color=INK2, fontsize=8.5)
-    for group, color in colors.items():
-        pts = [r for r in rows if r[1] == group]
+    groups = ("CLM (cached bi-encoder)", "other System-1 models", "open LLMs, answer-token readout")
+    colors = (S1, S2, S3)
+    fig, ax = plt.subplots(figsize=(7.6, 4.6))
+    ax.add_patch(
+        matplotlib.patches.Rectangle(
+            (19, 65),
+            100 - 19,
+            15,
+            facecolor="#F7E1D5",
+            edgecolor="#E2501E",
+            linestyle=(0, (4, 3)),
+            linewidth=1,
+            zorder=0,
+        )
+    )
+    ax.text(21, 77.6, "fast and accurate: only open-LLM readouts,", fontsize=8, color="#E2501E")
+    ax.text(21, 75.9, "with worse Brier than the best System-1 models", fontsize=8, color="#E2501E")
+    for g, (name, color) in enumerate(zip(groups, colors, strict=True)):
+        pts = [r for r in rows if r[1] == g]
         ax.scatter(
             [r[2] for r in pts],
             [r[3] for r in pts],
-            s=70,
+            s=46,
             color=color,
-            label=group,
+            label=name,
             edgecolor=SURFACE,
-            linewidth=2,
+            linewidth=1.5,
             zorder=3,
         )
-    offsets = {
-        "Laya": (6, -12),
-        "Jev 1.13": (6, 4),
-        "Microsoft-Decision-1": (-8, -14),
-        "Decision 2.0 Vega-27B": (-40, 8),
-        "OpenAI Decisions": (-30, 8),
+    labels = {  # name -> (text shown, offset in points)
+        "CLM-v0.1-8B": ("CLM-v0.1-8B", (7, -3)),
+        "Decision-2.0-Vega-27B": ("Vega-27B", (-34, 7)),
+        "Jev 1.13": ("Jev 1.13", (6, 4)),
+        "Gemma-4-31B": ("Gemma-4-31B", (8, -3)),
+        "Qwen3-8B": ("Qwen3-8B (CLM's backbone)", (6, -10)),
+        "Laya": ("Laya", (6, 4)),
+        "Decision-2.0-Kai-0.6B": ("Kai-0.6B", (6, -3)),
     }
     for name, _, x, y in rows:
-        dx, dy = offsets.get(name, (7, -3))
-        ax.annotate(name, (x, y), xytext=(dx, dy), textcoords="offset points", fontsize=8.5, color=INK)
+        if name in labels:
+            shown, offset = labels[name]
+            ax.annotate(
+                f"{shown} {y:.1f}%",
+                (x, y),
+                xytext=offset,
+                textcoords="offset points",
+                fontsize=7.8,
+                color=INK,
+            )
     ax.set_xscale("log")
-    ax.set_xticks([40, 60, 100, 200, 300])
-    ax.set_xticklabels(["40", "60", "100", "200", "300"])
-    ax.set_xlim(32, 420)
+    ax.set_xticks([20, 40, 60, 100, 200, 300])
+    ax.set_xticklabels(["20", "40", "60", "100", "200", "300"])
+    ax.set_xlim(19, 420)
     ax.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
     ax.set_ylim(35, 80)
     ax.set_xlabel("p50 latency per request (ms, log scale)")
     ax.set_ylabel("Accuracy (%)")
-    ax.set_title("System1-Arena: the fastest model is the least accurate")
-    ax.legend(loc="lower right", fontsize=8.5)
+    ax.set_title("System1-Arena: accuracy vs latency for every System-1 and open-LLM row")
+    ax.legend(loc="lower right", fontsize=8)
     fig.text(
         0.0,
         -0.04,
-        "Source: System1-Arena (arXiv 2610.21244), Table 1. Local models on an idle H100; "
-        "hosted models include network time.",
-        fontsize=7.5,
+        "Source: System1-Arena (arXiv 2610.21244), Table 1. Local models on an idle H100; hosted models "
+        "include network time; closed reasoning LLMs (seconds) omitted.",
+        fontsize=7.2,
         color=INK2,
     )
     save(fig, "s1arena_frontier")
