@@ -33,7 +33,7 @@ We trace which laboratory's design fixed which other's flaw, at what cost, and w
 Three conclusions stand out:
 1. **The fastest System-1-native model is the least accurate, and its gap has plausible, fixable causes that are not yet isolated.** The contrastive bi-encoder CLM-8B scores 41.4% on System1-Arena at 41 ms. Zero-shot answer-token readout of its own frozen backbone scores 59.3% at 30 ms. The gap is consistent with several candidate causes, none tested in isolation on that benchmark: the question appended to the state before last-token pooling, context-free short option texts, option-independent scoring without a null outcome, no training on typed decisions, and a 2,048-token tail cut that the readout did not face. The scale saturated at its cap explains CLM's Brier score, not its accuracy: rescaling cannot change an argmax. More broadly, zero-shot readouts of mid-size open LLMs (e.g. Gemma-4-31B, 73.9% at 60 ms) are the fastest *accurate* models on that benchmark. Specialized System-1 models still lead on calibration (Brier 0.34 vs 0.46–0.54).
 2. **Late interaction over cached option representations can add set-dependence, null coverage and exact permutation equivariance without giving up caching**, as Jeva shows. Narrow Decision Models corroborates the value of a set head and an adequacy (null) logit, although its option vectors are state-conditioned and therefore cached only within a request.
-3. **For calibration, simple direct objectives match reinforcement-learning variants.** Soft cross-entropy or cross-entropy plus Brier, followed by temperature scaling fitted on held-out *datasets*, matches or beats the RL variants that several systems advertise. Several published calibration choices are tuned to leaderboard scoring rules rather than to calibration.
+3. **For single-step decisions, no controlled evidence shows reinforcement learning beating direct proper-score losses.** Laya's three-seed ablation ties soft cross-entropy with its RL term, and the largest gains credited to RL-style stages elsewhere come from direct cross-entropy or proper-score training against outcome or closed-form targets. Temperature scaling fitted on held-out *datasets* is the common finishing step, though it can hurt other metrics. Several published calibration choices are tuned to leaderboard scoring rules rather than to calibration.
 
 We complement the literature with our own measurements on the published CLM heads. They show an expected calibration error of 0.065 at the shipped scale, reduced to 0.013 by one scalar fitted in-distribution; a cross-dataset fit and a tie-corrected re-measurement are pending (§5.6). We close with a design space and a benchmark protocol for a from-scratch implementation that targets both cached action selection and typed decisions on a single mid-range GPU.
 
@@ -127,7 +127,7 @@ and by the Brier score $\sum_i (p_i - y_i)^2$, the log loss, and decision costs.
 
 **P2 Permutation equivariance.** For any permutation $\pi$ of the options, $p(\pi(O)) = \pi(p(O))$. It is measured by flip rates under shuffling or reversal.
 
-**P3 Set-dependence vs. independence of irrelevant alternatives (IIA).** An *independent scorer* $z_i = g(s, q, o_i)$ gives log-odds $\log(p_i/p_j) = (g_i - g_j)/T$, which no other option can change (the Luce/IIA property). Jeva's Proposition 1 shows that a single attention block over the option set can prefer $a$ in one candidate set and $b$ in another set containing both. No independent scorer with set-independent tie-breaking can do this [@jeva, §3, App. B.1]. IIA buys order invariance and cacheability. It costs the ability to model "compared with what?".
+**P3 Set-dependence vs. independence of irrelevant alternatives (IIA).** An *independent scorer* $z_i = g(s, q, o_i)$ gives log-odds $\log(p_i/p_j) = (g_i - g_j)/T$, which no other option can change (the Luce/IIA property). Jeva's Proposition 1 shows that a single attention block over the option set can prefer $a$ in one candidate set and $b$ in another set containing both. No independent scorer with set-independent tie-breaking can do this [@jeva, §3, App. B.1]. IIA costs the ability to model "compared with what?". Independent scoring is sufficient for order invariance and cacheability but not necessary: Jeva is set-dependent yet exactly permutation-equivariant, and it still caches option keys and values [@jeva, Prop. 3]. What IIA saves is the per-request computation over the set. Proposition 1 is an existence result: it shows what one block can represent, not what trained models learn.
 
 **P4 Null coverage.** Models need to say "none of these fits". Appending a "none" option to a flat softmax yields
 
@@ -390,13 +390,13 @@ Jeff-1.1's DecisionBank mixes dataset labels 50/50 with a reasoning teacher (Qwe
 - Jeff: hard labels −0.2 ± 2.1 Capability; removing LM-labeled data −1.9 [@jeff, Table 5].
 - Kev: ambiguity soft targets gave +1.1 accuracy and −0.011 Brier [@kev-repo, PLAN.md].
 
-Adding a Brier term or label smoothing is the cheapest calibration lever:
+Changing the training objective is a cheap lever with mixed results. Label smoothing helped AnyS1 and a Brier term helped SanSi, but CE+Brier did not help AnyS1, and in Kev label smoothing, CE+Brier and focal loss "produced no candidate" [@kev-repo]:
 
 | Objective change | Effect on ECE | Source |
 |---|---|---|
 | Add Brier to CE (SanSi) | 0.104 → 0.093 | [@sansi, Table 3] |
 | Label smoothing (ε = 0.1) vs hard-label CE vs CE+Brier (AnyS1) | 0.094 vs 0.146 vs 0.148 | [@anys1, Table 3c] |
-| Various calibration losses vs plain CE, after temperature scaling (Jeff: Brier, focal, soft-ECE, MMCE) | none lowers ECE by more than 0.01 | [@jeff, App. G] |
+| Various calibration losses vs plain CE, after temperature scaling (Jeff: Brier, focal, soft-ECE, MMCE) | none lowers ECE by more than 0.01 | [@jeff] |
 
 The last row is the important caveat: once temperature scaling is applied, the choice of calibration loss barely matters.
 
@@ -426,11 +426,12 @@ The merged three-seed follow-up (PR #1012) found the arms tied: 0.7763 vs 0.7762
 - SanSi's RL variant gave no gain (71.7 vs. 72.0) [@sansi].
 - Jeeves's CISPO stage "did not improve v2" [@jeeves].
 
-RL earns its keep where the target is *not* available in closed form:
-- **Outcome-grounded sandbox decisions.** Bongard's stage 3 moved a frozen evaluation panel from 50.6 to 64.8 and Brier from 0.482 to 0.289 [@bongard]. It labels every legal action with an outcome distribution and then trains with direct CE, justified because the expected REINFORCE gradient is half the negative Brier gradient.
-- **Belief log-scores against exact laws and reasoning-gated fusion.** decider's PPO stage halves its belief excess, 0.473 → 0.219 nats [@decider, `docs/RL.md`]. StartLux's RLCD² rewards improving a pre-reasoning proper score [@startlux, Eqs. 3–6].
+The largest gains credited to RL-style stages come from direct proper-score training against outcome or closed-form targets:
+- **Outcome-grounded sandbox decisions.** Bongard's stage 3 moved a frozen evaluation panel from 50.6 to 64.8 and Brier from 0.482 to 0.289 [@bongard]. The stage labels every legal action with an outcome distribution (rollout frequencies or exact oracles) and trains with direct CE, which replaces REINFORCE. The gain is a whole-stage effect, not an RL ablation.
+- **Belief log-scores against exact laws and reasoning-gated fusion.** decider's RL stage combines four terms, one of them a direct belief log-score against exact laws; together they cut belief excess from 0.473 to 0.219 nats, and no ablation credits PPO itself [@decider, `docs/RL.md`]. StartLux's RLCD² rewards post-reasoning improvement over the direct answer [@startlux, Eqs. 3–6].
+- **Mixed evidence elsewhere.** Jeeves v1, which used CISPO, beats v2 on JevBench public and hard [@jeeves]; StartLux finds RL hurts long computations (−5.9) [@startlux]; sbert2s1's PG-LOO adds +2.5 [@sbert2s1].
 
-*(Inference)* For single-step typed decisions, direct proper-score losses (soft-CE, plus Brier) are sufficient. RL is a tool for multi-step outcomes and for deciding when to deliberate.
+*(Inference)* For single-step typed decisions there is no controlled evidence that RL beats direct proper-score losses (soft-CE, optionally plus Brier). RL remains a candidate for multi-step outcomes and for deciding when to deliberate.
 
 ### 4.4 Ordinal, null and coherence objectives
 
@@ -456,7 +457,7 @@ Kev's ordinal CDF penalty was a reported negative [@kev-repo, PLAN.md].
 
 The strongest finding in the literature concerns *where* to spend trainable parameters.
 
-**Table 4. Adaptation regime.** All within one system's controlled ablation unless noted.
+**Table 4. Adaptation regime.** Rows come from different systems and recipes, so read them as directions, not controlled effect sizes. A counterpoint not in the table: Kev's same-data full fine-tune gained nothing and raised ECE by about 0.045 [@kev-repo].
 
 | Evidence | Head only (frozen) | LoRA | Full FT | Source |
 |---|---|---|---|---|
@@ -468,12 +469,12 @@ The strongest finding in the literature concerns *where* to spend trainable para
 | decider: stock Gemma-4-31B + readout vs trained 35B, DI 0.2.1 | **57.33** (stock) | | 47.11 | [@decider] |
 
 Four further results sharpen the picture:
-1. **Backbone scale dominates head design.** Small Heads finds a 0.53M cosine head equals a 27.3M joint-schema head when options are read *in context*. Moving the backbone from 0.6B to 4B adds about 11 out-of-distribution points, with little change from 8B to 14B [@smallheads, Tables 3, 7].
-2. **Zero-shot letter readout levels off around 4B.** Qwen3.5 0.8B / 2B / 4B / 9B / 27B score 48.9 / 57.6 / 76.8 / 82.2 / 86.5 [@jeff, App. F].
+1. **Backbone scale dominates head design.** Small Heads finds a 0.53M cosine head equals a 27.3M joint-schema head when options are read *in context*. Moving the backbone from 0.6B to 4B adds about 11 out-of-distribution points, with little change from 8B to 14B; every size is LoRA-adapted [@smallheads, Tables 3, 7].
+2. **Zero-shot letter readout keeps improving past 4B, with diminishing returns.** Qwen3.5 0.8B / 2B / 4B / 9B / 27B score 48.9 / 57.6 / 76.8 / 82.2 / 86.5 on seven held-out sets: +19.2 from 2B to 4B, then +9.7 from 4B to 27B. The paper describes this as levelling off [@jeff, App. F].
 3. **Learning rate, not rank, is the lever.** LoRA rank 16 to 128 is flat in Jeff. In Kev, lowering the LR from 2e-4 to 5e-5 gave +4.7 pp, by limiting drift [@kev-repo, PLAN.md].
 4. **Fine-tuning erodes knowledge.** Kev reports −11 pp MMLU at 8B and −14 pp PAWS at 0.6B. Date arithmetic is lost *in the representation*, not at the readout: 0.53 through both the LM head and the pointer. Weight blending (Kev-27B ships 0.85·SFT + 0.15·v1) and multi-seed soups (Jeff, Strands, StartLux; Decision 2.0's 6-arm uniform soup) are the common mitigations [@kev-repo; @jeff; @strands; @decision2-kai].
 
-*(Inference)* For a frozen-backbone design, the head is not the bottleneck. *What the frozen encoder is asked to encode* (§7.7, §7.14) and the calibration of the readout (§5) are. For a typed-decision path, LoRA on an instruct checkpoint at a conservative LR is the evidence-backed default.
+*(Inference)* Head design matters less than backbone scale and data, but it is not irrelevant: in Strands a pointer head beats a linear slot, 0.7250 vs 0.6619, and "roughly half the gain is having option representations at all" [@strands]. For a frozen-backbone design, *what the frozen encoder is asked to encode* (FM7, FM14) and the calibration of the readout (§5) matter most. For a typed-decision path, LoRA at a conservative learning rate is the evidence-backed default; base, instruct and thinking checkpoints tie within 0.25 points in distribution [@smallheads, Tables 8–9].
 
 ### 4.7 Curricula, augmentation and data shortcuts
 
@@ -617,7 +618,7 @@ One scalar removes 79–90% of the calibration error; top-1 cannot change, becau
 
 The embedding cost of re-encoding is modest at our scale. Nemotron questions plus answers are about 1.66B tokens, roughly 20–35 H100-hours. DecisionBank-625k is about 0.3B tokens *(inference, from token counts)*.
 
-One property of causal last-token pooling makes trajectories cheap. With causal attention, the hidden state at the last token of step $j$ depends only on the trajectory up to step $j$. So one forward pass over a trajectory yields every step's state embedding *(inference)*.
+One property of causal last-token pooling makes trajectories cheap. With causal attention, the hidden state at the last token of step $j$ depends only on the trajectory up to step $j$. So one forward pass over a trajectory yields every step's state embedding *(inference)*. This holds only if each step's input is an exact prefix of the trajectory and pooling happens at the end of that prefix. CLM's layout breaks both conditions: it appends instructions after the state, wraps the state in a chat template and keeps only the last 2,048 tokens. A design that wants the shortcut must put nothing after the state, pool at a sentinel token, match the truncation, and validate against per-step encodings on a sample.
 
 ### 6.3 Contamination
 
@@ -899,10 +900,10 @@ We state the gaps as testable hypotheses, each grounded in the evidence above.
 
   *Test:* the same frozen Qwen3-8B, CLM heads vs. a revised F1, on S1-Arena and typed suites.
 - **H2 Late interaction helps on frozen backbones too.** Jeva reports results only with LoRA. The frozen mode exists in code but is unreported [@jeva-repo]. *Test:* a Jeva block over frozen-encoder option memories, vs. F1, vs. LoRA.
-- **H3 Calibration should condition on $K$, fitted on held-out datasets.** The evidence is mixed: Kev found per-(type, K) worse out of distribution, while Laya, NDM and decider use $K$. *Test:* global vs. per-type vs. $T(\text{type}, \log K)$, all fit on held-out *datasets* and scored on others.
+- **H3 Calibration should condition on $K$, fitted on held-out datasets.** The evidence is thin and mixed: Bongard fits per-$K$ temperatures [@bongard] and Laya's shipped calibration has a `choice:11+` bucket [@laya-repo, issue #394], while Kev found per-(type, $K$) temperatures worse out of distribution and its held-out-dataset refit failed its adoption rule [@kev-repo]. NDM's temperatures are per primitive, without $K$ [@ndm]. *Test:* global vs. per-type vs. $T(\text{type}, \log K)$, all fit on held-out *datasets* and scored on others.
 - **H4 Exact order invariance is free for F1/F2 on typed suites.** For joint decoders the cost is unsettled: Kev's isolation cost 5.8 pp in a single 4B run, while Jeff finds its invariant encodings within noise and option sorting free. *Test:* flip rates and accuracy at matched backbones, including a sorted-options joint baseline.
 - **H5 `prefix_bidir` gives most of the bidirectional gain with full state reuse.** It has been tested only within Strands. *Test:* causal vs. `prefix_bidir` vs. full bidirectional on a joint path, measuring accuracy and cache hit latency.
-- **H6 On one mid GPU, a 4B adapted backbone beats a frozen 8B.** Evidence: Small Heads (4B ≈ 8B out of distribution) and Jeff's level-off around 4B. *Test:* Qwen3.5-4B with LoRA vs. frozen Qwen3-8B vs. frozen Inkling 2 Mini, same head and data.
+- **H6 On one mid GPU, a 4B adapted backbone beats a frozen 8B.** Evidence is indirect: Small Heads finds 4B ≈ 8B, but with every size LoRA-adapted, so it does not compare an adapted 4B with a frozen 8B; zero-shot letter readout still gains 9.7 points from 4B to 27B [@jeff, App. F]. *Test:* Qwen3.5-4B with LoRA vs. frozen Qwen3-8B, same head and data. A frozen Inkling 2 Mini arm needs a GPU outside the L4/A10/L40S target (see the architecture review).
 - **H7 Intermediate-layer taps cut prefill with little loss** [@layerbylayer; @vegaml]. *Test:* layers L/2, 3L/4 and L.
 - **H8 Matryoshka training makes 128-d option caches nearly lossless.** Untrained truncation loses 12 points at 128-d (this project).
 - **H9 A calibrated two-path cascade dominates either path alone** on cost-adjusted accuracy for mixed W1/W2 traffic [@s1auto; @rafedas].
