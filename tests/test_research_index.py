@@ -19,6 +19,8 @@ FAMILIES = {
     "foundations",
     "generative",
     "data",
+    "community",
+    "unclassified",
 }
 ROLES = {"implementation", "benchmark", "background", "dataset", "product"}
 
