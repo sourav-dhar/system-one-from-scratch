@@ -845,8 +845,8 @@ Local models ran on an idle H100 (A100 for agentic runs); hosted models include 
 Four things follow:
 - **The fastest accurate models on this benchmark are zero-shot answer-token readouts of mid-size open LLMs, not System-1 models.** Gemma-4-31B reaches 73.9% at 60 ms, and Gemma-4-26B-A4B 69.9% at 47 ms. No System-1-native model reaches 65% under 100 ms.
 - **System-1-native models win on calibration.** Vega and Jev reach Brier 0.343–0.349, against 0.46–0.54 for the fast readouts, which are over-confident (Gemma-4-31B puts ≥ 0.999 on its choice for 87% of questions). Temperature scaling is the obvious first fix *(inference; it removed 79–90% of CLM's calibration error, §5.6)*. The open target is therefore *fast, accurate and calibrated at once*.
-- **CLM is the fastest System-1-native model but not the fastest model.** Its own backbone read at the answer token is faster (30 ms) and 17.9 points more accurate. Per §7 (FM7, FM14), the deficit is largely a property of *what* CLM encodes, not of the frozen backbone.
-- **Cached designs (F1/F2) remain the only route to single-digit milliseconds under reuse** (§9.1). Their advantage is specific to workloads with reused option sets and revisited states (W2).
+- **CLM is the fastest System-1-native model but not the fastest model.** Its own backbone read at the answer token is faster (30 ms) and 17.9 points more accurate. Per §7 (FM7, FM14), the deficit plausibly reflects *what* CLM encodes rather than the frozen backbone, although S1-Arena also cut CLM's inputs to the last 2,048 tokens (the readout saw full inputs) and CLM never trained on typed decisions.
+- **Cached designs (F1/F2) are the most direct route to millisecond decisions under reuse, but not the only one** (§9.1). NDM adds 0.8–4.9 ms per extra question over a cached state [@ndm], Laya answers one question in 4.6 ms on an RTX 4070 Ti S [@laya-repo], and Beveridge runs in 4.9 ms on an H200 [@beveridge]. The advantage is specific to workloads with reused option sets and revisited states (W2), and there CLM is weak too: over 29,852 commands its `/v1/rank` scores 0/20 top-1 against BM25's 8/20 [@clm-repo, issue #15]. Latencies above come from different hardware and are not directly comparable.
 
 Figure 2 (`figures/s1arena_frontier.png`) plots all rows.
 
@@ -954,7 +954,7 @@ These are *inputs* to the architecture decision, not the decision itself. All th
 | Agent loops with large cached action sets | ✓✓ | ✓✓ | ✓✓ (fast path) |
 | Order invariance | exact | exact | exact on fast path; on slow path needs `prefix_bidir` + augmentation |
 | Null outcome | coverage scalar | gate (Prop. 2) | gate + slow path |
-| p50 on one L40S, cached options | ~1 ms revisit / ~30 ms new state | + small block | + slow path on the escalated fraction |
+| Latency anchors (measured elsewhere; ours to be measured on L4/L40S in M0–M1) | CLM: 0.6–0.7 ms revisit, 28 ms new state [@clm-repo] | Jeva: 46.6–75.1 ms per request on an H200, request side not cached [@jeva] | + slow path on the escalated fraction |
 | Build cost | low | medium | high |
 
 ---
