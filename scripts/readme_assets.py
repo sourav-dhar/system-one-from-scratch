@@ -377,14 +377,31 @@ def hero(t: Theme) -> Canvas:
 # ---------------------------------------------------------------------------------------------
 # 2. findings strip
 # ---------------------------------------------------------------------------------------------
-S1A = [  # (name, group, p50 ms, accuracy %) - System1-Arena Table 1 (arXiv 2610.21244)
-    ("CLM-v0.1-8B", 0, 41, 41.4),
-    ("Decision 2.0 Kai-0.6B", 1, 72, 50.3),
-    ("Laya", 1, 136, 44.5),
-    ("Decision 2.0 Vega-27B", 1, 228, 73.0),
-    ("OpenAI Decisions", 2, 140, 68.6),
-    ("Microsoft-Decision-1", 2, 304, 70.9),
-    ("Jev 1.13", 2, 321, 72.6),
+# System1-Arena Table 1 (arXiv 2610.21244), non-agentic: (name, group, p50 ms, accuracy %, Brier).
+# group 0 = CLM, 1 = System-1-native models (incl. hosted APIs), 2 = open LLMs read zero-shot at the answer token.
+S1A = [
+    ("CLM-v0.1-8B", 0, 41, 41.4, 0.749),
+    ("Decision-2.0-Vega-27B", 1, 228, 73.0, 0.343),
+    ("Jev 1.13", 1, 321, 72.6, 0.349),
+    ("Microsoft-Decision-1", 1, 304, 70.9, 0.369),
+    ("OpenAI Decisions API", 1, 140, 68.6, 0.424),
+    ("Decision-2.0-Lux-9B", 1, 104, 67.0, 0.397),
+    ("Decision-2.0-Nox-4B", 1, 114, 65.1, 0.414),
+    ("Decision-2.0-Kai-0.6B", 1, 72, 50.3, 0.537),
+    ("Laya", 1, 136, 44.5, 0.660),
+    ("Gemma-4-31B", 2, 60, 73.9, 0.474),
+    ("gpt-oss-120b", 2, 284, 71.8, 0.534),
+    ("Qwen3.8-27B", 2, 105, 70.2, 0.391),
+    ("Gemma-4-26B-A4B", 2, 47, 69.9, 0.528),
+    ("DiffusionGemma-26B-A4B", 2, 68, 69.7, 0.465),
+    ("gpt-oss-20b", 2, 183, 68.7, 0.589),
+    ("Qwen3.5-9B", 2, 77, 65.3, 0.461),
+    ("Qwen3-32B", 2, 50, 65.0, 0.543),
+    ("Llama-3.3-70B", 2, 46, 64.8, 0.640),
+    ("Gemma-4-E4B", 2, 29, 62.8, 0.602),
+    ("Qwen3-8B", 2, 30, 59.3, 0.715),
+    ("Llama-3.1-8B", 2, 21, 53.1, 0.645),
+    ("Qwen3-0.6B", 2, 27, 39.2, 0.937),
 ]
 ECE = {"pre": (0.1598, 0.0154), "mid": (0.0648, 0.0131), "post": (0.0668, 0.0141)}  # this project
 
@@ -395,17 +412,17 @@ def findings(t: Theme) -> Canvas:
         330,
         t,
         "Findings so far",
-        "Three result tiles: CLM-8B is the fastest but least accurate System-1 model on System1-Arena; "
-        "one fitted temperature cuts the published CLM head's calibration error from 0.065 to 0.013; "
-        "our evaluation reproduces the published heads exactly.",
+        "Three result tiles: CLM-8B is the fastest of the System-1-native models on System1-Arena but the "
+        "least accurate, below a zero-shot readout of its own backbone; one fitted temperature cuts the "
+        "published CLM head's calibration error from 0.065 to 0.013; our evaluation reproduces the published "
+        "heads exactly.",
     )
-    group_colors = (t.s1, t.s2, t.s3)
     tiles = [
         (
             "The CLM paradox",
             "41.4%",
             " at 41 ms",
-            "CLM-8B on System1-Arena: the fastest System-1 model, and the least accurate.",
+            "Fastest System-1-native model, least accurate: its own backbone read zero-shot scores 59.3%.",
             "System1-Arena, arXiv 2610.21244, Table 1",
         ),
         (
@@ -440,24 +457,24 @@ def findings(t: Theme) -> Canvas:
             c.text(small, x + 26 + bw, y0 + 104, MONO, 14, t.ink2)
         c.lines(cap, x + 26, y0 + 136, MONO, 12.5, t.ink2, tw - 52, 18)
         vx, vy, vw, vh = x + 26, y0 + 182, tw - 52, 58
-        if i == 0:  # mini frontier
+        if i == 0:  # mini frontier: every System1-Arena row, CLM and its own backbone highlighted
 
             def to_x(ms: float, vx: float = vx, vw: float = vw) -> float:
-                return vx + (math.log(ms) - math.log(32)) / (math.log(400) - math.log(32)) * vw
+                return vx + (math.log(ms) - math.log(19)) / (math.log(400) - math.log(19)) * vw
 
             def to_y(a: float, vy: float = vy, vh: float = vh) -> float:
-                return vy + vh - (a - 38) / (76 - 38) * vh
+                return vy + vh - (a - 36) / (77 - 36) * vh
 
-            c.add(line(vx, to_y(59.3), vx + vw, to_y(59.3), t.ink3, 1, "3 4"))
             c.add(line(vx, vy + vh, vx + vw, vy + vh, t.rule))
-            for _name, g, ms, acc in S1A:
-                r = 5.5 if g == 0 else 4
-                col = t.accent if g == 0 else t.ink3
+            for name, _g, ms, acc, _b in S1A:
+                hot = name in ("CLM-v0.1-8B", "Qwen3-8B")
+                col = t.accent if name == "CLM-v0.1-8B" else (t.ink if hot else t.ink3)
                 c.add(
-                    f'<circle cx="{to_x(ms):.1f}" cy="{to_y(acc):.1f}" r="{r}" fill="{col}" stroke="{t.panel}" stroke-width="1.5"/>'
+                    f'<circle cx="{to_x(ms):.1f}" cy="{to_y(acc):.1f}" r="{5 if hot else 3.2}" fill="{col}" '
+                    f'stroke="{t.panel}" stroke-width="1.2" opacity="{1 if hot else 0.7}"/>'
                 )
             c.text("CLM", to_x(41) + 9, to_y(41.4) + 4, MONO_MD, 10.5, t.accent)
-            c.text("Jev", to_x(321) - 8, to_y(72.6) - 8, MONO, 10, t.ink3, anchor="end")
+            c.text("its backbone", to_x(30) + 9, to_y(59.3) + 4, MONO_MD, 10.5, t.ink)
         elif i == 1:  # ECE before/after
             bar_w = vw / 3
             for j, (k, (own, fit)) in enumerate(ECE.items()):
@@ -481,7 +498,6 @@ def findings(t: Theme) -> Canvas:
                 )
         c.text(src, x + 26, y0 + th - 18, MONO, 10, t.ink3)
         c.add("</g>")
-    del group_colors
     c.css.append(FADE_UP + delays("r", 3, 0.1, 0.15))
     return c
 
@@ -492,11 +508,13 @@ def findings(t: Theme) -> Canvas:
 def frontier(t: Theme) -> Canvas:
     c = Canvas(
         1280,
-        620,
+        660,
         t,
         "The System One frontier on System1-Arena",
-        "Scatter of accuracy versus p50 latency for seven System-1 models from System1-Arena Table 1. "
-        "CLM is fastest at 41 ms but least accurate at 41.4%; no model reaches 65% under 100 ms.",
+        "Scatter of accuracy versus median latency for all 22 System-1 models and open LLMs in System1-Arena "
+        "Table 1. Zero-shot answer-token readouts of open LLMs are the fastest accurate models but have worse "
+        "Brier scores than the best System-1 models; CLM is the fastest System-1-native model and the least "
+        "accurate.",
     )
     c.text("The System One frontier", 56, 74, SERIF, 40, t.ink)
     c.text(
@@ -507,8 +525,8 @@ def frontier(t: Theme) -> Canvas:
         13,
         t.ink2,
     )
-    px, py, pw, ph = 110, 150, 1090, 380
-    lo, hi = math.log(32), math.log(420)
+    px, py, pw, ph = 110, 150, 1090, 400
+    lo, hi = math.log(19), math.log(420)
 
     def to_x(ms: float) -> float:
         return px + (math.log(ms) - lo) / (hi - lo) * pw
@@ -519,12 +537,12 @@ def frontier(t: Theme) -> Canvas:
     for a in range(40, 81, 10):
         c.add(line(px, to_y(a), px + pw, to_y(a), t.grid))
         c.text(f"{a}%", px - 14, to_y(a) + 4, MONO, 11.5, t.ink3, anchor="end")
-    for ms in (40, 60, 100, 200, 300):
+    for ms in (20, 40, 60, 100, 200, 300):
         c.add(line(to_x(ms), py, to_x(ms), py + ph, t.grid))
         c.text(f"{ms} ms", to_x(ms), py + ph + 24, MONO, 11.5, t.ink3, anchor="middle")
     c.text("median latency per request (log scale)", px + pw, py + ph + 50, MONO, 11.5, t.ink2, anchor="end")
-    # the empty corner
-    zx, zy = to_x(32), to_y(80)
+    # the fast-and-accurate region
+    zx, zy = to_x(19), to_y(80)
     zw, zh = to_x(100) - zx, to_y(65) - zy
     c.add(
         rect(
@@ -540,60 +558,64 @@ def frontier(t: Theme) -> Canvas:
             extra=' stroke-dasharray="5 5"',
         )
     )
-    c.text("the empty corner", zx + 18, zy + 38, SERIF_IT, 26, t.accent)
-    c.text("≥ 65% accuracy under 100 ms:", zx + 18, zy + 62, MONO, 12, t.ink2)
-    c.text("no System-1 model here yet", zx + 18, zy + 80, MONO, 12, t.ink2)
-    # reference line
-    c.add(line(px, to_y(59.3), px + pw, to_y(59.3), t.ink3, 1.2, "4 4"))
-    c.text(
-        "Qwen3-8B answer-token readout  ·  59.3%",
-        px + pw - 4,
-        to_y(59.3) - 9,
-        MONO,
-        11.5,
-        t.ink2,
-        anchor="end",
-    )
+    c.text("fast and accurate", zx + 18, zy + 36, SERIF_IT, 25, t.accent)
+    c.text("≥ 65% under 100 ms: only zero-shot readouts", zx + 18, zy + 58, MONO, 11.5, t.ink2)
+    c.text("of open LLMs, with Brier 0.46–0.54 vs 0.34", zx + 18, zy + 75, MONO, 11.5, t.ink2)
+    c.text("for the best System-1 models", zx + 18, zy + 92, MONO, 11.5, t.ink2)
     cols = (t.s1, t.s2, t.s3)
-    offs = {
+    labels = {  # name -> (dx, dy, anchor)
         "CLM-v0.1-8B": (12, 5, "start"),
-        "Decision 2.0 Kai-0.6B": (12, 5, "start"),
-        "Laya": (12, 18, "start"),
-        "Decision 2.0 Vega-27B": (-12, -12, "end"),
-        "OpenAI Decisions": (0, -16, "middle"),
-        "Microsoft-Decision-1": (-12, 18, "end"),
+        "Decision-2.0-Vega-27B": (-12, -12, "end"),
         "Jev 1.13": (12, -10, "start"),
+        "Decision-2.0-Kai-0.6B": (12, 5, "start"),
+        "Laya": (12, 18, "start"),
+        "Gemma-4-31B": (12, -10, "start"),
+        "Qwen3-8B": (12, 18, "start"),
     }
-    for i, (name, g, ms, acc) in enumerate(S1A):
+    order = sorted(range(len(S1A)), key=lambda k: S1A[k][2])
+    for rank, k in enumerate(order):
+        name, g, ms, acc, _brier = S1A[k]
         cx, cy = to_x(ms), to_y(acc)
+        r = 8 if name in labels else 6
         c.add(
-            f'<g class="pop p{i}"><circle cx="{cx:.1f}" cy="{cy:.1f}" r="8" fill="{cols[g]}" '
-            f'stroke="{t.bg}" stroke-width="2.5"/></g>'
+            f'<g class="pop p{rank}"><circle cx="{cx:.1f}" cy="{cy:.1f}" r="{r}" fill="{cols[g]}" '
+            f'stroke="{t.bg}" stroke-width="2.2"/></g>'
         )
-        dx, dy, anc = offs[name]
-        c.text(
-            f"{name}  {acc:.1f}%",
-            cx + dx,
-            cy + dy,
-            MONO_MD if g == 0 else MONO,
-            12,
-            t.ink if g == 0 else t.ink2,
-            anchor=anc,
-            cls=f"rise q{i}",
-        )
-    # legend
-    lx, ly = px + pw - 300, 140
-    for j, name in enumerate(("cached bi-encoder", "open joint models", "hosted APIs")):
+        if name in labels:
+            dx, dy, anc = labels[name]
+            extra = "  (CLM's backbone, zero-shot)" if name == "Qwen3-8B" else ""
+            c.text(
+                f"{name}  {acc:.1f}%{extra}",
+                cx + dx,
+                cy + dy,
+                MONO_MD if g == 0 else MONO,
+                12,
+                t.ink if g == 0 else t.ink2,
+                anchor=anc,
+                cls=f"rise q{rank}",
+            )
+    lx, ly = to_x(225), to_y(47.5)
+    for j, name in enumerate(
+        ("CLM (cached bi-encoder)", "other System-1 models", "open LLMs, answer-token readout")
+    ):
         c.add(f'<circle cx="{lx + 8}" cy="{ly + j * 22 - 4}" r="6" fill="{cols[j]}"/>')
         c.text(name, lx + 22, ly + j * 22, MONO, 12, t.ink2)
-    c.text("Local models on an idle H100; hosted models include network time.", 56, 596, MONO, 11, t.ink3)
+    c.text(
+        "Local models on an idle H100; hosted models include network time. Closed LLMs that reason score up "
+        "to 81.1% (Claude Opus 5.5) at 2.3 s and sit off this chart.",
+        56,
+        636,
+        MONO,
+        11,
+        t.ink3,
+    )
     c.css.append(
         FADE_UP
         + ".pop{transform-box:fill-box;transform-origin:center;animation:pop .7s cubic-bezier(.2,.9,.3,1.4) both}"
         "@keyframes pop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}"
         ".zone{animation:march 6s linear infinite}@keyframes march{to{stroke-dashoffset:-60}}"
-        + delays("p", 7, 0.2, 0.12)
-        + delays("q", 7, 0.35, 0.12)
+        + delays("p", len(S1A), 0.15, 0.06)
+        + delays("q", len(S1A), 0.3, 0.06)
     )
     return c
 
