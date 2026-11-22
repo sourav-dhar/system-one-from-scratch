@@ -5,7 +5,8 @@
 # which guards against a mistyped id. Non-arXiv sources are link-only (`url`).
 #
 # family: biencoder | late-interaction | decoder-readout | encoder | encoder-decoder | looped |
-#         frozen-reader | evaluation | serving | foundations | generative | data
+#         frozen-reader | evaluation | serving | foundations | generative | data | community
+#         | unclassified (new System One work we have not yet read and placed in the taxonomy)
 # role:   implementation | benchmark | background | dataset | product
 
 arxiv:
@@ -81,6 +82,319 @@ arxiv:
   - {key: qwen3emb, id: "2506.05176", expect: Qwen3, system: Qwen3-Embedding / Reranker, family: biencoder, role: background}
   - {key: archrouter, id: "2506.16655", expect: Arch-Router, system: Arch-Router, family: decoder-readout, role: background}
 
+  # --- Added from the 2026-11-22 library sweep (docs/research/library-sweep.md) ----------------------
+  - {key: scale-to-jev, id: "2611.00505", expect: "System-1", system: "To Jev or Not to Jev", family: evaluation, role: background}
+  - {key: booch-s1s2, id: "2010.06002", expect: "Thinking", system: "booch s1s2", family: foundations, role: background}
+  - {key: cot-or-not, id: "2409.12183", expect: "Chain-of-thought", system: "cot scope", family: generative, role: background}
+  - {key: chain-thought-prompting, id: "2201.11903", expect: "Chain-of-Thought", system: "cot scope", family: generative, role: background}
+  - {key: distilling-system-2, id: "2407.06023", expect: "Distilling", system: "distill s2 s1", family: generative, role: background}
+  - {key: from-explicit-cot, id: "2405.14838", expect: "Explicit", system: "distill s2 s1", family: generative, role: background}
+  - {key: swiftsage-generative-agent, id: "2305.17390", expect: "SwiftSage", system: "fast slow agents", family: generative, role: background}
+  - {key: agents-thinking-fast, id: "2410.08328", expect: "Agents", system: "fast slow agents", family: generative, role: background}
+  - {key: system-1-x, id: "2407.14414", expect: "System-1", system: "fast slow agents", family: generative, role: background}
+  - {key: efficient-guided-generation, id: "2307.09702", expect: "Efficient", system: "constrained gen", family: serving, role: background}
+  - {key: let-me-speak, id: "2408.02442", expect: "Speak", system: "constrained gen", family: serving, role: background}
+  - {key: discovering-context-effects, id: "1902.03266", expect: "Discovering", system: "set dependent choice", family: foundations, role: background}
+  - {key: predicting-choice-set, id: "1906.06365", expect: "Predicting", system: "set dependent choice", family: foundations, role: background}
+  - {key: deep-sets, id: "1703.06114", expect: "Deep", system: "set functions", family: foundations, role: background}
+  - {key: set-transformer-framework, id: "1810.00825", expect: "Transformer", system: "set functions", family: foundations, role: background}
+  - {key: baseline-detecting-misclassified, id: "1610.02136", expect: "Baseline", system: "ood scores", family: foundations, role: background}
+  - {key: energy-based-out, id: "2010.03759", expect: "Energy-based", system: "ood scores", family: foundations, role: background}
+  - {key: evaluation-dataset-intent, id: "1909.02027", expect: "Evaluation", system: "oos intent", family: evaluation, role: dataset}
+  - {key: pretrained-transformers-robust, id: "2106.04564", expect: "Pretrained", system: "oos intent", family: evaluation, role: dataset}
+  - {key: sbert, id: "1908.10084", expect: "Sentence-BERT", system: "sbert", family: biencoder, role: background}
+  - {key: poly-encoders, id: "1905.01969", expect: "Poly-encoders", system: "poly encoders", family: late-interaction, role: background}
+  - {key: efficient-natural-language, id: "1705.00652", expect: "Efficient", system: "dual encoders prod", family: biencoder, role: background}
+  - {key: convert-efficient-accurate, id: "1911.03688", expect: "ConveRT", system: "dual encoders prod", family: biencoder, role: background}
+  - {key: banking77, id: "2003.04807", expect: "Efficient", system: "banking77", family: evaluation, role: dataset}
+  - {key: blink, id: "1911.03814", expect: "Scalable", system: "blink", family: biencoder, role: background}
+  - {key: efficient-document-re, id: "2004.14255", expect: "Efficient", system: "precompute late join", family: late-interaction, role: background}
+  - {key: deformer-decomposing-pre, id: "2005.00697", expect: "DeFormer", system: "precompute late join", family: late-interaction, role: background}
+  - {key: colbertv2, id: "2112.01488", expect: "ColBERTv2", system: "colbertv2", family: late-interaction, role: background}
+  - {key: one-embedder-any, id: "2212.09741", expect: "Embedder", system: "instruction embedders", family: biencoder, role: background}
+  - {key: promptriever-instruction-trained, id: "2409.11136", expect: "Promptriever", system: "instruction embedders", family: biencoder, role: background}
+  - {key: llm2vec-large-language, id: "2404.05961", expect: "LLM2Vec", system: "llm embedders", family: biencoder, role: background}
+  - {key: nv-embed-improved, id: "2405.17428", expect: "NV-Embed", system: "llm embedders", family: biencoder, role: background}
+  - {key: text-embeddings-by, id: "2212.03533", expect: "Embeddings", system: "llm embedders", family: biencoder, role: background}
+  - {key: improving-text-embeddings, id: "2401.00368", expect: "Improving", system: "llm embedders", family: biencoder, role: background}
+  - {key: towards-general-text, id: "2308.03281", expect: "Towards", system: "llm embedders", family: biencoder, role: background}
+  - {key: sgpt-gpt-sentence, id: "2202.08904", expect: "SGPT", system: "causal pooling", family: biencoder, role: background}
+  - {key: repetition-improves-language, id: "2402.15449", expect: "Repetition", system: "causal pooling", family: biencoder, role: background}
+  - {key: scaling-sentence-embeddings, id: "2307.16645", expect: "Scaling", system: "causal pooling", family: biencoder, role: background}
+  - {key: gritlm, id: "2402.09906", expect: "Generative", system: "gritlm", family: biencoder, role: background}
+  - {key: mteb-massive-text, id: "2210.07316", expect: "MTEB", system: "mteb m3", family: evaluation, role: benchmark}
+  - {key: m3-embedding-multi, id: "2402.03216", expect: "M3-Embedding", system: "mteb m3", family: evaluation, role: benchmark}
+  - {key: siglip, id: "2303.15343", expect: "Sigmoid", system: "siglip", family: biencoder, role: background}
+  - {key: understanding-contrastive-representation, id: "2005.10242", expect: "Understanding", system: "contrastive geometry", family: biencoder, role: background}
+  - {key: simcse-simple-contrastive, id: "2104.08821", expect: "SimCSE", system: "contrastive geometry", family: biencoder, role: background}
+  - {key: contextual-contextualized-word, id: "1909.00512", expect: "Contextual", system: "anisotropy", family: biencoder, role: background}
+  - {key: whitening-sentence-representations, id: "2103.15316", expect: "Whitening", system: "anisotropy", family: biencoder, role: background}
+  - {key: all-but-top, id: "1702.01417", expect: "All-but-the-Top", system: "anisotropy", family: biencoder, role: background}
+  - {key: debiased-contrastive-learning, id: "2007.00224", expect: "Debiased", system: "false negatives", family: biencoder, role: background}
+  - {key: rocketqa-optimized-training, id: "2010.08191", expect: "RocketQA", system: "false negatives", family: biencoder, role: background}
+  - {key: cross-to-bi-kd, id: "2010.02666", expect: "Improving", system: "cross to bi kd", family: biencoder, role: background}
+  - {key: monot5, id: "2003.06713", expect: "Document", system: "monot5", family: encoder-decoder, role: background}
+  - {key: chatgpt-good-at, id: "2304.09542", expect: "ChatGPT", system: "permutation sc", family: decoder-readout, role: background}
+  - {key: found-middle-permutation, id: "2310.07712", expect: "Found", system: "permutation sc", family: decoder-readout, role: background}
+  - {key: set-encoder, id: "2404.06912", expect: "Set-Encoder", system: "set encoder", family: late-interaction, role: background}
+  - {key: pine, id: "2407.01100", expect: "Eliminating", system: "pine", family: foundations, role: background}
+  - {key: block-attention-efficient, id: "2409.15355", expect: "Block-Attention", system: "nonprefix kv", family: serving, role: background}
+  - {key: cacheblend-fast-large, id: "2405.16444", expect: "CacheBlend", system: "nonprefix kv", family: serving, role: background}
+  - {key: prompt-cache-modular, id: "2311.04934", expect: "Prompt", system: "nonprefix kv", family: serving, role: background}
+  - {key: qwen3-technical-report, id: "2505.09388", expect: "Qwen3", system: "backbones", family: foundations, role: background}
+  - {key: gated-delta-networks, id: "2412.06464", expect: "Gated", system: "backbones", family: foundations, role: background}
+  - {key: language-models-few, id: "2005.14165", expect: "Language", system: "rank classification", family: decoder-readout, role: background}
+  - {key: multitask-prompted-training, id: "2110.08207", expect: "Multitask", system: "rank classification", family: decoder-readout, role: background}
+  - {key: bert-pre-training, id: "1810.04805", expect: "BERT", system: "encoder backbones", family: encoder, role: background}
+  - {key: smarter-better-faster, id: "2412.13663", expect: "Smarter", system: "encoder backbones", family: encoder, role: background}
+  - {key: mmbert-modern-multilingual, id: "2509.06888", expect: "mmBERT", system: "encoder backbones", family: encoder, role: background}
+  - {key: debertav3-improving-deberta, id: "2111.09543", expect: "DeBERTaV3", system: "encoder backbones", family: encoder, role: background}
+  - {key: exploiting-cloze-questions, id: "2001.07676", expect: "Exploiting", system: "mask verbalizers", family: encoder, role: background}
+  - {key: making-pre-trained, id: "2012.15723", expect: "Making", system: "mask verbalizers", family: encoder, role: background}
+  - {key: benchmarking-zero-shot, id: "1909.00161", expect: "Benchmarking", system: "nli zero shot", family: encoder, role: background}
+  - {key: building-efficient-universal, id: "2312.17543", expect: "Building", system: "nli zero shot", family: encoder, role: background}
+  - {key: adapting-language-models, id: "2104.04670", expect: "Adapting", system: "nli zero shot", family: encoder, role: background}
+  - {key: gliner-generalist-model, id: "2311.08526", expect: "GLiNER", system: "gliner setfit", family: encoder, role: background}
+  - {key: efficient-few-shot, id: "2209.11055", expect: "Efficient", system: "gliner setfit", family: encoder, role: background}
+  - {key: language-models-text, id: "2403.17661", expect: "Language", system: "finetuned vs zs", family: foundations, role: background}
+  - {key: fine-tuned-small, id: "2406.08660", expect: "Fine-Tuned", system: "finetuned vs zs", family: foundations, role: background}
+  - {key: t5gemma, id: "2504.06225", expect: "Encoder-Decoder", system: "t5gemma", family: encoder-decoder, role: background}
+  - {key: scaling-latent-reasoning, id: "2510.25741", expect: "Scaling", system: "looped depth", family: looped, role: background}
+  - {key: universal-transformers, id: "1807.03819", expect: "Universal", system: "looped depth", family: looped, role: background}
+  - {key: scaling-up-test, id: "2502.05171", expect: "Scaling", system: "looped depth", family: looped, role: background}
+  - {key: probes, id: "1610.01644", expect: "Understanding", system: "probes", family: frozen-reader, role: background}
+  - {key: discovering-latent-knowledge, id: "2212.03827", expect: "Discovering", system: "truth in states", family: frozen-reader, role: background}
+  - {key: geometry-truth-emergent, id: "2310.06824", expect: "Geometry", system: "truth in states", family: frozen-reader, role: background}
+  - {key: internal-state-llm, id: "2304.13734", expect: "Internal", system: "truth in states", family: frozen-reader, role: background}
+  - {key: llms-know-more, id: "2410.02707", expect: "LLMs", system: "truth in states", family: frozen-reader, role: background}
+  - {key: calibrate-before-use, id: "2102.09690", expect: "Calibrate", system: "calibrate before use", family: decoder-readout, role: background}
+  - {key: pride, id: "2309.03882", expect: "Large", system: "pride", family: evaluation, role: background}
+  - {key: mcsb, id: "2210.12353", expect: "Leveraging", system: "mcsb", family: evaluation, role: background}
+  - {key: large-language-models, id: "2308.11483", expect: "Large", system: "order sensitivity", family: evaluation, role: background}
+  - {key: fantastically-ordered-prompts, id: "2104.08786", expect: "Fantastically", system: "order sensitivity", family: evaluation, role: background}
+  - {key: surface-form-competition, id: "2104.08315", expect: "Surface", system: "prior correction", family: decoder-readout, role: background}
+  - {key: mitigating-label-biases, id: "2305.19148", expect: "Mitigating", system: "prior correction", family: decoder-readout, role: background}
+  - {key: batch-calibration-rethinking, id: "2309.17249", expect: "Batch", system: "prior correction", family: decoder-readout, role: background}
+  - {key: my-answer-c, id: "2402.14499", expect: "Answer", system: "first token mismatch", family: evaluation, role: background}
+  - {key: look-at-text, id: "2404.08382", expect: "Instruction-Tuned", system: "first token mismatch", family: evaluation, role: background}
+  - {key: msp-mcqa, id: "2402.13213", expect: "Probabilities", system: "msp mcqa", family: decoder-readout, role: background}
+  - {key: prob-vs-prompt, id: "2305.13264", expect: "Prompting", system: "prob vs prompt", family: decoder-readout, role: background}
+  - {key: know-what-they-know, id: "2207.05221", expect: "Language", system: "know what they know", family: foundations, role: background}
+  - {key: calibration-pre-trained, id: "2003.07892", expect: "Calibration", system: "lm calibration", family: foundations, role: background}
+  - {key: can-know-when, id: "2012.00955", expect: "Language", system: "lm calibration", family: foundations, role: background}
+  - {key: just-ask-calibration, id: "2305.14975", expect: "Calibration", system: "verbalized confidence", family: foundations, role: background}
+  - {key: can-llms-express, id: "2306.13063", expect: "LLMs", system: "verbalized confidence", family: foundations, role: background}
+  - {key: teaching-models-express, id: "2205.14334", expect: "Teaching", system: "verbalized confidence", family: foundations, role: background}
+  - {key: gpt-4-technical, id: "2303.08774", expect: "GPT-4", system: "alignment calibration", family: foundations, role: background}
+  - {key: calibration-large-language, id: "2311.13240", expect: "Calibration", system: "alignment calibration", family: foundations, role: background}
+  - {key: calibration-survey, id: "2311.08298", expect: "Survey", system: "calibration survey", family: foundations, role: background}
+  - {key: g-eval-nlg, id: "2303.16634", expect: "G-Eval", system: "score expectation", family: decoder-readout, role: background}
+  - {key: regression-aware-inference, id: "2403.04182", expect: "Regression-aware", system: "score expectation", family: decoder-readout, role: background}
+  - {key: improving-llm-as, id: "2503.03064", expect: "Improving", system: "score expectation", family: decoder-readout, role: background}
+  - {key: beyond-yes-no, id: "2310.14122", expect: "Beyond", system: "score expectation", family: decoder-readout, role: background}
+  - {key: distilling-knowledge-neural, id: "1503.02531", expect: "Distilling", system: "soft targets", family: foundations, role: background}
+  - {key: policy-distillation-language, id: "2306.13649", expect: "On-Policy", system: "soft targets", family: foundations, role: background}
+  - {key: what-can-learn, id: "2010.03532", expect: "Learn", system: "human votes", family: foundations, role: background}
+  - {key: human-uncertainty-makes, id: "1908.07086", expect: "Human", system: "human votes", family: foundations, role: background}
+  - {key: when-does-label, id: "1906.02629", expect: "Label", system: "ls focal", family: foundations, role: background}
+  - {key: calibrating-deep-neural, id: "2002.09437", expect: "Calibrating", system: "ls focal", family: foundations, role: background}
+  - {key: proper-loss-calibration, id: "2305.18764", expect: "Optimizing", system: "proper loss calibration", family: foundations, role: background}
+  - {key: back-basics-revisiting, id: "2402.14740", expect: "Basics", system: "pg estimators", family: foundations, role: background}
+  - {key: monte-carlo-gradient, id: "1906.10652", expect: "Monte", system: "pg estimators", family: foundations, role: background}
+  - {key: deepseekmath-pushing-limits, id: "2402.03300", expect: "DeepSeekMath", system: "rl algorithms", family: foundations, role: background}
+  - {key: minimax-m1-scaling, id: "2506.13585", expect: "MiniMax-M1", system: "rl algorithms", family: foundations, role: background}
+  - {key: proximal-policy-optimization, id: "1707.06347", expect: "Proximal", system: "rl algorithms", family: foundations, role: background}
+  - {key: beyond-binary-rewards, id: "2507.16806", expect: "Beyond", system: "rl calibration", family: foundations, role: background}
+  - {key: rewarding-doubt-reinforcement, id: "2503.02623", expect: "Rewarding", system: "rl calibration", family: foundations, role: background}
+  - {key: large-language-models-2, id: "2406.08391", expect: "Large", system: "rl calibration", family: foundations, role: background}
+  - {key: rank-consistent-ordinal, id: "1901.07884", expect: "application", system: "ordinal losses", family: foundations, role: background}
+  - {key: squared-earth-mover, id: "1611.05916", expect: "Squared", system: "ordinal losses", family: foundations, role: background}
+  - {key: lp-ft, id: "2202.10054", expect: "Fine-Tuning", system: "lp ft", family: foundations, role: background}
+  - {key: lora-learns-less, id: "2405.09673", expect: "LoRA", system: "forgetting", family: foundations, role: background}
+  - {key: empirical-study-catastrophic, id: "2308.08747", expect: "Empirical", system: "forgetting", family: foundations, role: background}
+  - {key: robust-fine-tuning, id: "2109.01903", expect: "Robust", system: "weight averaging", family: foundations, role: background}
+  - {key: model-soups-averaging, id: "2203.05482", expect: "Model", system: "weight averaging", family: foundations, role: background}
+  - {key: qlora, id: "2305.14314", expect: "QLoRA", system: "qlora", family: foundations, role: background}
+  - {key: learning-difference-that, id: "1909.12434", expect: "Learning", system: "minimal pairs", family: evaluation, role: background}
+  - {key: evaluating-models-local, id: "2004.02709", expect: "Evaluating", system: "minimal pairs", family: evaluation, role: background}
+  - {key: annotation-artifacts-natural, id: "1803.02324", expect: "Annotation", system: "shortcuts", family: evaluation, role: background}
+  - {key: right-wrong-reasons, id: "1902.01007", expect: "Right", system: "shortcuts", family: evaluation, role: background}
+  - {key: artifacts-or-abduction, id: "2402.12483", expect: "Artifacts", system: "shortcuts", family: evaluation, role: background}
+  - {key: revisiting-calibration-modern, id: "2106.07998", expect: "Revisiting", system: "calibration methods", family: foundations, role: background}
+  - {key: beyond-temperature-scaling, id: "1910.12656", expect: "Beyond", system: "calibration methods", family: foundations, role: background}
+  - {key: verified-uncertainty-calibration, id: "1909.10155", expect: "Verified", system: "ece estimation", family: foundations, role: background}
+  - {key: measuring-calibration-deep, id: "1904.01685", expect: "Measuring", system: "ece estimation", family: foundations, role: background}
+  - {key: mitigating-bias-calibration, id: "2012.08668", expect: "Mitigating", system: "ece estimation", family: foundations, role: background}
+  - {key: smooth-ece-principled, id: "2309.12236", expect: "Smooth", system: "ece estimation", family: foundations, role: background}
+  - {key: can-you-trust, id: "1906.02530", expect: "Trust", system: "shift calibration", family: foundations, role: background}
+  - {key: thermometer-towards-universal, id: "2403.08819", expect: "Thermometer", system: "shift calibration", family: foundations, role: background}
+  - {key: decision-calibration, id: "2107.05719", expect: "Calibrating", system: "decision calibration", family: foundations, role: background}
+  - {key: selective-classification-deep, id: "1705.08500", expect: "Selective", system: "selective", family: foundations, role: background}
+  - {key: selectivenet-deep-neural, id: "1901.09192", expect: "SelectiveNet", system: "selective", family: foundations, role: background}
+  - {key: selective-question-answering, id: "2006.09462", expect: "Selective", system: "selective", family: foundations, role: background}
+  - {key: know-your-limits, id: "2407.18418", expect: "Limits", system: "selective", family: foundations, role: background}
+  - {key: classification-valid-adaptive, id: "2006.02544", expect: "Classification", system: "conformal options", family: foundations, role: background}
+  - {key: uncertainty-sets-image, id: "2009.14193", expect: "Uncertainty", system: "conformal options", family: foundations, role: background}
+  - {key: conformal-risk-control, id: "2208.02814", expect: "Conformal", system: "conformal options", family: foundations, role: background}
+  - {key: conformal-prediction-large, id: "2305.18404", expect: "Conformal", system: "conformal options", family: foundations, role: background}
+  - {key: robots-that-ask, id: "2307.01928", expect: "Robots", system: "conformal options", family: foundations, role: background}
+  - {key: benchmarking-llms-uncertainty, id: "2401.12794", expect: "Benchmarking", system: "conformal options", family: foundations, role: background}
+  - {key: adaptive-conformal-inference, id: "2106.00170", expect: "Adaptive", system: "conformal options", family: foundations, role: background}
+  - {key: deduplicating-training-data, id: "2107.06499", expect: "Deduplicating", system: "decontamination", family: evaluation, role: background}
+  - {key: proving-test-set, id: "2310.17623", expect: "Proving", system: "decontamination", family: evaluation, role: background}
+  - {key: rethinking-benchmark-contamination, id: "2311.04850", expect: "Rethinking", system: "decontamination", family: evaluation, role: background}
+  - {key: stop-uploading-test, id: "2305.10160", expect: "Uploading", system: "decontamination", family: evaluation, role: background}
+  - {key: benchmark-data-contamination, id: "2406.04244", expect: "Benchmark", system: "decontamination", family: evaluation, role: background}
+  - {key: boolq-exploring-surprising, id: "1905.10044", expect: "BoolQ", system: "dataset papers", family: evaluation, role: dataset}
+  - {key: massive-1m-example, id: "2204.08582", expect: "MASSIVE", system: "dataset papers", family: evaluation, role: dataset}
+  - {key: measuring-massive-multitask, id: "2009.03300", expect: "Measuring", system: "dataset papers", family: evaluation, role: dataset}
+  - {key: mmlu-pro-more, id: "2406.01574", expect: "MMLU-Pro", system: "dataset papers", family: evaluation, role: dataset}
+  - {key: alfworld-aligning-text, id: "2010.03768", expect: "ALFWorld", system: "dataset papers", family: evaluation, role: dataset}
+  - {key: mind2web-towards-generalist, id: "2306.06070", expect: "Mind2Web", system: "dataset papers", family: evaluation, role: dataset}
+  - {key: retrieval-models-aren, id: "2503.01763", expect: "Retrieval", system: "dataset papers", family: evaluation, role: dataset}
+  - {key: gorilla-large-language, id: "2305.15334", expect: "Gorilla", system: "dataset papers", family: evaluation, role: dataset}
+  - {key: checklist, id: "2005.04118", expect: "Beyond", system: "checklist", family: evaluation, role: background}
+  - {key: quantifying-language-models, id: "2310.11324", expect: "Quantifying", system: "framing", family: evaluation, role: background}
+  - {key: state-what-art, id: "2401.00595", expect: "State", system: "framing", family: evaluation, role: background}
+  - {key: when-benchmarks-targets, id: "2402.01781", expect: "Benchmarks", system: "framing", family: evaluation, role: background}
+  - {key: lost-middle-language, id: "2307.03172", expect: "Middle", system: "long context", family: evaluation, role: background}
+  - {key: ruler-what-s, id: "2404.06654", expect: "RULER", system: "long context", family: evaluation, role: background}
+  - {key: large-language-models-3, id: "2302.00093", expect: "Large", system: "long context", family: evaluation, role: background}
+  - {key: same-task-more, id: "2402.14848", expect: "Tokens", system: "long context", family: evaluation, role: background}
+  - {key: negated-misprimed-probes, id: "1911.03343", expect: "Negated", system: "negation", family: evaluation, role: background}
+  - {key: language-models-not, id: "2306.08189", expect: "Language", system: "negation", family: evaluation, role: background}
+  - {key: large-language-models-4, id: "2305.17926", expect: "Large", system: "judge bias", family: evaluation, role: background}
+  - {key: judging-llm-as, id: "2306.05685", expect: "Judging", system: "judge bias", family: evaluation, role: background}
+  - {key: little-power-comes, id: "2010.06595", expect: "Little", system: "eval statistics", family: evaluation, role: background}
+  - {key: adding-error-bars, id: "2411.00640", expect: "Adding", system: "eval statistics", family: evaluation, role: background}
+  - {key: quantifying-variance-evaluation, id: "2406.10229", expect: "Quantifying", system: "eval statistics", family: evaluation, role: background}
+  - {key: leaderboard-illusion, id: "2504.20879", expect: "Leaderboard", system: "eval integrity", family: evaluation, role: background}
+  - {key: holistic-evaluation-language, id: "2211.09110", expect: "Holistic", system: "eval integrity", family: evaluation, role: background}
+  - {key: lessons-from-trenches, id: "2405.14782", expect: "Lessons", system: "eval integrity", family: evaluation, role: background}
+  - {key: non-determinism-deterministic, id: "2408.04667", expect: "Non-Determinism", system: "nondeterminism", family: serving, role: background}
+  - {key: understanding-mitigating-numerical, id: "2506.09501", expect: "Understanding", system: "nondeterminism", family: serving, role: background}
+  - {key: accuracy-not-all, id: "2407.09141", expect: "Accuracy", system: "quant flips", family: serving, role: background}
+  - {key: when-quantization-affects, id: "2405.00632", expect: "Quantization", system: "quant flips", family: serving, role: background}
+  - {key: efficient-memory-management, id: "2309.06180", expect: "Efficient", system: "engines", family: serving, role: background}
+  - {key: sglang-efficient-execution, id: "2312.07104", expect: "SGLang", system: "engines", family: serving, role: background}
+  - {key: flashattention-fast-memory, id: "2205.14135", expect: "FlashAttention", system: "prefill serving", family: serving, role: background}
+  - {key: flashattention-2-faster, id: "2307.08691", expect: "FlashAttention-2", system: "prefill serving", family: serving, role: background}
+  - {key: chunkattention-efficient-self, id: "2402.15220", expect: "ChunkAttention", system: "prefill serving", family: serving, role: background}
+  - {key: taming-throughput-latency, id: "2403.02310", expect: "Taming", system: "prefill serving", family: serving, role: background}
+  - {key: distserve-disaggregating-prefill, id: "2401.09670", expect: "DistServe", system: "prefill serving", family: serving, role: background}
+  - {key: prefillonly-inference-engine, id: "2505.07203", expect: "PrefillOnly", system: "prefill serving", family: serving, role: background}
+  - {key: llm-int8-8, id: "2208.07339", expect: "int8", system: "quant methods", family: serving, role: background}
+  - {key: smoothquant-accurate-efficient, id: "2211.10438", expect: "SmoothQuant", system: "quant methods", family: serving, role: background}
+  - {key: gptq-accurate-post, id: "2210.17323", expect: "GPTQ", system: "quant methods", family: serving, role: background}
+  - {key: awq-activation-aware, id: "2306.00978", expect: "Activation-aware", system: "quant methods", family: serving, role: background}
+  - {key: fp8-formats-deep, id: "2209.05433", expect: "Formats", system: "fp formats", family: serving, role: background}
+  - {key: microscaling-data-formats, id: "2310.10537", expect: "Microscaling", system: "fp formats", family: serving, role: background}
+  - {key: pretraining-large-language, id: "2509.25149", expect: "Pretraining", system: "fp formats", family: serving, role: background}
+  - {key: give-me-bf16, id: "2411.02355", expect: "BF16", system: "fp formats", family: serving, role: background}
+  - {key: deebert-dynamic-early, id: "2004.12993", expect: "DeeBERT", system: "early exit", family: serving, role: background}
+  - {key: confident-adaptive-language, id: "2207.07061", expect: "Confident", system: "early exit", family: serving, role: background}
+  - {key: unreasonable-ineffectiveness-deeper, id: "2403.17887", expect: "Unreasonable", system: "early exit", family: serving, role: background}
+  - {key: frugalgpt-use-large, id: "2305.05176", expect: "FrugalGPT", system: "cascades", family: serving, role: background}
+  - {key: routellm-learning-route, id: "2406.18665", expect: "RouteLLM", system: "cascades", family: serving, role: background}
+  - {key: hybrid-llm-cost, id: "2404.14618", expect: "Hybrid", system: "cascades", family: serving, role: background}
+  - {key: large-language-model, id: "2310.03094", expect: "Large", system: "cascades", family: serving, role: background}
+  - {key: language-model-cascades, id: "2404.10136", expect: "Language", system: "cascades", family: serving, role: background}
+  - {key: when-does-confidence, id: "2307.02764", expect: "Confidence-Based", system: "cascades", family: serving, role: background}
+  - {key: consistent-estimators-learning, id: "2006.01862", expect: "Consistent", system: "cascades", family: serving, role: background}
+  - {key: routerbench-benchmark-multi, id: "2403.12031", expect: "RouterBench", system: "cascades", family: serving, role: background}
+  - {key: training-verifiers-solve, id: "2110.14168", expect: "Training", system: "verifiers", family: generative, role: background}
+  - {key: solving-math-word, id: "2211.14275", expect: "Solving", system: "verifiers", family: generative, role: background}
+  - {key: let-s-verify, id: "2305.20050", expect: "Verify", system: "verifiers", family: generative, role: background}
+  - {key: generative-verifiers-reward, id: "2408.15240", expect: "Generative", system: "verifiers", family: generative, role: background}
+  - {key: scaling-llm-test, id: "2408.03314", expect: "Scaling", system: "verifiers", family: generative, role: background}
+  - {key: training-language-models, id: "2203.02155", expect: "Training", system: "reward heads", family: generative, role: background}
+  - {key: rewardbench-evaluating-reward, id: "2403.13787", expect: "RewardBench", system: "reward heads", family: generative, role: background}
+  - {key: r2e-gym-procedural, id: "2504.07164", expect: "R2E-Gym", system: "reward heads", family: generative, role: background}
+  - {key: glide, id: "2611.26509", expect: "GLiDE", system: "GLiDE", family: decoder-readout, role: implementation}
+  - {key: piccolo, id: "2611.24651", expect: "Piccolo", system: "Piccolo", family: unclassified, role: implementation}
+  - {key: jeveration, id: "2611.24738", expect: "Jeveration", system: "Jeveration", family: unclassified, role: implementation}
+  - {key: bgpo, id: "2611.25168", expect: "Calibrated", system: "What a Calibrated Probability Hides", family: unclassified, role: background}
+  - {key: rlcdr, id: "2611.25135", expect: "Calibrated", system: "Calibrated Decision Rewards", family: unclassified, role: background}
+  - {key: llm-zsc-confidence, id: "2611.25289", expect: "LLMs", system: "LLMs Are Already Confidence-Aware Zero-Shot Classifiers", family: decoder-readout, role: background}
+  - {key: medmcqa-biencoder, id: "2611.23832", expect: "System", system: "A System 1 Decision Model for Medical Multiple-Choice Questi", family: biencoder, role: implementation}
+  - {key: sirius-tiamat, id: "2611.26339", expect: "Sirius-Tiamat", system: "Sirius-Tiamat", family: encoder, role: implementation}
+  - {key: rigel-ladon, id: "2611.26332", expect: "Rigel-Ladon", system: "Rigel-Ladon", family: encoder, role: implementation}
+  - {key: mm-s1bias, id: "2611.26557", expect: "MM-SystemOneBias", system: "MM-SystemOneBias", family: evaluation, role: benchmark}
+  - {key: visualjevbench, id: "2611.25435", expect: "VisualJevBench", system: "VisualJevBench", family: evaluation, role: benchmark}
+  - {key: looproute, id: "2611.25363", expect: "Going", system: "Stop Going in Circles", family: unclassified, role: implementation}
+  - {key: s1-rsi, id: "2611.26007", expect: "System-One", system: "System-One RSI", family: unclassified, role: implementation}
+  - {key: decision2care, id: "2611.23700", expect: "Auditable", system: "Auditable Clinical Support with Decision Agents", family: unclassified, role: implementation}
+  - {key: uemo-d1-efficient, id: "2611.24481", expect: "UEmo-D1", system: "UEmo-D1", family: evaluation, role: background}
+  - {key: jev-vs-llms, id: "2611.23683", expect: "LLMs", system: "JEV vs. LLMs", family: evaluation, role: background}
+  - {key: when-decision-models, id: "2611.23947", expect: "Decision", system: "When Do Decision Models Help LLM-Driven Network Discovery?", family: evaluation, role: background}
+  - {key: fast-closed-loop, id: "2611.23698", expect: "STEM", system: "Fast closed-loop STEM navigation using vision-language model", family: evaluation, role: background}
+  - {key: finveriqa-financial-research, id: "2611.25071", expect: "FinVeriQA", system: "FinVeriQA", family: evaluation, role: background}
+  - {key: hitchhiker-survey, id: "2610.33775", expect: "Hitchhiker", system: "The Hitchhiker's Guide to System 1 Models", family: foundations, role: background}
+  - {key: decision-1-0, id: "2611.18629", expect: "Decision", system: "Decision 1.0", family: unclassified, role: implementation}
+  - {key: valen-drex-clairic, id: "2611.07854", expect: "Towards", system: "Towards Foundation Decision Models", family: unclassified, role: implementation}
+  - {key: type-safe-not, id: "2609.26758", expect: "Type-Safe", system: "Type-Safe Is Not Error-Free", family: evaluation, role: background}
+  - {key: labels-override-definitions, id: "2610.02586", expect: "Labels", system: "Labels Override Definitions in Jev-Style Typed Decision Mode", family: evaluation, role: background}
+  - {key: joint-or-per, id: "2610.30970", expect: "Joint", system: "Joint or Per-Option? Compact Encoders for Closed-Set Decisio", family: encoder, role: background}
+  - {key: metaencoder-exploring-limit, id: "2610.11316", expect: "MetaEncoder", system: "MetaEncoder", family: encoder, role: background}
+  - {key: prism-1-position, id: "2610.22066", expect: "Prism-1", system: "Prism-1", family: unclassified, role: background}
+  - {key: permutation-robust-decision, id: "2610.01601", expect: "Permutation-Robust", system: "Permutation-Robust Decision Modeling with Candidate-Independ", family: unclassified, role: background}
+  - {key: ijev-order-invariant, id: "2611.01015", expect: "Order-Invariant", system: "IJev", family: unclassified, role: background}
+  - {key: maya-a1-options, id: "2611.09803", expect: "Options", system: "Maya a1", family: unclassified, role: background}
+  - {key: understanding-jev-style, id: "2610.35826", expect: "Understanding", system: "Understanding Jev-Style System One Models", family: unclassified, role: background}
+  - {key: lost-fallback-reliably, id: "2610.19856", expect: "Fallback", system: "Lost in the Fallback", family: evaluation, role: background}
+  - {key: when-right-answer, id: "2609.39496", expect: "Right", system: "When the Right Answer Is Missing", family: evaluation, role: background}
+  - {key: benchmarking-candidate-coverage, id: "2610.03387", expect: "Benchmarking", system: "Benchmarking candidate coverage and rejection policy transfe", family: evaluation, role: background}
+  - {key: more-choices-fewer, id: "2609.38827", expect: "Choices", system: "More Choices, Fewer Decisions", family: evaluation, role: background}
+  - {key: system-one-decisions, id: "2609.33971", expect: "System", system: "Do System One Decisions Add Up? A Study of Probabilistic Coh", family: evaluation, role: background}
+  - {key: cross-primitive-consistency, id: "2610.38623", expect: "Cross-Primitive", system: "Cross-Primitive Consistency in Jev", family: evaluation, role: background}
+  - {key: probability-contracts-accuracy, id: "2609.37470", expect: "Probability", system: "Probability Contracts", family: evaluation, role: background}
+  - {key: teacher-supervision-fixed, id: "2610.26797", expect: "Teacher", system: "Teacher Supervision, Fixed Representations and Calibration", family: foundations, role: background}
+  - {key: recalibrating-many-questions, id: "2610.18488", expect: "Recalibrating", system: "Recalibrating Many Questions with Few Labels", family: foundations, role: background}
+  - {key: typed-decision-models, id: "2610.26325", expect: "Typed", system: "Typed Decision Models under Prevalence Shift and Label Budge", family: foundations, role: background}
+  - {key: recalibrating-typed-decision, id: "2611.16499", expect: "Recalibrating", system: "Recalibrating a Typed-Decision Model in an Afternoon", family: evaluation, role: background}
+  - {key: laya-as-typed, id: "2609.33843", expect: "Typed", system: "Laya as a Typed Probabilistic Assessor", family: evaluation, role: background}
+  - {key: confidence-not-promise, id: "2610.36311", expect: "Confidence", system: "Confidence Is Not a Promise", family: evaluation, role: background}
+  - {key: jev-thinks-i, id: "2609.35342", expect: "Introducing", system: "Jev thinks \"I don't know'', but doesn't say it", family: evaluation, role: background}
+  - {key: pact-pairwise-anchored, id: "2609.35865", expect: "PACT", system: "PACT", family: evaluation, role: background}
+  - {key: flide-accelerating-decision, id: "2610.42148", expect: "Flide", system: "Flide", family: serving, role: implementation}
+  - {key: jevcascade-readout-stability, id: "2610.07716", expect: "JevCascade", system: "JevCascade", family: serving, role: implementation}
+  - {key: system-x-llm, id: "2610.25456", expect: "System", system: "System X", family: serving, role: implementation}
+  - {key: noise-floor-quantization, id: "2611.15671", expect: "Noise", system: "The Noise Floor of a Quantization Comparison", family: serving, role: implementation}
+  - {key: lev-thinking-fast, id: "2610.20951", expect: "Thinking", system: "LEV", family: unclassified, role: background}
+  - {key: extending-reasoning-typed, id: "2611.07736", expect: "Extending", system: "Extending Reasoning in Typed Decision Models via Looping", family: unclassified, role: background}
+  - {key: system-switch-when, id: "2610.09683", expect: "System", system: "System Switch", family: unclassified, role: background}
+  - {key: selective-reasoning-typed, id: "2610.19644", expect: "Selective", system: "Selective Reasoning for Typed Decision Models", family: unclassified, role: background}
+  - {key: value-thinking-learning, id: "2611.16961", expect: "Value", system: "The Value of Thinking", family: unclassified, role: background}
+  - {key: thinkjev-one-thought, id: "2610.37732", expect: "ThinkJev", system: "ThinkJev", family: unclassified, role: background}
+  - {key: p-yes-15, id: "2610.25474", expect: "Improvements", system: "P(Yes)", family: unclassified, role: background}
+  - {key: so-arena-benchmarking, id: "2611.15777", expect: "SO-Arena", system: "SO-Arena", family: evaluation, role: benchmark}
+  - {key: mmdm-measuring-massive, id: "2611.14309", expect: "MMDM", system: "MMDM", family: evaluation, role: benchmark}
+  - {key: xdecidebench-evaluating-typed, id: "2611.01370", expect: "XDecideBench", system: "XDecideBench", family: evaluation, role: benchmark}
+  - {key: still-need-fine, id: "2611.20191", expect: "Still", system: "Do We Still Need Fine-Tuned Classifiers? Swapping Typed Deci", family: evaluation, role: background}
+  - {key: cheap-consistent-calibrated, id: "2610.18122", expect: "Cheap", system: "Cheap, Consistent, Calibrated, but Biased? Typed Decision Mo", family: evaluation, role: background}
+  - {key: good-judgment-bad, id: "2610.24649", expect: "Judgment", system: "Good Judgment, Bad Advice", family: evaluation, role: background}
+  - {key: fast-models-slow, id: "2610.02267", expect: "Models", system: "Fast Models, Slow Evidence", family: evaluation, role: background}
+  - {key: why-generate-click, id: "2610.20107", expect: "Generate", system: "Why Generate a Click? Plug-in Decision Heads for Web Agents", family: evaluation, role: background}
+  - {key: flipjev-fast-black, id: "2610.38895", expect: "FlipJev", system: "FlipJev", family: evaluation, role: background}
+  - {key: s1-evo-experience, id: "2611.16937", expect: "S1-Evo", system: "S1-Evo", family: evaluation, role: background}
+  - {key: one-word-opens, id: "2610.12292", expect: "Opens", system: "One Word Opens the Gate", family: evaluation, role: background}
+  - {key: dice-tilting-odds, id: "2610.14404", expect: "DICE", system: "DICE", family: evaluation, role: background}
+  - {key: poisoned-into-action, id: "2610.15537", expect: "Poisoned", system: "Poisoned into Action", family: evaluation, role: background}
+  - {key: fast-cheap-fair, id: "2611.04510", expect: "Cheap", system: "Fast, Cheap, and Fair? Evaluating Decision Models", family: evaluation, role: background}
+  - {key: swap-replicate-read, id: "2611.00496", expect: "Replicate", system: "Swap, Replicate, Read the Mass", family: evaluation, role: background}
+  - {key: llm-as-jev, id: "2610.02076", expect: "LLM-as-Jev", system: "LLM-as-Jev", family: unclassified, role: background}
+  - {key: large-decision-models, id: "2610.15501", expect: "Large", system: "Large Decision Models", family: unclassified, role: background}
+  - {key: fundm-cheap-label, id: "2610.17175", expect: "FunDM", system: "FunDM", family: unclassified, role: background}
+  - {key: adamenu-query-adaptive, id: "2611.19005", expect: "AdaMenu", system: "AdaMenu", family: unclassified, role: background}
+  - {key: clm-as-judge, id: "2610.07177", expect: "CLM-as-a-Judge", system: "CLM-as-a-Judge", family: unclassified, role: background}
+  - {key: ultrabert-jev-encoder, id: "2611.17867", expect: "UltraBERT-JEV", system: "UltraBERT-JEV", family: encoder, role: implementation}
+  - {key: zuse-decision-model, id: "2611.06238", expect: "Decision", system: "Zuse", family: encoder, role: implementation}
+  - {key: where-input-does, id: "2611.16477", expect: "Where", system: "Where in the Input Does a One-Pass Decision Encoder Look?", family: encoder, role: implementation}
+  - {key: many-llm-labelled, id: "2611.16498", expect: "LLM-labelled", system: "How many LLM-labelled rows does a decision encoder need, and", family: encoder, role: implementation}
+  - {key: learning-calibrated-decision, id: "2611.15572", expect: "Learning", system: "Learning a calibrated decision head from logged bandit feedb", family: encoder, role: implementation}
+  - {key: system-one-models, id: "2610.32318", expect: "System", system: "System One models Are Not Better Rerankers", family: encoder, role: implementation}
+  - {key: beyond-ranking-decision, id: "2611.11480", expect: "Beyond", system: "Beyond Ranking", family: encoder, role: implementation}
+
 links:
   # --- Primary sources without an arXiv paper (link-only; never mirrored) -------------------------
   - {key: clm-repo, url: "https://github.com/Contrastive-LM/CLM", title: "CLM: Contrastive Language Models (code, README, issues)", system: CLM, family: biencoder, role: implementation}
@@ -143,3 +457,85 @@ links:
   - {key: clm-negs, url: "https://huggingface.co/datasets/jackyk02/nemotron_dqa_qwen3_8b_neg_embeddings", title: "CLM hard-negative vectors (shard_00)", system: CLM, family: data, role: dataset}
   - {key: adp, url: "https://huggingface.co/datasets/neulab/adp-v2", title: "Agent Data Protocol v2", system: CLM, family: data, role: dataset}
   - {key: decisionbench, url: "https://huggingface.co/datasets/Hanno-Labs/decision-bench", title: "DecisionBench", system: DecisionBench, family: data, role: dataset}
+
+  # --- Added from the 2026-11-22 library sweep (docs/research/library-sweep.md) ----------------------
+  - {key: ts-dont-call-it, url: "https://typesafe.ai/blog/dont-call-it-a-decision-model", title: "Don't Call It a Decision Model", system: "-", family: community, role: background}
+  - {key: ts-antibenchmaxxing, url: "https://typesafe.ai/blog/antibenchmaxxing", title: "Lies, Damned Lies, and Benchmarks", system: "-", family: community, role: background}
+  - {key: ts-bitterest-lesson, url: "https://typesafe.ai/blog/bitterest-lesson", title: "The Bitterest Lesson", system: "-", family: community, role: background}
+  - {key: ts-jev-1-14, url: "https://typesafe.ai/blog/jev-1-14", title: "Jev: For the builders AND dreamers (Jev 1.14)", system: "-", family: community, role: background}
+  - {key: latent-space-jev, url: "https://latent.space/p/jev/", title: "Jev: System One models for Prod, not God", system: "-", family: community, role: background}
+  - {key: mad-podcast, url: "https://www.mattturck.com/podcast/95-einstein-5-mr-bean-jevs-creator-on-why-ai-cant-automate-anything-reliably-dio", title: "Jev: The AI That Makes Decisions, Not Text", system: "-", family: community, role: background}
+  - {key: a16z-podcast, url: "https://a16z.com/podcast/ai-can-write-code-why-isnt-software-better/", title: "AI Can Write Code. Why Isn't Software Better?", system: "-", family: community, role: background}
+  - {key: sequoia-jevolution, url: "https://sequoiacap.com/article/typesafe-the-jevolution", title: "Partnering with TypeSafe: The Jevolution", system: "-", family: community, role: background}
+  - {key: together-jev-17, url: "https://www.together.ai/blog/how-to-train-your-own-jev", title: "How to train your own Jev for $17", system: "-", family: community, role: background}
+  - {key: dibia-how-jev-works, url: "https://newsletter.victordibia.com/p/how-jev-works-calibrated-decision", title: "How Jev works: calibrated decision models", system: "-", family: community, role: background}
+  - {key: venturebeat-clm, url: "https://venturebeat.com/ai/stanford-and-nvidias-open-clm-8b-caches-reusable-agent-actions-and-runs-up-to-9x-faster-than-jev-in-tests", title: "Stanford and Nvidia's open CLM-8B \u2026 up to 9x faster than Jev", system: "-", family: community, role: background}
+  - {key: willison-jev, url: "https://simonwillison.net/2026/Sep/21/jev/", title: "Jev introduces a new shape of LLM (+ llm-typesafe 09-22, llm-openai-decisions 10-06)", system: "-", family: community, role: background}
+  - {key: willison-gemini, url: "https://simonwillison.net/2026/Nov/11/gemini-decisions-api/", title: "Gemini Decisions API", system: "-", family: community, role: background}
+  - {key: google-gemini-decisions, url: "https://blog.google/innovation-and-ai/technology/developers-tools/gemini-decisions-api/", title: "Gemini Decisions API: Fast multimodal decisions", system: "-", family: community, role: background}
+  - {key: openai-decisions-ga, url: "https://openai.com/index/decisions-api/", title: "Build more responsive apps with the Decisions API", system: "-", family: community, role: background}
+  - {key: aie-code-2026, url: "https://ai.engineer/code/2026", title: "AI Engineer Code Summit, System One track (Almeida; Goyal, Glean; Roberts, Workday)", system: "-", family: community, role: background}
+  - {key: nobodywho-25-lines, url: "https://www.nobodywho.ai/posts/jev-in-25-lines/", title: "Jev in 25 lines of Python", system: "-", family: community, role: background}
+  - {key: nishtahir-build, url: "https://nishtahir.com/build-your-own-decision-model/", title: "Build your own decision model", system: "-", family: community, role: background}
+  - {key: ivanyeelee-system1, url: "https://ivanyeelee.com/blog/2026/jev-vs-open-models/", title: "Your Language Model Is Not-So-Secretly a System 1 Model", system: "-", family: community, role: background}
+  - {key: privatemode-glm, url: "https://www.privatemode.ai/blog/system-one-from-glm-flash", title: "Turn GLM-5.3-Flash into a Jev-like System One model", system: "-", family: community, role: background}
+  - {key: redhat-guardrails, url: "https://developers.redhat.com/articles/2026/10/02/benchmarking-ai-decision-models-against-traditional-guardrails", title: "Benchmarking AI decision models against traditional guardrails", system: "-", family: community, role: background}
+  - {key: brooker-encoder, url: "https://brooker.co.za/blog/2026/10/04/encoders.html", title: "Strands Decider: Why Not an Encoder?", system: "-", family: community, role: background}
+  - {key: strands-amazon, url: "https://strandsagents.com/blog/amazon-saves-millions-replacing-sonnet-with-strands-decider/", title: "Amazon saves millions by replacing Sonnet 4.6 with Strands Decider", system: "-", family: community, role: background}
+  - {key: hightouch-cascade, url: "https://hightouch.com/blog/llm-judges-identity-resolution", title: "LLM Judges for Identity Resolution at 4x Lower Cost", system: "-", family: community, role: background}
+  - {key: openrouter-banking77, url: "https://openrouter.ai/blog/insights/jev-vs-claude-opus-5-classification/", title: "Is Jev as Accurate as Frontier Models at Classification?", system: "-", family: community, role: background}
+  - {key: ayautomate-791, url: "https://www.ayautomate.com/blog/jev-vs-llm-benchmark", title: "Jev vs Claude and GPT: 791 Decisions", system: "-", family: community, role: background}
+  - {key: amplitude-jev, url: "https://amplitude.com/blog/jev-analysis", title: "An analysis of Jev: watch the accuracy", system: "-", family: community, role: background}
+  - {key: zilliz-jev-search, url: "https://zc277584121.github.io/rag/2026/09/22/jev-search-deep-evaluation.html", title: "Jev in Depth: Can It Reshape Agent Search?", system: "-", family: community, role: background}
+  - {key: anthus-luna, url: "https://anth.us/blog/openai-decisions-api-preview/", title: "The OpenAI Decisions API Needs a Confidence You Can Trust", system: "-", family: community, role: background}
+  - {key: hayashi-dice, url: "https://kantahayashiai.github.io/posts/jev-does-not-play-dice/", title: "Jev Does Not Play Dice", system: "-", family: community, role: background}
+  - {key: landes-trolley, url: "https://zachlandes.com/trolley-problem/", title: "Jev Meets the Trolley Problem", system: "-", family: community, role: background}
+  - {key: dizhang-rlcd, url: "https://di-zhang-llm.github.io/blog/what-is-rlcd-the-secret-behind-jev/", title: "What Is RLCD? The Secret Behind Jev", system: "-", family: community, role: background}
+  - {key: vega-explainer, url: "https://www.nandakishorm.com/writing/vega", title: "Vega: a decision model that rolls a ball down a hill", system: "-", family: community, role: background}
+  - {key: venn-vdm, url: "https://markrussinovich.github.io/venn-vdm/", title: "Venn: Vector Decision Models", system: "-", family: community, role: background}
+  - {key: arcturus-fast-follow, url: "https://arcturus-labs.com/blog/2026/09/21/will-openai-eat-jevs-lunch/", title: "Will OpenAI Eat Jev's Lunch?", system: "-", family: community, role: background}
+  - {key: turingpost-15, url: "https://www.turingpost.com/p/exploring-system-one-ai-models-beyond-jev-15-outstanding-models", title: "System One AI Models: 15 New Research Approaches", system: "-", family: community, role: background}
+  - {key: explainers, url: "https://URLs", title: "DataCamp; Firecrawl; Builder.io; flaviocopes; parallel.ai; eesel; The Register (09-23); Every; Kai Waehner (10-20)", system: "-", family: community, role: background}
+  - {key: proper-scores, url: "https://doi.org/10.1198/016214506000001437", title: "Strictly Proper Scoring Rules", system: "-", family: foundations, role: background}
+  - {key: brier-rps, url: "https://doi.org/10.1175/1520-0493(1950)078<0001:VOFEIT>2.0.CO", title: "Brier score; Brier partition; RPS", system: "-", family: foundations, role: background}
+  - {key: reliability-ece, url: "https://doi.org/10.2307/2987588", title: "Comparison of forecasters; Predicting good probabilities; Bayesian binning (ECE); multiclass isotonic", system: "-", family: foundations, role: background}
+  - {key: luce-iia, url: "https://doi.org/10.1016/0022-2496(77)90032-3", title: "The choice axiom after twenty years", system: "-", family: foundations, role: background}
+  - {key: reject-option, url: "https://doi.org/10.1109/TIT.1970.1054406", title: "Reject tradeoff; noise-free selective classification", system: "-", family: foundations, role: background}
+  - {key: inkling-2-mini, url: "https://thinkingmachines.ai/news/inkling-2-mini/", title: "Introducing Inkling 2 Mini; TML-d24-varloop-research", system: "-", family: generative, role: product}
+  - {key: inkling-decision, url: "https://huggingface.co/eltokh7/inkling-2-mini-decision", title: "Inkling-2-Mini Decision (\"System 1.5\")", system: "-", family: unclassified, role: product}
+  - {key: uraion, url: "https://huggingface.co/UraionLabs/Uraion-Decision-1.0-Preview-GGUF", title: "Uraion Decision 1.0 Preview (GGUF)", system: "-", family: unclassified, role: product}
+  - {key: lookatmyquant, url: "https://github.com/ShinMegamiBoson/lookatmyquant", title: "Inkling-2-Mini in 5.4 GB (quantization compiler)", system: "-", family: serving, role: product}
+  - {key: karpo, url: "https://huggingface.co/MachinePulseAI/karpo-decision-27B-act", title: "Karpo Decision 27B Act + karpo-browser", system: "-", family: unclassified, role: product}
+  - {key: glance, url: "https://github.com/Vision-Decision/Glance", title: "Glance 4B v1.1\u20131.3, X-4B, X-Lite", system: "-", family: unclassified, role: product}
+  - {key: vllm-prs, url: "https://github.com/vllm-project/vllm/pull/68760", title: "vLLM decision work: bench-serve backends #68760 (merged 11-19), predicate fix #68917 (11-20), GLiDE #68882, Kakao Kanana-2-v-decide #68878 (open 11-20)", system: "-", family: serving, role: product}
+  - {key: llamacpp-tests, url: "https://github.com/ggml-org/llama.cpp/pull/32578", title: "llama.cpp \"server: add more decision tests\" #32578, plus test GGUFs for Kev, pplx, Kai, Clef, d1", system: "-", family: serving, role: product}
+  - {key: community-repos, url: "https://GitHub", title: "fleet-handbook (agent \"fleet\" behind a JevBench #2 model); which-jev; Light-Decision-MCP; LayaOnJetson; Laya-rust; d1-rocm; system-1-decision-benchmark v2 push", system: "-", family: unclassified, role: background}
+  - {key: ms-decision-1-1, url: "https://commandline.microsoft.com/microsoft-decision-model-ga/", title: "Microsoft-Decision-1.1 GA", system: "-", family: unclassified, role: product}
+  - {key: liquid-d1-2, url: "https://www.liquid.ai/blog/d1-2", title: "d1.2: Omnimodal Decision Models", system: "-", family: unclassified, role: product}
+  - {key: decision-3, url: "https://huggingface.co/vllm-sr/d3-ultra", title: "Decision 3.0 d3-ultra/turbo (+FP8/INT4/NVFP4) and free API", system: "-", family: unclassified, role: product}
+  - {key: mammoth-elephant, url: "https://labs.baseten.co/articles/mammoth-1-and-elephant-1-frontier-decision-models", title: "Mammoth-1 (27B) & Elephant-1 (9B)", system: "-", family: unclassified, role: product}
+  - {key: pplx-v1-3, url: "https://www.perplexity.ai/hub/blog/perplexity-decider", title: "Perplexity Decider v1.3", system: "-", family: decoder-readout, role: product}
+  - {key: firelex-jeff, url: "https://github.com/firelex/jeff", title: "Jeff (firelex): 0.8B Jev-compatible models with swappable LoRAs", system: "-", family: decoder-readout, role: implementation}
+  - {key: typesafe-docs, url: "https://docs.typesafe.ai/llms.txt", title: "Docs index (llms.txt), Patterns, about 30 Cookbooks", system: "-", family: community, role: product}
+  - {key: typesafe-confidence, url: "https://docs.typesafe.ai/confidence.md", title: "Confidence (vs probability)", system: "-", family: community, role: product}
+  - {key: typesafe-jaggedness, url: "https://docs.typesafe.ai/model-jaggedness.md", title: "Model jaggedness", system: "-", family: community, role: product}
+  - {key: typesafe-reference, url: "https://docs.typesafe.ai/models.md", title: "Models; changelog; request rules; OpenAPI", system: "-", family: community, role: product}
+  - {key: typesafe-sdk-skill, url: "https://github.com/typesafe-ai/skills", title: "Python/JS SDKs; agent skills (2.9k stars); system-one-adapter-python", system: "-", family: community, role: product}
+  - {key: typesafe-evals, url: "https://evals.typesafe.ai", title: "Workflow evals", system: "-", family: community, role: product}
+  - {key: kev-modal, url: "https://github.com/jaredpalmer/kev/tree/main/skills/kev-deploy", title: "Kev Modal deploy + kev-deploy/kev-finetune skills", system: "-", family: community, role: product}
+  - {key: laya-finetune, url: "https://github.com/NandhaKishorM/laya/blob/main/notebooks/laya_finetune_typed_decisions_2xT4_kaggle.ipynb", title: "Laya Kaggle 2\u00d7T4 notebook; docs/finetune.md; Colab; `laya-train`", system: "-", family: community, role: product}
+  - {key: tinker, url: "https://tinker-docs.thinkingmachines.ai/", title: "Tinker docs; cookbook `recipes/decisions`; pricing and access", system: "-", family: community, role: product}
+  - {key: vllm-decisions, url: "https://docs.vllm.ai/en/latest/models/structured_decisions_models/", title: "Structured Decisions Models docs", system: "-", family: serving, role: product}
+  - {key: vllm-pooling, url: "https://docs.vllm.ai/en/latest/models/pooling_models/", title: "Pooling Models docs", system: "-", family: serving, role: product}
+  - {key: sglang, url: "https://docs.sglang.io/docs/supported-models/decision_models", title: "Decision models docs", system: "-", family: serving, role: product}
+  - {key: llamacpp, url: "https://huggingface.co/blog/ggml-org/decision-models-in-llamacpp", title: "New in llama.cpp: Decision Models (+ PR #30113; open PR #31502 for shared-prefix checkpoints)", system: "-", family: serving, role: product}
+  - {key: ollama-unsloth, url: "https://ollama.com/blog/ollama-now-supports-jev-style-decision-models", title: "Ollama: Jev-style decision models; Unsloth: Laya + Jev API locally", system: "-", family: serving, role: product}
+  - {key: hosted-endpoints, url: "https://docs.fastino.ai/inference/systemone", title: "Fastino GLiDE API; Baseten mammoth-1; vLLM-SR free d3 API; OpenRouter decision filter; Vercel AI Gateway (Jev)", system: "-", family: serving, role: product}
+  - {key: aa-decision-index, url: "https://artificialanalysis.ai/articles/decision-index-v2", title: "Artificial Analysis Decision Index v2/v2.1", system: "-", family: evaluation, role: benchmark}
+  - {key: other-leaderboards, url: "https://jevals.com/", title: "Jevals.com; LangWatch; Decision Models as Guardrails (raxIT); System 1 Decision Benchmark v2; Visual Decision Benchmark; JevMan (Opper); which-jev; leanmcp JevB", system: "-", family: evaluation, role: benchmark}
+  - {key: eval-tooling, url: "https://github.com/Eliot5566/s1kit", title: "s1kit; jevcal; JevalKit; openlayer jevals; jev-dspy-lab", system: "-", family: evaluation, role: product}
+  - {key: calib-libs, url: "https://github.com/apple/ml-calibration", title: "relplot (smooth ECE); net:cal; MAPIE", system: "-", family: foundations, role: product}
+  - {key: embedding-stack, url: "https://github.com/huggingface/text-embeddings-inference", title: "Text Embeddings Inference; Infinity; Sentence-Transformers; SetFit; MTEB leaderboard; HF embedding-quantization blog; lm-evaluation-harness", system: "-", family: serving, role: product}
+  - {key: datasets, url: "https://huggingface.co/datasets/tasksource/tasksource-jev-typed-decisions", title: "tasksource-jev-typed-decisions (1\u201310M rows, licence \"other\"); procedural-typed-decisions (Apache-2.0); synthetic-typed-decisions (Apache-2.0); bekko-system-one-", system: "-", family: data, role: dataset}
+  - {key: catalogs, url: "https://github.com/AbdelStark/awesome-typesafe-jev", title: "awesome-typesafe-jev (620\u2605); awesome-system-one (pushed 11-20); MrJev/awesome-jev (11-22); awesome-jev-prompts; laya.tools; jev-system-one-survey (CN, 11-17)", system: "-", family: community, role: background}
+  - {key: newcomer-code, url: "https://github.com/togethercomputer/tev1", title: "Tev1 recipe; build-your-own-jev; Dibia interactive explainer; Milvus search_with_jev notebooks", system: "-", family: community, role: background}

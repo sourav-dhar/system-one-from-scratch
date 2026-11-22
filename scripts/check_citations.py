@@ -22,6 +22,7 @@ INDEX = ROOT / "research" / "papers" / "index.yaml"
 META = ROOT / "research" / "papers" / "metadata.json"
 DOCS = [
     ROOT / "docs" / "research" / "survey.md",
+    ROOT / "docs" / "research" / "README.md",
     *sorted((ROOT / "docs" / "research" / "systems").glob("*.md")),
 ]
 OUT = ROOT / "docs" / "research" / "references.md"
