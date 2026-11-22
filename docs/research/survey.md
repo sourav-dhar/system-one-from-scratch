@@ -186,11 +186,11 @@ flowchart LR
 
 | Family | Score $z_i$ | Passes per request | State reuse | Option reuse | Order invariant |
 |---|---|---|---|---|---|
-| **F1** Bi-encoder | $\lambda \cos\!\big(f_s(E(s \oplus q)),\, f_a(E(o_i))\big)$ | 1 state + $K$ options (options cached) | per request | **yes** | by construction |
-| **F2** Late interaction | $z_L^\top u_i$, with $z_L = \mathrm{Block}(z_0;\{u_i\})$ | as F1 + one small block | per request | **yes** (plus per-option K/V) | by construction |
-| **F3** Decoder readout | pointer $\langle W_q h_{\text{decide}}, W_k h_{o_i}\rangle$, or LM-head row of label $\ell_i$ at the answer slot | 1 joint pass (or 1 row per question) | causal / `prefix_bidir`: **yes**; full bidirectional: no | no | no (needs isolation, averaging or augmentation) |
+| **F1** Bi-encoder | $\lambda \cos\!\big(f_s(E(s \oplus q)),\, f_a(E(o_i))\big)$ | 1 state + $K$ options (options cached) | no: the question is appended before pooling, so each question needs a state pass; a prefix cache saves the shared state tokens [@clm-repo] | **yes** | by construction |
+| **F2** Late interaction | $z_L^\top u_i$, with $z_L = \mathrm{Block}(z_0;\{u_i\})$ | as F1 + one small block | no: the request side is recomputed; only options are cached [@jeva] | **yes** (plus per-option K/V) | by construction |
+| **F3** Decoder readout | pointer $\langle W_q h_{\text{decide}}, W_k h_{o_i}\rangle$, or LM-head row of label $\ell_i$ at the answer slot | 1 joint pass (or 1 row per question) | causal / `prefix_bidir`: **yes**; full bidirectional: no | no, except a schema-first prefix reused across states [@thisthat] | no (needs isolation, averaging or augmentation) |
 | **F4** Encoder option-marker | $\mathrm{MLP}(h_{[\mathrm{MASK}]_i})$ after a small head | 1 row per question | usually no | no | no (unless masks reset positions) |
-| **F5** Encoder-decoder | bilinear $w^\top h_i + (W_c h_i)^\top (W_g g)$ on decoder branch | 1 encoder + ⌈N/8⌉ decoder | **yes** (encoder output) | no | no |
+| **F5** Encoder-decoder | bilinear $w^\top h_i + (W_c h_i)^\top (W_g g)$ on decoder branch | 1 encoder + ⌈N/8⌉ decoder | only for identical question instructions, which the encoder reads from stage 3 [@bongard] | no | no |
 | **F6** Looped readout | letter logits after each loop $t$, averaged | $T$ loops of a shared stack | KV per loop | no | no |
 | **F7** Frozen-reader head | energy readout over pooled tapped layers | 1 reader pass per question | long states only | no | depends |
 | **F8** Training-free | label-token logits, rotation-averaged or pointwise-then-listwise | $1$ to $K$ passes | prefix | no | via averaging |
