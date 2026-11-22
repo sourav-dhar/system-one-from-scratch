@@ -753,20 +753,20 @@ def architecture(t: Theme) -> Canvas:
         1280,
         700,
         t,
-        "Architecture B, built to grow into C",
-        "Diagram: state and question are encoded separately; options are encoded once with their decision "
-        "type and cached; one decision block lets the state read the cached options; heads give scores, a "
-        "null probability, yes/no and score outputs; K-aware calibration; uncertain cases route to a "
-        "milestone-2 joint slow path.",
+        "The locked design: one state, many questions, every option in its own lane",
+        "Diagram: a causal backbone prefills the state once; each question forks from the exact cached "
+        "state; every option is scored in its own lane, which reads the state but never another option; "
+        "heads give choice probabilities, yes/no, score and a null outcome; per-type calibration fitted on "
+        "held-out sources; the bar is the calibrated zero-shot readout of the same backbone; a cached-option "
+        "path for agent loops follows in milestone 2 behind a go/no-go.",
     )
     c.defs.append(
         f'<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" '
         f'orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="{t.ink3}"/></marker>'
     )
-    c.text("Architecture B, built to grow into C", 56, 74, SERIF, 40, t.ink)
+    c.text("One state, many questions, every option in its own lane", 56, 74, SERIF, 40, t.ink)
     c.text(
-        "two towers  ·  late interaction over cached options  ·  a real null outcome  ·  K-aware calibration"
-        "  ·  ADR 0001",
+        "causal backbone  ·  exact state forking  ·  per-option lanes  ·  calibrated heads  ·  ADR 0003",
         56,
         104,
         MONO,
@@ -786,112 +786,102 @@ def architecture(t: Theme) -> Canvas:
     # inputs
     box(56, 150, 180, 86, "state", "the situation", "text · JSON · chat")
     box(56, 252, 180, 86, "question", "what to decide", "choice · yes/no · score")
-    box(
-        56,
-        380,
-        180,
-        122,
-        "options",
-        "K candidates",
-        "o_1 … o_K, rendered with their type, never with the request",
-    )
+    box(56, 380, 180, 122, "options", "K candidates", "o_1 … o_K, each scored in its own lane")
     # backbone
-    c.add(rect(280, 140, 200, 372, fill=t.panel, stroke=t.rule, rx=14))
+    c.add(rect(280, 140, 430, 372, fill=t.panel, stroke=t.rule, rx=14))
     label(c, "backbone", 296, 166, size=10)
-    c.text("frozen or LoRA", 296, 192, SERIF, 21, t.ink)
-    for y, nm in ((222, "state tower"), (300, "question tower"), (414, "option tower")):
-        c.add(rect(296, y, 168, 40, fill=t.bg, stroke=t.rule, rx=8))
-        c.text(nm, 380, y + 25, MONO, 11.5, t.ink2, anchor="middle")
-    c.text("Qwen3-8B (anchor, taps)", 296, 474, MONO, 10, t.ink3)
-    c.text("Qwen3.5-4B + LoRA", 296, 488, MONO, 10, t.ink3)
-    c.text("Inkling 2 Mini (frozen)", 296, 502, MONO, 10, t.ink3)
-    c.add(arrow(236, 193, 296, 242, t.ink3))
-    c.add(arrow(236, 295, 296, 320, t.ink3))
-    c.add(arrow(236, 441, 296, 434, t.ink3))
-    # fuse
-    c.add(f'<circle cx="560" cy="282" r="20" fill="{t.panel}" stroke="{t.rule}"/>')
-    c.text("+", 560, 289, MONO_MD, 18, t.ink, anchor="middle")
-    c.text("late fusion", 560, 322, MONO, 10.5, t.ink3, anchor="middle")
-    c.add(arrow(464, 242, 540, 276, t.ink3))
-    c.add(arrow(464, 320, 540, 288, t.ink3))
-    # option memory (cache)
+    c.text("Qwen3.5-4B + LoRA, causal", 296, 192, SERIF, 21, t.ink)
+    c.add(rect(296, 210, 398, 36, fill=t.bg, stroke=t.rule, rx=8))
+    c.text("state prefill  ·  once per state", 495, 233, MONO, 11.5, t.ink2, anchor="middle")
     for k in range(3):
         c.add(
             rect(
-                520 + k * 6,
-                404 + k * 8,
-                200,
-                74,
+                312 + k * 6,
+                258 + k * 8,
+                230,
+                58,
                 fill=t.panel,
                 stroke=t.accent if k == 2 else t.rule,
                 rx=10,
                 cls="mem" if k == 2 else "",
             )
         )
-    label(c, "option memory", 548, 444, t.accent, 10)
-    c.text("u_i · K_i · V_i", 548, 466, MONO_MD, 13, t.ink)
-    c.text("cached across requests", 548, 484, MONO, 10.5, t.ink2)
-    c.add(arrow(464, 434, 520, 440, t.ink3))
-    # decision block
-    box(
-        760,
-        214,
-        210,
-        136,
-        "decision block",
-        "the state reads",
-        "z_L = z_0 + attn(z_0 → K, V). Options never see each other: exact order invariance.",
-        hot=True,
-    )
-    c.add(arrow(580, 282, 760, 282, t.ink3))
-    c.add(arrow(724, 430, 800, 350, t.accent, curve=-40))
+    label(c, "fork point", 340, 296, t.accent, 10)
+    c.text("KV + DeltaNet state", 340, 318, MONO_MD, 12.5, t.ink)
+    c.lines("exact: every question resumes from it", 568, 286, MONO, 10.5, t.ink2, 126, 15)
+    # fork bus and per-option lanes
+    c.add(line(304, 342, 304, 472, t.ink3, 1.4, "3 5", cls="flow"))
+    for k, (o, s_name) in enumerate((("o_1", "s_1"), ("o_2", "s_2"), ("o_K", "s_K"))):
+        y = 356 + k * 42
+        c.add(rect(318, y, 376, 32, fill=t.bg, stroke=t.rule, rx=8))
+        c.add(line(304, y + 16, 318, y + 16, t.ink3, 1.4))
+        c.text(f"question + {o}", 332, y + 21, MONO, 11.5, t.ink2)
+        c.text(f"→ {s_name}", 680, y + 21, MONO_MD, 11.5, t.ink, anchor="end")
+    c.text("lanes never see each other: exact order invariance", 296, 498, MONO, 10, t.ink3)
+    c.add(arrow(236, 193, 296, 228, t.ink3))
+    c.add(arrow(236, 295, 300, 352, t.ink3))
+    c.add(arrow(236, 456, 316, 456, t.ink3))
     # heads
-    c.add(rect(1010, 150, 214, 210, fill=t.panel, stroke=t.rule, rx=12))
-    label(c, "heads", 1026, 176, size=10)
+    c.add(rect(750, 150, 228, 210, fill=t.panel, stroke=t.rule, rx=12))
+    label(c, "heads", 766, 176, size=10)
     for k, (a, b) in enumerate(
         (
-            ("scores", "z_L · u_i"),
-            ("coverage", "null outcome"),
+            ("choice", "softmax over s_i"),
             ("yes / no", "own head"),
             ("score", "expected level"),
+            ("coverage", "null outcome"),
         )
     ):
         yy = 206 + k * 38
-        c.text(a, 1026, yy, MONO_MD, 12, t.ink)
-        c.text(b, 1208, yy, MONO, 11.5, t.ink2, anchor="end")
+        c.text(a, 766, yy, MONO_MD, 12, t.ink)
+        c.text(b, 962, yy, MONO, 11.5, t.ink2, anchor="end")
         if k < 3:
-            c.add(line(1026, yy + 14, 1208, yy + 14, t.grid))
-    c.add(arrow(970, 282, 1010, 260, t.ink3))
-    # calibration
-    box(1010, 380, 214, 82, "calibration", "T(type, log K)")
-    c.add(line(1117, 360, 1117, 380, t.ink3, 1.6, "3 6", cls="flow"))
-    # output bars
+            c.add(line(766, yy + 14, 962, yy + 14, t.grid))
+    c.add(arrow(694, 414, 750, 300, t.ink3))
+    # calibration and output
+    box(1010, 150, 214, 96, "calibration", "T per question type", "fitted on held-out sources")
+    c.add(line(978, 198, 1010, 198, t.ink3, 1.6, "3 6", cls="flow"))
     for k, p in enumerate((0.07, 0.86, 0.04, 0.03)):
-        yy = 490 + k * 14
+        yy = 272 + k * 14
         c.add(rect(1010, yy, 214, 6, fill=t.rule, rx=3))
         c.add(rect(1010, yy, 214 * p, 6, fill=t.accent if p > 0.5 else t.ink3, rx=3, cls=f"bar b{k}"))
-    c.text("p(o_1 … o_K, none)", 1010, 560, MONO, 10.5, t.ink3)
-    c.add(line(1117, 462, 1117, 486, t.ink3, 1.6, "3 6", cls="flow"))
-    # milestone 2 slow path
+    c.text("p(o_1 … o_K, none)", 1010, 342, MONO, 10.5, t.ink3)
+    c.add(line(1117, 246, 1117, 268, t.ink3, 1.6, "3 6", cls="flow"))
+    # the bar to beat
+    box(
+        1010,
+        380,
+        214,
+        122,
+        "the bar · milestone 0",
+        "beat the backbone",
+        "its own zero-shot readout, calibrated (Qwen3-8B: 59.3% on System1-Arena)",
+        hot=True,
+    )
+    # milestone 2: cached path for agent loops
     c.add(
         rect(56, 586, 1168, 82, fill="none", stroke=t.accent, rx=14, sw=1.4, extra=' stroke-dasharray="6 6"')
     )
-    label(c, "milestone 2  ·  architecture C", 76, 614, t.accent, 10)
-    c.text("joint slow path on the same backbone", 76, 646, SERIF, 23, t.ink)
+    label(c, "milestone 2  ·  agent loops", 76, 614, t.accent, 10)
+    c.text("options cached once, without the state", 76, 646, SERIF, 23, t.ink)
     c.text(
-        "state, question and rendered options in one prefix_bidir pass · LoRA · reached only when",
-        520,
+        "a late block reads them from the forked state · kept only if, against the same head",
+        560,
         628,
         MONO,
         11.5,
         t.ink2,
     )
-    c.text("the fast path is unsure (calibrated-confidence gate)", 520, 648, MONO, 11.5, t.ink2)
-    c.add(
-        f'<path d="M1010 421 C960 421 980 586 940 586" fill="none" stroke="{t.accent}" stroke-width="1.6" '
-        f'stroke-dasharray="3 6" class="flow" marker-end="url(#ah)"/>'
+    c.text(
+        "on in-context options, it stays within 3 points and runs at least 5× faster",
+        560,
+        648,
+        MONO,
+        11.5,
+        t.ink2,
     )
-    c.text("low confidence", 905, 548, MONO, 10.5, t.accent, anchor="end")
+    c.add(line(640, 514, 640, 584, t.accent, 1.6, "3 6", cls="flow"))
+    c.text("revisits · large catalogs", 652, 554, MONO, 10.5, t.accent)
     c.css.append(
         ".flow{animation:dash 1.1s linear infinite}@keyframes dash{to{stroke-dashoffset:-18}}"
         ".mem{animation:glow 3.2s ease-in-out infinite}@keyframes glow{0%,100%{stroke-opacity:1}50%{stroke-opacity:.25}}"
@@ -906,11 +896,11 @@ def architecture(t: Theme) -> Canvas:
 # 6. roadmap
 # ---------------------------------------------------------------------------------------------
 STEPS = [  # title, two-line note, status
-    ("Rebuild", ("CLM heads re-scored", "51.73 / 69.16 / 68.63"), "done"),
-    ("Field survey", ("64 papers · 31 systems", "14 failure modes"), "done"),
-    ("M0 · Harness", ("reproduce S1-Arena 41.4%", "then run the references"), "now"),
-    ("M1 · Architecture B", ("late interaction · null", "K-aware calibration"), "next"),
-    ("M2 · Architecture C", ("joint slow path", "calibrated cascade"), "later"),
+    ("Rebuild", ("CLM heads re-scored", "within 0.4 pts of published"), "done"),
+    ("Field guide", ("375 papers · 31 systems", "4 independent reviews"), "done"),
+    ("M0 · Harness", ("anchors 41.4% and 59.3%", "baselines + references"), "now"),
+    ("M1 · Typed decisions", ("forked state · own lanes", "calibrated heads"), "next"),
+    ("M2 · Cached path", ("options cached once", "go/no-go vs M1"), "later"),
     ("M3 · Release", ("model card · results", "v0.2.0"), "later"),
 ]
 
@@ -921,8 +911,8 @@ def roadmap(t: Theme) -> Canvas:
         270,
         t,
         "Roadmap",
-        "Timeline: rebuild and field survey done; benchmark harness in progress; "
-        "architecture B next, then architecture C and a release.",
+        "Timeline: rebuild and field guide done; benchmark harness in progress; "
+        "the typed-decision model next, then the cached path for agent loops and a release.",
     )
     c.text("Where we are", 56, 64, SERIF, 34, t.ink)
     x0, x1, y = 120, 1160, 150
