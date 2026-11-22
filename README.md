@@ -152,7 +152,7 @@ Inkling joins as an API readout and a distillation teacher, plus an off-target f
 git clone https://github.com/sourav-dhar/system-one-from-scratch && cd system-one-from-scratch
 uv sync --extra dev --extra data        # CPU PyTorch; no GPU needed for development
 uv run systemone demo                   # synthetic end-to-end training run, about a minute on a laptop
-uv run pytest                           # 81 tests
+uv run pytest                           # 82 tests
 uv run python scripts/fetch_papers.py   # the full 64-paper library into research/papers/pdf/
 ```
 
