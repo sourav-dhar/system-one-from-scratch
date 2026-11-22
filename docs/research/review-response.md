@@ -63,7 +63,7 @@ This page tracks every finding.
 | 13 | Major | The adaptation and scale claims do not follow (Qwen3.5 keeps rising after 4B; head-only arm within noise) | **Fixed** in 3516adf (Table 4 caption, §4.5, H6). **Declined in part:** the review's "frozen 9B 82.2 vs LoRA-adapted Jeff-Qwen-4B 79.3" compares accuracy on Jeff's seven held-out sets (App. F) with OpenDecisions Capability (Table 3), which are different benchmarks |
 | 14 | Major | Strong baselines and benchmark-validity caveats are missing | **Partly.** The [start-here guide](README.md) adds baselines and a benchmark card; adding them to the M0 protocol is **At lock** |
 | 15 | Major | W2 and the latency frontier are argued one-sidedly | **Fixed.** The "empty region" in 68c1019; W2 counter-evidence and measured latency anchors in Table 12 in 7d0ad66 |
-| 16 | Major | Metric conventions (ECE bins, Brier scale) are unspecified | **Open.** The protocol estimator is fixed **At lock** |
+| 16 | Major | Metric conventions (ECE bins, Brier scale) are unspecified | **Fixed** in e899364 (§2.2 conventions). The protocol estimator is confirmed **At lock** |
 | 17 | Major | The single-pass trajectory shortcut breaks under CLM's layout | **Fixed** in 3516adf (§6.2). **At lock** (plan M1.1) |
 | 18 | Major | Failure-mode provenance is overstated; FM6, FM11 and FM13 are mismeasured | **Partly.** FM2 was fixed in 68c1019; a provenance column and FM6/FM11/FM13 are open |
 | 19 | Major | ADR 0001 has unestablished hardware feasibility (Inkling 2 Mini; `prefix_bidir` on DeltaNet layers) | **At lock.** The recommendation is to drop the Inkling 2 Mini reader, make C causal and run a feasibility spike |
