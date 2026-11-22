@@ -52,19 +52,19 @@ This page tracks every finding.
 | 2 | Critical | The abstract asserts causes for CLM's gap; the scale cap explains Brier, not accuracy; the truncation and training-data confounds are omitted | **Fixed** in the survey (68c1019, 23bf3ac): candidate causes, not established ones; truncation and training-data confounds; the scale cap moved to Brier. M0 arms (full context vs tail cut) are **At lock** |
 | 3 | Critical | Table 10 mostly cites evidence that a flaw exists, not that a fix works | **Partly.** Rows 5, 6, 7, 10, 11, 14 and 16 were revised in 68c1019, and rows 2, 4 and 9 in 23bf3ac. Restructuring (flaw measured / fix measured / status / citations) is open |
 | 4 | Major | Reproduction and calibration claims lack provenance; the low-confidence bin is anomalous | **Partly.** The tie bug is fixed in PR #41; the wording ("within 0.4 pp", different sample) and the in-distribution and tie caveats are in 23bf3ac. Split provenance is open; randomised gold position and a cross-dataset fit are M0 |
-| 5 | Major | P3 misstates the IIA trade-off | **Open** |
-| 6 | Major | Four equations are wrong or overstated (null formula, Bongard REINFORCE identity, AnyJev "exact", soft-CE "exact") | **Open** |
+| 5 | Major | P3 misstates the IIA trade-off | **Fixed** in 3516adf |
+| 6 | Major | Four equations are wrong or overstated (null formula, Bongard REINFORCE identity, AnyJev "exact", soft-CE "exact") | **Partly.** The Bongard identity was removed in 3516adf; the other three are open |
 | 7 | Major | Four equations are unsourced or incomplete (InfoNCE mask, RLCD std, vegaml E_k, Jeva attention terms) | **Open** |
 | 8 | Major | Taxonomy families overlap and several systems are misplaced | **Open.** Planned: two axes (interaction/cache pattern × readout) plus attributes |
 | 9 | Major | Table 1's caching columns are wrong for F1, F2, F3 and F5 | **Open** |
-| 10 | Major | Calibration is presented as free, but the sources record trade-offs | **Partly.** Table 10 row 4 and §5.6 state the costs (23bf3ac); a §5 paragraph and the §4 loss wording are open |
-| 11 | Major | K-aware calibration is misattributed; the ADRs adopt fitting rules that the sources contradict | **Open** (survey), **At lock** (ADR 0001, ADR 0002) |
-| 12 | Major | The "RL earns its keep" examples are CE or closed-form proper-score losses | **Open** |
-| 13 | Major | The adaptation and scale claims do not follow (Qwen3.5 keeps rising after 4B; head-only arm within noise) | **Open** |
+| 10 | Major | Calibration is presented as free, but the sources record trade-offs | **Partly.** Table 10 row 4 and §5.6 state the costs (23bf3ac); the §4.2 objective wording and the Jeff locator are fixed in 3516adf; a dedicated §5 paragraph is open |
+| 11 | Major | K-aware calibration is misattributed; the ADRs adopt fitting rules that the sources contradict | **Partly.** H3 was fixed in 3516adf; Table 5 is open. **At lock** for ADR 0001 and ADR 0002 |
+| 12 | Major | The "RL earns its keep" examples are CE or closed-form proper-score losses | **Fixed** in 3516adf (conclusion 3, §4.3) |
+| 13 | Major | The adaptation and scale claims do not follow (Qwen3.5 keeps rising after 4B; head-only arm within noise) | **Fixed** in 3516adf (Table 4 caption, §4.5, H6). **Declined in part:** the review's "frozen 9B 82.2 vs LoRA-adapted Jeff-Qwen-4B 79.3" compares accuracy on Jeff's seven held-out sets (App. F) with OpenDecisions Capability (Table 3), which are different benchmarks |
 | 14 | Major | Strong baselines and benchmark-validity caveats are missing | **Partly.** The [start-here guide](README.md) adds baselines and a benchmark card; adding them to the M0 protocol is **At lock** |
 | 15 | Major | W2 and the latency frontier are argued one-sidedly | **Partly.** The "empty region" was fixed in 68c1019. W2 counter-evidence and rebuilding Table 12 from measured latencies are open |
 | 16 | Major | Metric conventions (ECE bins, Brier scale) are unspecified | **Open.** The protocol estimator is fixed **At lock** |
-| 17 | Major | The single-pass trajectory shortcut breaks under CLM's layout | **Open** (§6.2), **At lock** (plan M1.1) |
+| 17 | Major | The single-pass trajectory shortcut breaks under CLM's layout | **Fixed** in 3516adf (§6.2). **At lock** (plan M1.1) |
 | 18 | Major | Failure-mode provenance is overstated; FM6, FM11 and FM13 are mismeasured | **Partly.** FM2 was fixed in 68c1019; a provenance column and FM6/FM11/FM13 are open |
 | 19 | Major | ADR 0001 has unestablished hardware feasibility (Inkling 2 Mini; `prefix_bidir` on DeltaNet layers) | **At lock.** The recommendation is to drop the Inkling 2 Mini reader, make C causal and run a feasibility spike |
 | 20 | Major | ADR 0001 lacks a training specification and acceptance criteria | **At lock** |
