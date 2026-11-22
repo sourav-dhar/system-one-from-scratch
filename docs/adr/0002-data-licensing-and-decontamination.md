@@ -1,6 +1,6 @@
 # ADR 0002: Training data, licensing and decontamination
 
-- **Status:** accepted, 2026-11-22
+- **Status:** accepted, 2026-11-22; amended by [ADR 0004](0004-data-calibration-and-decontamination-amendments.md) the same day.
 - **Evidence:** [`docs/research/survey.md`](../research/survey.md) §6; [`notes/raw/04-training-data-and-benchmarks.md`](../research/notes/raw/04-training-data-and-benchmarks.md)
 
 ## Context

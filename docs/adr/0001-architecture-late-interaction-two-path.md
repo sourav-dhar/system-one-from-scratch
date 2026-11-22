@@ -1,6 +1,6 @@
 # ADR 0001: A two-tower late-interaction System One model, designed for a joint slow path
 
-- **Status:** accepted, 2026-11-22
+- **Status:** superseded by [ADR 0003](0003-architecture-resequenced.md) on 2026-11-22, after the [independent reviews](../research/reviews/). Kept for the record.
 - **Deciders:** @sourav-dhar
 - **Evidence:** [`docs/research/survey.md`](../research/survey.md) §3, §7, §8, §10–§11; per-system notes for [CLM](../research/systems/clm.md), [Jeva](../research/systems/jeva.md), [NDM](../research/systems/ndm.md), [Kev](../research/systems/kev.md), [Jeff-1.1](../research/systems/jeff.md), [Strands Decider](../research/systems/strands-decider.md), [Inkling](../research/systems/inkling.md)
 

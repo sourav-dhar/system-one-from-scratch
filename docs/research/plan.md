@@ -1,79 +1,118 @@
-# Research and build plan, v2
+# Research and build plan, v3
 
 - **Status:** accepted, 2026-11-22
-- **Supersedes:** the Tier 1 plan in #31, written before the survey
-- **Architecture:** [ADR 0001](../adr/0001-architecture-late-interaction-two-path.md)
-- **Data:** [ADR 0002](../adr/0002-data-licensing-and-decontamination.md)
-- **Evidence:** [survey](survey.md)
+- **Supersedes:** plan v2, which was written for ADR 0001 before the independent reviews
+- **Architecture:** [ADR 0003](../adr/0003-architecture-resequenced.md), which supersedes [ADR 0001](../adr/0001-architecture-late-interaction-two-path.md)
+- **Data:** [ADR 0002](../adr/0002-data-licensing-and-decontamination.md), as amended by [ADR 0004](../adr/0004-data-calibration-and-decontamination-amendments.md)
+- **Evidence:** the [survey](survey.md), the [start-here guide](README.md) and the [independent reviews](reviews/)
 
-## Ground rules (carried over)
+## Ground rules
 
-- **Noise floor.** Every trained configuration gets 3 seeds. An effect counts only if it exceeds 2× the seed standard deviation, tested with McNemar or a paired bootstrap.
-- **One factor at a time** against a stated baseline.
+- **Noise floor.**
+  - Every trained configuration gets 3 seeds.
+  - An effect counts only if it exceeds 2× the seed standard deviation under a task-cluster paired bootstrap.
+  - Item-level McNemar would call 0.3 pp "significant" on System1-Arena's ~78k items, so it is not used.
+- **Baseline-anchored factorials with drop-one ablations.** We do not use cumulative ladders, whose effects depend on rung order.
+- **Calibration is a procedure, not a rung.**
+  - The same calibrator is applied to every configuration.
+  - Raw and calibrated results are both reported.
+  - Fit sources are frozen before scoring ([ADR 0004](../adr/0004-data-calibration-and-decontamination-amendments.md)).
+- **Metrics.**
+  - ECE is reported with both estimators (15 equal-width and 10 equal-mass bins), plus multi-class Brier and NLL, with CIs.
+  - Latency is reported with hardware, batch size and cache state.
 - **Negative results are published.**
-- **Every reported number** comes from a file in `results/`, produced by a committed config.
-- **Calibration** is reported as ECE, Brier and NLL, on suites never used for fitting.
+- **Every number comes from a file in `results/`**, produced by a committed config.
 - **Budget gates.** Each milestone states its GPU budget and needs approval before it starts.
 
-## Milestone M0: benchmark harness and reference implementations (approved, ≤ $60 Modal)
+## M0: harness, anchors and baselines (approved, ≤ $60 on Modal)
 
 | Step | Deliverable | Done when |
 |---|---|---|
-| M0.1 | Typed-decision schema (`choice`/`noul`/`score`, null), loaders for System1-Arena (official adapter), OpenDecisions, typed-decisions, Jeva's BANKING77/MASSIVE K = 8/16 protocol | Unit tests on fixtures; loaders stream from the Hub |
-| M0.2 | Metrics and robustness battery: accuracy, Brier, ECE, NLL per type; option shuffle/reversal flips; yes/no identifier swap; K-sweep 5–255; null detection (gold removed); latency with and without caches | Tests against hand-computed cases |
-| M0.3 | `/v1/systemone`-compatible server and client, so references and our model share one harness | Contract tests |
-| M0.4 | **Harness validation:** reproduce S1-Arena's CLM-v0.1-8B **41.4%** (non-agentic) within noise | Number in `results/references/` |
-| M0.5 | Reference runs on the same harness: official CLM-8B; Kev-4B; Laya; Decision 2.0 Kai/Nox; Jeff-style zero-shot letter readout on Qwen3-8B; Inkling zero-shot readout via API (Inkling 2 Mini / Small); Jev via API if budget allows | `results/references/*` + a comparison table |
+| M0.1 | **Typed-decision schema and loaders.**<br>• `choice`/`noul`/`score` plus null.<br>• Pinned System1-Arena (dataset and harness commits), OpenDecisions, typed-decisions, Jeva's BANKING77/MASSIVE and nested-set protocols, ToolRet K-sweeps.<br>• S1-Arena's agentic static tasks and one closed-loop environment (T-Rex) as the **W2 quality suite**. | Unit tests on fixtures; loaders stream from the Hub |
+| M0.2 | **Metrics and probe battery.**<br>• Accuracy, Brier, both ECE estimators and NLL per type.<br>• Flips under shuffle and reversal; yes/no identifier swap; option renaming.<br>• Negation twins; question sensitivity; burying; K-sweep with distractors; gold-removed null.<br>• Latency with and without caches. | Tests against hand-computed cases |
+| M0.3 | **`/v1/systemone`-compatible server and client**, so references and our models share one harness | Contract tests |
+| M0.4 | **Two anchors on the pinned version:**<br>• CLM-v0.1-8B at 41.4%, through the official adapter *and* through our encoder (fixed truncation, PR #41), plus an embedding-parity test (cosine > 0.999 on ~1k Nemotron rows);<br>• the Qwen3-8B answer-token readout at 59.3%. | Both within 1.0 pp, in `results/references/` |
+| M0.5 | **Baselines and references on one harness:**<br>• calibrated readouts of Qwen3-8B and Qwen3.5-4B (the M1 bar);<br>• linear probe with seen and unseen label splits;<br>• fine-tuned DeBERTa-v3-large on the suites with train splits;<br>• BM25 for catalogs;<br>• Qwen3-Embedding-8B zero-shot;<br>• Jeva-4B, Kev-4B, Jeff-Qwen-4B, Decision 2.0 Kai and Nox, Laya;<br>• the Inkling readout via Tinker. | `results/references/*` plus a comparison table with contamination flags and clean subsets |
 
-## Milestone M1: Architecture B (budget estimated at M1 start; needs approval)
+**M0 cost:** about $40–70 *(estimate, [review 03](reviews/03-architecture-review.md) §6)*. Staying under $60 needs three things:
+- the battery runs on a 10k stratified subset;
+- full-set runs are limited to the anchors and the calibrated readouts;
+- Jev and Inkling 2 Small are dropped.
 
-**M1.1 Encoder registry and embedding pipeline.**
-- Backbones: frozen Qwen3-8B (last layer, L/2, 3L/4); Qwen3.5-4B + LoRA; frozen Inkling 2 Mini.
-- One causal pass over a trajectory or a state yields every needed embedding.
-- Embeddings are cached on the volume, keyed by backbone, layer and text hash.
+## M1: the typed-decision model (budget ≈ $200–400, approved at start)
 
-**M1.2 Data.**
-- Build the decontamination registry (ADR 0002).
-- Typed data: DecisionBank, kev-suites and typed-decisions train splits.
-- Q&A replay from the CLM vectors/text.
-- Augmentation:
+**M1.1 Registry and data** ([ADR 0004](../adr/0004-data-calibration-and-decontamination-amendments.md)).
+- Build the decontamination registry first.
+- Train on the typed-data train splits (DecisionBank, kev-suites, typed-decisions) under the release allow-list rules.
+- Mine hard negatives with open models.
+- Augment with:
   - option shuffling;
-  - none-pairs;
-  - polarity/negation twins;
+  - none-pairs from hard-label choice items;
+  - negation and polarity twins;
   - many questions per state;
   - descriptive option rendering.
 
-**M1.3 Model.** B's ablation ladder, each rung measured with 3 seeds on the M0 harness:
+**M1.2 Backbone and forking.**
+- Qwen3.5-4B, with frozen Qwen3-8B as the anchor.
+- Adopt or adapt Flide's exact state forking for the Gated DeltaNet and full-attention layers.
+- Validate forking with a parity test: forked logits vs standalone logits (total-variation distance, flips).
 
-| Rung | Change | Hypothesis (survey §10) |
+**M1.3 Model factorial,** with 3 seeds per cell on the M0 harness:
+
+| Arm | What it is | Answers |
 |---|---|---|
-| 0 | CLM heads as published (anchor) | — |
-| 1 | + calibration procedure (per type, K-aware, held-out-dataset fit) | H3 |
-| 2 | + separate state/question encoding, late fusion | H1 |
-| 3 | + descriptive, type-conditioned option rendering; Noul head without option text | H1 |
-| 4 | + coverage gate (null outcome) | — |
-| 5 | + Matryoshka + centring | H8 |
-| 6 | + late-interaction decision block over cached option K/V (**B**) | H2, H4 |
-| 7 | backbone arms: 3L/4 and L/2 taps; Qwen3.5-4B + LoRA; Inkling 2 Mini frozen | H6, H7 |
+| R0 | Calibrated zero-shot letter readout of the same backbone | The bar |
+| R1 | LoRA letter readout (all options in context) | What training alone buys |
+| R2 | **LoRA, per-option blocks that read the forked state** (Prism-1 style) with choice / noul / score heads and the coverage gate | The M1 model |
+| R2 − x | Drop-ones: −comparison head, −Noul head, −LM-row initialisation, −gate, −descriptive options | Attribution |
+| R3 | In-context bilinear head over candidate endpoints (Decision 1.0 Eq. 3) | Alternative scoring |
+| Pilot | LoRA learning rates {2e-5, 5e-5, 1e-4} on ¼ of the data, 1 seed | Stability (2e-4 diverged in Kev and Small Heads) |
+| Data | Questions per state, none-pair share, descriptive rendering | "Fixing data shortcuts mattered more" (Liquid) |
+| Calibration | Global vs per-type vs per-type × $\log K$, leave-source-out (post-hoc, free) | H3 |
 
-**M1.4 Serving.**
-- Latency on one L4/L40S: new state vs revisited state; K = 2–255 cached options.
-- int8 option cache; FP8 backbone validation.
+**M1 success** follows [ADR 0003](../adr/0003-architecture-resequenced.md):
+- R2 beats R0 on S1-Arena accuracy, with a cluster-bootstrap CI excluding zero (target +3 points);
+- R2 is no worse than R0 on Brier;
+- held-out-source accuracy is within 15 points of seen-source accuracy.
 
-## Milestone M2: Architecture C (designed in M1, built after M1 results)
+**M1.4 Serving on one GPU.**
+- Measure p50 and p95 on an L4 and an L40S: new state vs forked questions, and K from 2 to 255.
+- FP8 W8A8 on Ada is adopted only if it changes ≤ 0.5% of decisions with max |Δp| ≤ 0.02. The A10 runs bf16.
 
-- Joint `prefix_bidir` slow path with LoRA and an LM-head-initialized readout on the same backbone.
-- A calibrated-confidence cascade between the two paths (H9).
-- Serving work: CUDA graphs, fused kernels, prefix/KV reuse.
+**Inkling arms.**
+- The Tinker readout and teacher (M0.5, and distillation in M1.1).
+- The off-target frozen-reader arm on a rented H100, after a cost estimate is approved.
 
-## Milestone M3: release
+## M2: the cached path for agent loops (designed in M1, built after the M1 decision)
 
-- README overhaul with real results (#13).
-- Model card listing data licences.
-- `v0.2.0` release.
+- Options are encoded once without the state. A late-interaction block runs over the forked state's pooled representation, followed by the coverage gate.
+- **Go/no-go ([ADR 0003](../adr/0003-architecture-resequenced.md)).** Compare the same head on cached and on in-context options. The cached path is kept only if both hold:
+  - accuracy is within 3 points;
+  - W2 latency is at least 5× lower at K ≥ 50 or on revisits.
+- **Ablations:**
+  - question-blind towers vs a state-aware question;
+  - question-conditioned option-cache keys;
+  - a CSLS hubness control.
+
+## M3: release
+
+- A README with real results.
+- A model card listing every data source and its licence.
+- A public checkpoint only from an allow-listed training run ([ADR 0004](../adr/0004-data-calibration-and-decontamination-amendments.md)).
+- `v0.2.0`.
+
+## Time and risks
+
+- **Time:** about 3 months to the M1 decision for one engineer *(estimate)*:
+  - M0: 3–4 weeks;
+  - M1 data, forking and model: 5–7 weeks;
+  - serving: 1–2 weeks.
+- **Risks and kill criteria:** we adopt the [architecture review's risk register](reviews/03-architecture-review.md#6-budget-time-and-risk-register). Two of its risks are specific to this plan:
+  - Forked logits must match standalone logits; otherwise we serve one sequence per question and re-measure latency.
+  - Per-option blocks must not fall more than 3 points below R1; otherwise M1 ships R1, with sorting for order invariance.
 
 ## Parked
 
-- Tier 1 CLM-recipe sweeps (`configs/sweeps/`, local branch `exp/tier1-sweeps`). The pre-training recipe ablations remain useful for the contrastive replay stage. They will be re-cut into M1.2 once the data mix is fixed.
+- Tier 1 CLM-recipe sweeps (local branch `exp/tier1-sweeps`). They are reusable for the contrastive replay stage.
 - Agent post-training on trajectories (#14).
-- DeepSWE and T-Rex downstream tasks (#15).
+- DeepSWE and T-Rex downstream tasks (#15). T-Rex re-enters as part of M0's W2 suite.
