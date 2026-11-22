@@ -3,3 +3,6 @@
 *.gif binary
 *.pt binary
 *.npy binary
+*.pdf binary
+*.ttf binary
+*.woff2 binary
