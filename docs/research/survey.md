@@ -12,7 +12,7 @@ A *System One* model does not generate text. Given a situation (the *state*) and
 
 This survey organizes the field from primary sources (code, model cards, papers and issue trackers read in full) into eight architectural families, each defined by its scoring equation. For about thirty systems it compares sequence layouts, attention masks, readouts, training objectives, calibration procedures, data and serving paths.
 
-We catalogue fourteen failure modes that independent evaluations have quantified:
+We catalogue fourteen failure modes, quantified by independent evaluations or, for FM6, FM11 and FM12, by the systems' own trackers:
 - option-order flips;
 - yes/no polarity swaps;
 - collapse at large option counts;
@@ -707,7 +707,7 @@ Whether exact invariance costs accuracy in joint models is unsettled:
 **FM5: Ordinal compression.** Laya keeps level order on 1 of 4 ladders at 5 and 10 levels [@typedbench].
 
 **FM6: Long context and truncation.**
-- *Burying.* Hiding the evidence among 1–4k tokens of unrelated records cost Kev 22–43 pp; training on such states recovered 17–20 pp. Kev's own conclusion is that "buried synthetic states are not real documents": on real CFPB documents the long-state training moved accuracy by only ±1 pp [@kev-repo, PLAN.md #11]. For laya-multilingual, accuracy falls from 0.85 to 0.40 as evidence moves to the end of a 7,000-token filler document (n = 20 per cell, ±0.22; at 4,000 tokens the end position is the best cell) [@laya-repo, `research/README.md`].
+- *Burying.* Hiding the evidence among 1–4k tokens of unrelated records cost Kev 22–43 pp; training on such states recovered 17–20 pp. Kev's own conclusion is that "buried synthetic states are not real documents": on real CFPB documents the long-state training moved accuracy by only ±1 pp [@kev-repo, PLAN.md #11]. For laya-multilingual, accuracy falls from 0.85 to 0.40 as evidence moves to the end of a 7,000-token filler document (n = 20 per cell, ±0.22; at 4,000 tokens the end position is the best cell) [@laya-repo, `research/README.md`]. That checkpoint's window is 1,024 tokens by default and up to 8k, and the run does not state its setting, so part of the 7,000-token drop may be truncation *(inference)*.
 - *Truncation.* CLM's server truncates at 2,048 tokens. Since vLLM 0.13 truncation keeps the *head*, which drops the question; the cosine to the correct embedding falls to −0.0006 in an MLX emulation (#6) and to −0.1169 on real vLLM 0.30.0 (#29); both issues are open [@clm-repo, issues #6, #29].
 
 **FM7: Question-ignoring and state collapse.**
@@ -724,7 +724,7 @@ Whether exact invariance costs accuracy in joint models is unsettled:
 
 **FM10: Step accuracy vs. loop success.** Vega, Jev and Qwen3.5-9B share 67.8% agentic step accuracy but reach 26.5%, 17.4% and 5.7% loop success. CLM reaches 40.6% step accuracy and 1.7% loop success; its 41 ms latency did not turn into loop success [@s1arena, Table 2].
 
-**FM11: Knowledge erosion.** See §4.6. In addition, MMLU-Pro stays far below Jev for small fine-tuned models: Kev-4B 0.565, Jeeves 0.770, Jev 0.840 [@kev-repo; @jeeves].
+**FM11: Knowledge erosion.** See §4.6. In addition, MMLU-Pro stays below Jev for small fine-tuned models: Kev-4B 0.565 without reasoning, Jeeves v2 (9B) 0.770 with reasoning, Jev 0.840 [@kev-repo; @jeeves]. The reasoning settings differ, so the gap is not a clean measure of erosion.
 
 **FM12: Runtime nondeterminism.**
 - StartLux: prefix caching changed 2.6% of readouts by more than 0.05.
@@ -733,7 +733,7 @@ Whether exact invariance costs accuracy in joint models is unsettled:
 
 Sources: [@startlux; @decision2; @decider].
 
-**FM13: Out-of-scope acceptance.** Jev accepts 0.310 of out-of-scope requests at a held-out threshold vs. 0.015 for Kev-9B [@rafedas]. vegaml's "unbound" detector fired on 71% of *normal* banking77 rows [@vegaml].
+**FM13: Out-of-scope acceptance, and its mirror image.** Jev accepts 0.310 of out-of-scope requests at a held-out threshold vs. 0.015 for Kev-9B [@rafedas]. The opposite failure also occurs: vegaml's "unbound" detector fired on 71% of *normal* banking77 rows, rejecting in-scope inputs [@vegaml].
 
 **FM14: Short-label options in bi-encoders.**
 - With label-word options (yes/no, true/false), cosine gaps are about 1e-3 and no encoder is reliably above chance [@sbert2s1, RQ1].
