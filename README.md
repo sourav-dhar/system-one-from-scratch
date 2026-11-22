@@ -84,7 +84,8 @@ The research is built to be **the one place to start** if you want to build, eva
 | see which lab fixed which other lab's flaw | [§8 who fixed whom](docs/research/survey.md#8-who-fixed-whom) |
 | serve one on a single GPU | [§9 serving](docs/research/survey.md#9-serving-and-efficiency) |
 | find an open problem worth working on | [§10 open problems](docs/research/survey.md#10-open-problems-and-the-scope-for-improvement) |
-| see how this research was checked | [Three independent reviews](docs/research/reviews/) · [response tracker](docs/research/review-response.md) |
+| see how this research was checked | [Four independent reviews](docs/research/reviews/) · [response tracker](docs/research/review-response.md) |
+| find articles, talks, papers and tools beyond the survey | [Library sweep](docs/research/library-sweep.md) · [paper manifest](research/papers/MANIFEST.md) |
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/readme/taxonomy-dark.svg">
@@ -100,12 +101,15 @@ The research is built to be **the one place to start** if you want to build, eva
 
 | Resource | What is in it |
 |---|---|
+| [`docs/research/README.md`](docs/research/README.md) | **Start here:** reading paths, a design decision guide, a worked example, a glossary, baselines to beat, a benchmark card and a hardware primer |
 | [`docs/research/survey.md`](docs/research/survey.md) | The survey: 12 sections, about 12.5k words, ~30 systems, with a verification log |
 | [`docs/research/systems/`](docs/research/systems/) | 31 long-form technical notes, one per system. Each covers architecture with equations, training, calibration, results, serving and failure modes |
-| [`research/papers/`](research/papers/MANIFEST.md) | **64 arXiv papers.** The **38** under Creative Commons licences are in the repo as PDFs. The other 26 (arXiv's non-exclusive licence) download with one command. Each paper has its licence and sha256 listed |
+| [`research/papers/`](research/papers/MANIFEST.md) | **375 arXiv papers.** The **192** under Creative Commons licences are in the repo as PDFs. The other 183 (arXiv's non-exclusive licence) download with one command. Each paper has its licence and sha256 listed |
 | [`docs/research/references.md`](docs/research/references.md) | Every cited source (100+), grouped: implementations, evaluations, datasets, products, foundations |
+| [`docs/research/reviews/`](docs/research/reviews/) | Four independent reviews of the research and the design, published verbatim, with a [response tracker](docs/research/review-response.md) |
+| [`docs/research/library-sweep.md`](docs/research/library-sweep.md) | A verified sweep of articles, talks, foundational papers, new System One systems and tools |
 | [`docs/research/notes/raw/`](docs/research/notes/raw/) | The primary-source reading notes behind everything above |
-| [`research/papers/index.yaml`](research/papers/index.yaml) | The machine-readable index: papers plus 60 repos, model cards, datasets, docs and blogs |
+| [`research/papers/index.yaml`](research/papers/index.yaml) | The machine-readable index: 375 papers plus 140 repos, model cards, datasets, docs, articles and talks |
 
 <details>
 <summary><b>All 31 systems at a glance</b></summary>
@@ -125,25 +129,22 @@ The research is built to be **the one place to start** if you want to build, eva
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/readme/architecture-dark.svg">
-  <img alt="Architecture B: state and question encoded separately, options encoded once and cached, one decision block in which the state reads the cached options, heads for scores, a null outcome, yes/no and score, K-aware calibration, and a milestone-2 joint slow path for low-confidence cases." src="assets/readme/architecture-light.svg" width="100%">
+  <img alt="The locked design: a causal backbone prefills the state once; each question forks from the exact cached state; every option is scored in its own lane, which reads the state but never another option; heads for choice, yes/no, score and a null outcome; per-type calibration; the bar is the calibrated zero-shot readout of the same backbone; a cached-option path for agent loops follows in milestone 2 behind a go/no-go." src="assets/readme/architecture-light.svg" width="100%">
 </picture>
 
-**Architecture B** keeps what made CLM fast and fixes what made it inaccurate:
-- **Option representations are cached across requests**, so a revisited agent state costs a dot product.
-- **The state and the question are encoded separately**, which removes CLM's state collapse.
-- **One late-interaction block** lets the state read the cached options, so a preference can depend on what else is on offer. Options never see each other, so the output is **exactly order-invariant**.
-- **A coverage gate** gives a real "none of these" outcome.
-- **Calibration** takes the question type and K into account.
+The design was **locked on 22 November 2026**, after three independent reviews and a full read of eight new papers ([ADR 0003](docs/adr/0003-architecture-resequenced.md)). It keeps what made CLM fast and fixes what made it inaccurate:
+- **The state is read once.** A causal backbone (Qwen3.5-4B with LoRA) prefills the state once. Every question forks from the exact cached state, including the recurrent state of the Gated DeltaNet layers.
+- **Every option gets its own lane.** Each option is scored in a block that reads the state and the question but never another option, so the output is **exactly order-invariant**.
+- **Typed heads.** A softmax over option scores for choices, a yes/no head that ignores option text, an ordinal head for scores, and a coverage gate for "none of these".
+- **Calibration** per question type, fitted on held-out *sources*, never on a benchmark ([ADR 0004](docs/adr/0004-data-calibration-and-decontamination-amendments.md)).
 
-Uncertain cases route to a **joint slow path** (Architecture C, milestone 2).
+**The bar is set before any training.** Milestone 0 reproduces two published anchors on System1-Arena (CLM at 41.4%, and its own backbone read zero-shot at 59.3%) and runs a calibrated zero-shot readout of our backbone. The model has to beat it.
 
-The first milestone compares four backbone arms on one harness against the **reference implementations themselves**:
-- frozen Qwen3-8B, the CLM anchor, plus intermediate-layer taps;
-- Qwen3.5-4B with LoRA;
-- a frozen Inkling 2 Mini;
-- an Inkling readout baseline.
+**The cached path comes second, and has to earn its place.** For agent loops that revisit states and reuse large option sets, milestone 2 caches options once and adds a late-interaction block. It ships only if it stays within 3 points of the same head on in-context options and runs at least 5× faster.
 
-> **Status:** proposed in [ADR 0001](docs/adr/0001-architecture-late-interaction-two-path.md), currently under independent review before it is locked. Plan: [`docs/research/plan.md`](docs/research/plan.md).
+Inkling joins as an API readout and a distillation teacher, plus an off-target frozen-reader arm on an H100.
+
+> **Status:** locked in [ADR 0003](docs/adr/0003-architecture-resequenced.md), which supersedes [ADR 0001](docs/adr/0001-architecture-late-interaction-two-path.md). Plan: [`docs/research/plan.md`](docs/research/plan.md) (v3). How each review finding was handled: [`docs/research/review-response.md`](docs/research/review-response.md).
 
 ## Quickstart
 
@@ -177,14 +178,14 @@ probs = heads.option_probs(state_vec, option_vecs)  # 4096-d Qwen3-8B vectors in
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/readme/roadmap-dark.svg">
-  <img alt="Roadmap: rebuild and field survey done; benchmark harness in progress; architecture B next, then architecture C and a release." src="assets/readme/roadmap-light.svg" width="100%">
+  <img alt="Roadmap: the CLM rebuild and the field guide are done; the benchmark harness is in progress; the typed-decision model comes next, then the cached path for agent loops and a release." src="assets/readme/roadmap-light.svg" width="100%">
 </picture>
 
 | Milestone | Scope | Tracking |
 |---|---|---|
-| **M0** Harness & references | Typed-decision suites and a robustness battery. Validated by reproducing System1-Arena's CLM 41.4%, then CLM, Kev, Laya, Decision 2.0, Jeff-style and Inkling readouts on one harness | [#33](../../issues/33)–[#37](../../issues/37) |
-| **M1** Architecture B | An eight-rung ablation ladder over four backbone arms, 3 seeds per rung | [#38](../../issues/38) |
-| **M2** Architecture C | Joint `prefix_bidir` slow path and a calibrated cascade; serving optimization on one GPU | — |
+| **M0** Harness, anchors & baselines | Two anchors on a pinned System1-Arena (CLM 41.4%, the Qwen3-8B readout 59.3%); the calibrated same-backbone readout as the bar; probe, DeBERTa and BM25 baselines; reference models and a W2 quality suite on one harness | [#33](../../issues/33)–[#37](../../issues/37) |
+| **M1** Typed decisions | Qwen3.5-4B + LoRA on a forked state with per-option lanes; a baseline-anchored factorial with drop-one ablations, 3 seeds per cell | [#38](../../issues/38) |
+| **M2** Cached path | Options cached once plus a late-interaction block, behind a pre-registered go/no-go; serving on one GPU | — |
 | **M3** Release | Model card with data licences, results, `v0.2.0` | [#13](../../issues/13) |
 
 ## How it is built
@@ -194,7 +195,7 @@ Every change goes **issue → branch → pull request → CI → review notes �
 **CI checks on every PR:**
 - ruff (lint and format);
 - mypy;
-- 81 tests on Python 3.11 and 3.12;
+- 82 tests on Python 3.11 and 3.12;
 - a citation check that fails if any `[@key]` in the research documents is unknown, or if the reference list is stale.
 
 **Reproducibility:**
