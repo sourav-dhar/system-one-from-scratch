@@ -65,7 +65,7 @@ This page tracks every finding.
 | 15 | Major | W2 and the latency frontier are argued one-sidedly | **Fixed.** The "empty region" in 68c1019; W2 counter-evidence and measured latency anchors in Table 12 in 7d0ad66 |
 | 16 | Major | Metric conventions (ECE bins, Brier scale) are unspecified | **Fixed** in e899364 (§2.2 conventions). The protocol estimator is confirmed **At lock** |
 | 17 | Major | The single-pass trajectory shortcut breaks under CLM's layout | **Fixed** in 3516adf (§6.2). **At lock** (plan M1.1) |
-| 18 | Major | Failure-mode provenance is overstated; FM6, FM11 and FM13 are mismeasured | **Partly.** FM2 was fixed in 68c1019; a provenance column and FM6/FM11/FM13 are open |
+| 18 | Major | Failure-mode provenance is overstated; FM6, FM11 and FM13 are mismeasured | **Mostly fixed.** FM2 in 68c1019; provenance, FM6, FM11 and FM13 in c39e048. A per-mode provenance column and FM1's protocol column are open |
 | 19 | Major | ADR 0001 has unestablished hardware feasibility (Inkling 2 Mini; `prefix_bidir` on DeltaNet layers) | **At lock.** The recommendation is to drop the Inkling 2 Mini reader, make C causal and run a feasibility spike |
 | 20 | Major | ADR 0001 lacks a training specification and acceptance criteria | **At lock** |
 | 21 | Major | ADR 0002 has gaps: releasable-weights licensing, closed-model provenance, registry, dedup unit | **At lock** |
