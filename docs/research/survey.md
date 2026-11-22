@@ -125,6 +125,13 @@ $$\mathrm{ECE} = \sum_{b=1}^{B} \frac{|\mathcal{B}_b|}{n}\,\bigl|\mathrm{acc}(\m
 
 and by the Brier score $\sum_i (p_i - y_i)^2$, the log loss, and decision costs. TypedBench reports ECE relative to a Bernoulli resampling floor ("ECE/null") and judges probabilities by the *cost of the decisions they induce* [@typedbench].
 
+*Conventions differ across sources, so calibration numbers from different tables are not directly comparable.*
+- **ECE** is top-label (the confidence of the predicted option) unless stated otherwise. System1-Arena uses 10 equal-mass bins [@s1arena]. This project's measurements (§5.6) use 15 equal-width bins. Several systems do not state their binning. The two estimators diverge most when confidences cluster near 1.
+- **Brier** in this survey is the multi-class sum $\sum_i (p_i - y_i)^2 \in [0, 2]$, as in System1-Arena. Some sources instead report a per-option mean: Laya issue #741's 0.0501 at 80.5% accuracy implies one *(inference)*. Jeva reports a binary Brier for yes/no questions.
+- **ECE/null** (TypedBench) divides ECE by a Bernoulli resampling floor.
+
+For our own results we will report both ECE estimators (15 equal-width and 10 equal-mass bins), with bootstrap confidence intervals, and the multi-class Brier.
+
 **P2 Permutation equivariance.** For any permutation $\pi$ of the options, $p(\pi(O)) = \pi(p(O))$. It is measured by flip rates under shuffling or reversal.
 
 **P3 Set-dependence vs. independence of irrelevant alternatives (IIA).** An *independent scorer* $z_i = g(s, q, o_i)$ gives log-odds $\log(p_i/p_j) = (g_i - g_j)/T$, which no other option can change (the Luce/IIA property). Jeva's Proposition 1 shows that a single attention block over the option set can prefer $a$ in one candidate set and $b$ in another set containing both. No independent scorer with set-independent tie-breaking can do this [@jeva, §3, App. B.1]. IIA costs the ability to model "compared with what?". Independent scoring is sufficient for order invariance and cacheability but not necessary: Jeva is set-dependent yet exactly permutation-equivariant, and it still caches option keys and values [@jeva, Prop. 3]. What IIA saves is the per-request computation over the set. Proposition 1 is an existence result: it shows what one block can represent, not what trained models learn.
