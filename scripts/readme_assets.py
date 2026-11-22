@@ -415,7 +415,7 @@ def findings(t: Theme) -> Canvas:
         "Three result tiles: CLM-8B is the fastest of the System-1-native models on System1-Arena but the "
         "least accurate, below a zero-shot readout of its own backbone; one fitted temperature cuts the "
         "published CLM head's calibration error from 0.065 to 0.013; our evaluation reproduces the published "
-        "heads exactly.",
+        "heads to within 0.4 points.",
     )
     tiles = [
         (
@@ -426,18 +426,18 @@ def findings(t: Theme) -> Canvas:
             "System1-Arena, arXiv 2610.21244, Table 1",
         ),
         (
-            "One scalar fixes calibration",
+            "One scalar cuts the error",
             "0.065|0.013",
             "",
-            "Calibration error (ECE) of the published CLM mid head, shipped vs one fitted temperature.",
+            "ECE of the published CLM mid head, shipped vs one temperature fitted in-distribution.",
             "this project · results/benchmark/heads.json",
         ),
         (
-            "Reproduced exactly",
+            "Reproduced within 0.4 pp",
             "69.16%",
             "",
-            "Authors' mid head re-scored by our evaluation on 191,161 held-out pairs. Reference: 69.2%.",
-            "this project · Modal run on the full held-out test",
+            "Authors' mid head re-scored by our evaluation on 191,161 pairs. Published: 69.2% on ~100k.",
+            "this project · Modal run on the full tricky-Q&A test",
         ),
     ]
     tw, gap, x0, y0, th = 386, 21, 40, 26, 278
@@ -486,12 +486,12 @@ def findings(t: Theme) -> Canvas:
             c.text("shipped", vx + vw, vy + 8, MONO, 10, t.ink3, anchor="end")
             c.text("fitted", vx + vw, vy + 22, MONO, 10, t.accent, anchor="end")
         else:  # reproduction rows
-            rows = (("pre", "51.73", "51.7"), ("mid", "69.16", "69.2"), ("post", "68.63", "68.6"))
+            rows = (("pre", "51.73", "52.1"), ("mid", "69.16", "69.2"), ("post", "68.63", "68.5"))
             for j, (k, ours, ref) in enumerate(rows):
                 ry = vy + 12 + j * 20
                 c.text(k, vx, ry, MONO, 11.5, t.ink3)
                 c.text(f"ours {ours}", vx + 52, ry, MONO_MD, 11.5, t.ink)
-                c.text(f"reference {ref}", vx + 168, ry, MONO, 11.5, t.ink2)
+                c.text(f"published {ref}", vx + 168, ry, MONO, 11.5, t.ink2)
                 c.add(
                     f'<path d="M{vx + vw - 16} {ry - 4} l4 4 l8 -9" fill="none" stroke="{t.s3}" '
                     f'stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'

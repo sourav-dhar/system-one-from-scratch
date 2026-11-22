@@ -43,7 +43,7 @@ Two workloads hide under one name, and they pull designs in opposite directions:
 | Examples | intent routing, policy checks, rubric scoring, triage | agent loops, verifiers, tool choice, games |
 | Options | few, often short labels; new every request | many, **reused across requests** |
 | What matters | reading the state *in light of the question*; calibration | latency per step; caching option representations |
-| Today's best fit | joint decoders (Kev, Jeff-1.1, Strands, Decision 2.0) | cached bi-encoders (CLM) |
+| Today's best fit | joint decoders (Kev, Jeff-1.1, Strands, Decision 2.0) | cached designs (CLM, Jeva); quality still unproven |
 
 This repository rebuilds the open CLM-8B recipe from scratch. It maps the whole field from primary sources. It is now building a model aimed at doing **both** workloads well on **one mid-range GPU**.
 
@@ -51,21 +51,21 @@ This repository rebuilds the open CLM-8B recipe from scratch. It maps the whole 
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/readme/findings-dark.svg">
-  <img alt="Three findings: CLM-8B scores 41.4% at 41 ms on System1-Arena; one fitted temperature reduces the published CLM mid head's calibration error from 0.065 to 0.013; our evaluation reproduces the published heads exactly." src="assets/readme/findings-light.svg" width="100%">
+  <img alt="Three findings: CLM-8B scores 41.4% at 41 ms on System1-Arena; one fitted temperature reduces the published CLM mid head's calibration error from 0.065 to 0.013; our evaluation reproduces the published heads to within 0.4 points." src="assets/readme/findings-light.svg" width="100%">
 </picture>
 
-- **The rebuild is validated.** Re-scoring the authors' published heads with our evaluation code gives **51.73 / 69.16 / 68.63%** on all 191,161 held-out hard-negative questions, matching the reference to four digits.
-- **CLM's speed hides a typed-decision gap.** On System1-Arena, CLM-8B scores 41.4% against **59.3%** for answer-token readout of its *own* frozen backbone. Its issue tracker shows why, and the causes are fixable:
+- **The rebuild is validated.** Re-scoring the authors' published heads with our evaluation code gives **51.73 / 69.16 / 68.63%** on 191,161 hard-negative questions, within 0.4 points of the published 52.1 / 69.2 / 68.5 (measured on a different sample of about 100k).
+- **CLM's speed hides a typed-decision gap.** On System1-Arena, CLM-8B scores 41.4% against **59.3%** for answer-token readout of its *own* frozen backbone. Its issue tracker points to likely causes that look fixable, though none has been isolated on that benchmark (which also kept only CLM's last 2,048 tokens):
   - appending the question to the state collapses distinct states (cosine 0.958 vs 0.452);
   - short option labels make the head ignore the state;
   - a linear probe on the same embeddings beats the fine-tuned head (0.900 vs 0.795).
 
   See [survey §7](docs/research/survey.md#7-evaluation-landscape-and-failure-modes).
-- **Calibration is nearly free.** The published heads ship with their scale saturated at the cap of 100. One fitted scalar removes 79–90% of the calibration error with top-1 unchanged ([survey §5.6](docs/research/survey.md#56-our-measurements)).
+- **One temperature removes most of the shipped heads' calibration error.** The published heads ship with their scale saturated at the cap of 100. One scalar, fitted in-distribution, removes 79–90% of the calibration error, and top-1 cannot change. A cross-dataset fit and a tie-corrected re-measurement come next; elsewhere, calibration has cost other metrics ([survey §5.6](docs/research/survey.md#56-our-measurements)).
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/readme/frontier-dark.svg">
-  <img alt="Scatter plot of System1-Arena accuracy versus median latency for seven System-1 models. CLM is fastest and least accurate; no model reaches 65% accuracy under 100 ms." src="assets/readme/frontier-light.svg" width="100%">
+  <img alt="Scatter plot of System1-Arena accuracy versus median latency for all 22 System-1 and open-LLM rows. Only zero-shot open-LLM readouts reach the fast and accurate region; CLM is the fastest System-1-native model and the least accurate." src="assets/readme/frontier-light.svg" width="100%">
 </picture>
 
 ## The field guide
@@ -74,6 +74,7 @@ The research is built to be **the one place to start** if you want to build, eva
 
 | If you want to… | Read |
 |---|---|
+| **start here**: reading paths, a design decision guide, a worked example, a glossary, baselines and a benchmark card | **[Start-here guide](docs/research/README.md)** |
 | understand the problem, its notation and the properties a good model needs | [Survey §1–2](docs/research/survey.md#2-problem-formulation) |
 | compare architectures and see what each can cache | [§3 taxonomy](docs/research/survey.md#3-a-taxonomy-of-system-one-architectures) · [31 system notes](docs/research/systems/) |
 | train one: contrastive pre-training, soft targets, RL for calibration, LoRA vs head-only | [§4 objectives](docs/research/survey.md#4-training-objectives-and-curricula) |
@@ -83,6 +84,7 @@ The research is built to be **the one place to start** if you want to build, eva
 | see which lab fixed which other lab's flaw | [§8 who fixed whom](docs/research/survey.md#8-who-fixed-whom) |
 | serve one on a single GPU | [§9 serving](docs/research/survey.md#9-serving-and-efficiency) |
 | find an open problem worth working on | [§10 open problems](docs/research/survey.md#10-open-problems-and-the-scope-for-improvement) |
+| see how this research was checked | [Three independent reviews](docs/research/reviews/) · [response tracker](docs/research/review-response.md) |
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/readme/taxonomy-dark.svg">
