@@ -28,4 +28,4 @@ I identified all three names: Kev and Laya are System One models, but Inkling is
 
 **Not found:** a released CLM-35B; open weights for Microsoft-Decision-1; head and training details for Decision 2.0; Jev's architecture. CLM's README says each head is about 20M parameters, while our notes say 9.44M, which is worth reconciling.
 
-The report is at C:\Users\dhars\AppData\Local\Temp\claude\e3bad9d5fd4b315f\777241e1-0588-4c74-940a-4d72bf5420d9\scratchpad\research\landscape.md. It has the comparison table, a section per system, serving notes, and the prioritized plan with effort estimates.
+The report is at a local scratch directory (not in the repo). It has the comparison table, a section per system, serving notes, and the prioritized plan with effort estimates.
