@@ -253,8 +253,9 @@ def run_benchmark(heads: list[str], dims: list[int]) -> dict[str, Any]:
             "test_rows": len(test),
             "own": own,
             "fitted": cal,
-            "bins_own": reliability_bins(p_own.max(1), p_own.argmax(1) == 0),
-            "bins_fitted": reliability_bins(p_fit.max(1), p_fit.argmax(1) == 0),
+            # correct = gold strictly above every negative (ties are misses, as in top-1)
+            "bins_own": reliability_bins(p_own.max(1), p_own[:, 0] > p_own[:, 1:].max(1)),
+            "bins_fitted": reliability_bins(p_fit.max(1), p_fit[:, 0] > p_fit[:, 1:].max(1)),
         }
         res["seconds"] = time.time() - t0
         out[spec] = res

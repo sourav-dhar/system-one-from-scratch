@@ -95,3 +95,12 @@ def test_evaluate_combines_suites_and_prefix_dims() -> None:
     m = evaluate(identity_model(), suite, dims=(8,))
     assert {"scale", "general/top1", "hard/top1", "hard@8/top1", "hard/ece"} <= set(m)
     assert "hard/top1" not in evaluate(identity_model(), suite, hard=False)
+
+
+def test_ece_counts_exact_ties_as_misses() -> None:
+    """Gold tied with a negative must not count as correct (argmax would pick column 0)."""
+    cos = np.tile(np.array([[0.5, 0.5, 0.2]]), (100, 1))
+    m = summarize_hard(cos, scale=10.0)
+    p_max = np.exp(5) / (2 * np.exp(5) + np.exp(2))
+    assert m["hard/top1"] == 0.0
+    assert m["hard/ece"] == pytest.approx(p_max)  # confidence p_max, accuracy 0

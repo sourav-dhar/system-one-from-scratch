@@ -122,8 +122,10 @@ def summarize_hard(cos: np.ndarray, scale: float, prefix: str = "hard") -> dict[
     onehot = torch.zeros_like(p)
     onehot[:, 0] = 1
     brier = float(((p - onehot) ** 2).sum(1).mean())
-    conf, pred = p.max(1)
-    ece = expected_calibration_error(conf.numpy(), (pred == 0).numpy())
+    conf = p.max(1).values
+    # correct means strictly above every negative, the same rule as top-1: an exact tie is a miss
+    # (argmax would break ties towards the gold in column 0 and flatter calibration).
+    ece = expected_calibration_error(conf.numpy(), pos > neg.max(1))
     return {
         f"{prefix}/top1": top1,
         f"{prefix}/mrr": float((1.0 / rank).mean()),
