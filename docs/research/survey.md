@@ -129,11 +129,11 @@ and by the Brier score $\sum_i (p_i - y_i)^2$, the log loss, and decision costs.
 
 **P3 Set-dependence vs. independence of irrelevant alternatives (IIA).** An *independent scorer* $z_i = g(s, q, o_i)$ gives log-odds $\log(p_i/p_j) = (g_i - g_j)/T$, which no other option can change (the Luce/IIA property). Jeva's Proposition 1 shows that a single attention block over the option set can prefer $a$ in one candidate set and $b$ in another set containing both. No independent scorer with set-independent tie-breaking can do this [@jeva, §3, App. B.1]. IIA costs the ability to model "compared with what?". Independent scoring is sufficient for order invariance and cacheability but not necessary: Jeva is set-dependent yet exactly permutation-equivariant, and it still caches option keys and values [@jeva, Prop. 3]. What IIA saves is the per-request computation over the set. Proposition 1 is an existence result: it shows what one block can represent, not what trained models learn.
 
-**P4 Null coverage.** Models need to say "none of these fits". Appending a "none" option to a flat softmax yields
+**P4 Null coverage.** Models need to say "none of these fits". Appending a "none" option with logit $b_0$ to a flat softmax over option scores $u_1, \dots, u_K$ yields, exactly,
 
-$$p_\perp^{\mathrm{flat}} = \sigma\!\left(\frac{b_0 - s}{\tau} - \log K\right),$$
+$$p_\perp^{\mathrm{flat}} = \sigma\!\left(\frac{b_0 - \bar u}{\tau} - \log K\right), \qquad \bar u = \tau \log \frac{1}{K} \sum_{i=1}^{K} e^{u_i/\tau},$$
 
-a $\log K$ bias: the null becomes less likely simply because more options are listed. A coverage gate on the maximum score does not have this bias [@jeva, Prop. 2].
+where $\bar u$ is the log-mean-exp of the option scores. Holding the typical option score fixed, the null loses $\log K$ in log-odds simply because more options are listed. A coverage gate on the maximum score removes this bias for options added below the current maximum [@jeva, Prop. 2], but not every $K$-drift: for i.i.d. distractor scores the expected maximum still rises with $K$.
 
 **P5 Coherence.** Probabilities should obey the axioms: $P(A) + P(\lnot A) = 1$, and a partition's parts should sum to one. Jev's yes/no answers to a question and to its negation deviate from complementarity by a mean absolute 0.064 (noise floor 0.013). Its per-option yes/no probabilities over a three-way partition sum to 1.14 on average, exceeding 1 on 159 of 160 items [@axioms].
 
@@ -319,7 +319,7 @@ It is the closest published analogue to a frozen-reader head with intermediate-l
 
 **SemIf** [@semif] reads frozen Qwen3.5-4B letter logits for 2–16 options (balanced accuracy 0.813). Its prompt became Jeff's.
 
-**AnyJev**'s L0 readout averages label log-probabilities over all $K$ cyclic rotations of the options, which is exact under an additive position-bias model, and divides by a running label prior. At $K = 20$ the flip rate falls from 0.328 to 0.138 at the cost of $K$ prefills [@anyjev, Table 1]. On an 18-option serving task, adaptive stopping used 7.3 rotations on average; verified on disjoint data it uses 10.6 of 18 [@anyjev, Table 3].
+**AnyJev**'s L0 readout averages label log-probabilities over all $K$ cyclic rotations of the options, which cancels absolute-position effects that are additive in log-probability (not neighbour effects, since a rotation changes each option's neighbours), and divides by a running label prior raised to the power 0.75 [@anyjev]. At $K = 20$ the flip rate falls from 0.328 to 0.138 at the cost of $K$ prefills [@anyjev, Table 1]. On an 18-option serving task, adaptive stopping used 7.3 rotations on average; verified on disjoint data it uses 10.6 of 18 [@anyjev, Table 3].
 
 **Runoff** [@runoff] scores options *pointwise*, keeps the top set holding 99% of the mass (at least 3 options), and runs cyclic listwise averaging only on that shortlist. This takes flips to 0.0 at 3–4× the speed of full averaging at $K = 20$; pointwise-only scoring costs about 6 points (63.3 vs. 69.0). These methods matter as *baselines*: the evidence audit found that only 5 of 26 papers compared against a same-backbone label log-probability readout [@tdmaudit].
 
@@ -408,7 +408,7 @@ $$\tilde z = \mathrm{sg}(z) + \epsilon,\ \ \epsilon \sim \mathcal{N}(0,\sigma^2 
 
 $$r(q, t) = \sum_k t_k \max(\log q_k, -9.21) + w_{\text{sph}}\frac{t\cdot q}{\lVert q\rVert} - w_{\text{rps}}\,\mathbb{1}[\text{score}]\,\frac{\sum_k (\mathrm{CDF}_{q,k}-\mathrm{CDF}_{t,k})^2}{K-1},$$
 
-$$\mathcal{L} = -\overline{A \log \pi(\tilde z\mid z)} + \mathrm{CE}_{\text{soft}}(z, t), \qquad A = \frac{r - \bar r_{\text{samples}}}{\mathrm{std}_{\text{batch}}(r)},\quad \log\pi = -\frac{\lVert \tilde z - z\rVert^2}{2\sigma^2}.$$
+$$\mathcal{L} = -\overline{A \log \pi(\tilde z\mid z)} + \mathrm{CE}_{\text{soft}}(z, t), \qquad A = \frac{r - \bar r_{\text{samples}}}{\mathrm{std}_{\text{batch}}(r - \bar r_{\text{samples}})},\quad \log\pi = -\frac{\lVert \tilde z - z\rVert^2}{2\sigma^2}.$$
 
 The defaults are 4 samples, $\sigma$ annealed from 0.4 to 0.1, $w_{\text{sph}} = 0.75$ and $w_{\text{rps}} = 1$. This differs from the author's blog, which describes pure policy gradient with 8 samples and $\sigma$ from 1.0 to 0.3 [@laya-repo].
 
@@ -420,7 +420,7 @@ A three-arm ablation of Laya's objective on typed-decisions (issue #741, a singl
 | RLCD (PG + soft-CE) | 79.08% | **11.18%** | 0.0543 |
 | Direct proper-score gradient | 79.92% | 12.04% | 0.0516 |
 
-The merged three-seed follow-up (PR #1012) found the arms tied: 0.7763 vs 0.7762 accuracy, per-seed differences −0.0145, +0.0135 and +0.0015. So the single-seed soft-CE lead did not replicate, but neither did any RL gain [@laya-repo]. The explanation offered in the issue is exact: soft-CE *is* the expected log score, and the policy-gradient term is a high-variance estimate of a gradient that can be computed in closed form. Independent work agrees:
+The merged three-seed follow-up (PR #1012) found the arms tied: 0.7763 vs 0.7762 accuracy, per-seed differences −0.0145, +0.0135 and +0.0015. So the single-seed soft-CE lead did not replicate, but neither did any RL gain [@laya-repo]. The explanation offered in the issue holds only approximately. Soft-CE is the expected log score, while the policy-gradient term estimates the gradient of a noise-smoothed reward that also contains a spherical score (weight 0.75) and, for score questions, an RPS term; the two coincide only for the log-score part and only as the noise scale $\sigma \to 0$ [@laya-repo]. Independent work agrees:
 - sbert2s1 finds Laya's estimator 3.6–15× too large in scale and fixes it with a leave-one-out baseline (PG-LOO). After temperature scaling, all objectives sit at 3.6–4.4 ECE [@sbert2s1, Tables 4, 6].
 - NanoJev's unbiased sampled-Brier policy gradient scored test L2 0.1184 vs. 0.1242 (CE) and 0.1384 (Brier). The numbers are slightly lower than CE, but with one seed the authors describe it as matching rather than beating [@nanojev].
 - SanSi's RL variant gave no gain (71.7 vs. 72.0) [@sansi].
