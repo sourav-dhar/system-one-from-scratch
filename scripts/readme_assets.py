@@ -969,7 +969,7 @@ FAILURES = [  # name, headline, context, source
     ("Ordinal compression", "1 of 4", "Laya ladders that keep their level order", "TypedBench"),
     ("Long-context burying", "−22–43 pp", "Kev when evidence is buried in records", "Kev PLAN.md"),
     ("State collapse", "0.958", "CLM cosine between different states", "CLM issue #15"),
-    ("Read right, act wrong", "73–85%", "of top systems' errors follow correct reading", "Reading Right"),
+    ("Read right, act wrong", "73–78%", "of System One errors follow correct reading", "Reading Right"),
     ("Adversarial states", "46.3%", "attack success rate on Jev", "JevAdvBench"),
     ("Step vs. loop gap", "1.7%", "CLM loop success at 40.6% step accuracy", "System1-Arena"),
     ("Knowledge erosion", "−11 pp", "MMLU after Kev fine-tuning at 8B", "Kev PLAN.md"),
