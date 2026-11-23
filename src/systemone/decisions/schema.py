@@ -3,9 +3,10 @@
 A *decision request* is one state plus named questions. Each question has a type:
 
 * ``choice`` picks one of 2-255 options. ``criteria`` maps option id -> description.
-* ``boolean`` asks whether a statement is true. Its option ids are ``"true"`` and ``"false"``, and it
-  takes no criteria. TypeSafe's API calls this type ``noul``; both spellings are accepted and stored
-  as ``boolean``.
+* ``boolean`` asks whether a statement is true. Its option ids are ``"true"`` and ``"false"``.
+  Criteria are optional; when given, they describe what each answer means
+  (``{"true": ..., "false": ...}``). TypeSafe's API calls this type ``noul``; both spellings are
+  accepted and stored as ``boolean``.
 * ``score`` picks one of 2-10 ordered levels. ``criteria`` is the ordered list of level descriptions,
   and the option ids are ``"0"``, ``"1"``, and so on.
 
@@ -13,10 +14,13 @@ A model answers each question with a probability per option id. On open-set prot
 the probability that no listed option is right. Gold is a hard label, a soft distribution, or both.
 On open-set protocols gold can instead be ``absent``: the right answer is not among the options.
 
+The state may be an object, a string or an array, as in TypeSafe's ``POST /v1/systemone``.
+
 The format is wire-compatible with the System1-Arena item schema, version 0.1
 (https://github.com/TianyuCodings/S1-Arena, ``s1arena/schema.py``, Apache-2.0, from which the
 validation rules and the id definition are adapted):
-* an S1-Arena item parses unchanged;
+* an S1-Arena item parses unchanged (S1-Arena itself only uses object states and no boolean
+  criteria, so this schema is a superset of it);
 * :func:`content_id` reproduces S1-Arena's ids, so a loader can prove that no item differs from a pinned
   release.
 
@@ -59,8 +63,10 @@ class Question(BaseModel):
         elif self.type == "score":
             if not isinstance(self.criteria, list) or not 2 <= len(self.criteria) <= MAX_LEVELS:
                 raise ValueError(f"score questions need an ordered list of 2..{MAX_LEVELS} levels")
-        elif self.criteria is not None:
-            raise ValueError("boolean questions take no criteria; put clarifications in the instructions")
+        elif self.criteria is not None and (
+            not isinstance(self.criteria, dict) or not set(self.criteria) <= set(BOOLEAN_OPTIONS)
+        ):
+            raise ValueError('boolean criteria, if given, describe "true" and/or "false" in a dict')
         return self
 
     def option_ids(self) -> list[str]:
@@ -74,20 +80,24 @@ class Question(BaseModel):
         return list(BOOLEAN_OPTIONS)
 
     def option_texts(self) -> list[str]:
-        """The text of each option, aligned with :meth:`option_ids`; booleans give their ids."""
+        """The text of each option, aligned with :meth:`option_ids`.
+
+        A boolean option without a description gives its id.
+        """
         if self.type == "choice":
             assert isinstance(self.criteria, dict)
             return list(self.criteria.values())
         if self.type == "score":
             assert isinstance(self.criteria, list)
             return list(self.criteria)
-        return list(BOOLEAN_OPTIONS)
+        described = self.criteria if isinstance(self.criteria, dict) else {}
+        return [described.get(o) or o for o in BOOLEAN_OPTIONS]
 
 
 class DecisionRequest(BaseModel):
     """Everything the model is allowed to see."""
 
-    state: dict[str, Any]
+    state: dict[str, Any] | str | list[Any]
     questions: dict[str, Question]
 
 

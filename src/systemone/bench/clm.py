@@ -9,7 +9,8 @@ spec ``clm:Contrastive-LM/CLM-v0.1-8B``).
   instructions.
 * A choice option's candidate text is its description, or its id if the description is empty.
 * A score level's candidate text is the level itself.
-* A boolean's two candidate texts state the claim affirmed and denied:
+* A boolean's two candidate texts are its descriptions when the question gives them
+  (``"true: <description>"``). Otherwise they state the claim affirmed and denied:
   ``"true: Yes. This is true: <instructions>"`` and ``"false: No. This is false: <instructions>"``.
 
 **Encoding.** The frozen encoder (Qwen3-8B, last-token pooling, L2-normalised) embeds each distinct text
@@ -86,7 +87,12 @@ def candidate_texts(question: Question) -> list[str]:
         return [to_text(c) for c in question.criteria]
     ins = to_text(question.instructions).strip()
     claims = {"true": f"Yes. This is true: {ins}", "false": f"No. This is false: {ins}"}
-    return [f"{k}: {claims[k] if ins else k}" for k in question.option_ids()]
+    described = question.criteria if isinstance(question.criteria, dict) else {}
+    texts = []
+    for k in question.option_ids():
+        d = described.get(k)
+        texts.append(f"{k}: {to_text(d) if d not in (None, '') else (claims[k] if ins else k)}")
+    return texts
 
 
 def tail_text(tok: Any, ids: list[int], maxlen: int) -> str:
