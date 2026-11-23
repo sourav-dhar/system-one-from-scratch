@@ -77,7 +77,7 @@ def test_noul_is_an_alias_of_boolean() -> None:
     [
         ({"type": "choice", "criteria": {"only": "one option"}}, "choice questions need"),
         ({"type": "choice", "criteria": ["a", "list", "is", "not", "a", "dict"]}, "choice questions need"),
-        ({"type": "choice", "criteria": {str(i): str(i) for i in range(256)}}, "choice questions need"),
+        ({"type": "choice", "criteria": {str(i): str(i) for i in range(4097)}}, "choice questions need"),
         ({"type": "score", "criteria": ["one level"]}, "score questions need"),
         ({"type": "score", "criteria": [str(i) for i in range(11)]}, "score questions need"),
         ({"type": "boolean", "criteria": ["yes", "no"]}, "describe"),

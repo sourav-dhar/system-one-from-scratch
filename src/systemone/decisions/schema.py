@@ -2,7 +2,7 @@
 
 A *decision request* is one state plus named questions. Each question has a type:
 
-* ``choice`` picks one of 2-255 options. ``criteria`` maps option id -> description.
+* ``choice`` picks one of 2-4,096 options (2-255 on the wire). ``criteria`` maps option id -> description.
 * ``boolean`` asks whether a statement is true. Its option ids are ``"true"`` and ``"false"``.
   Criteria are optional; when given, they describe what each answer means
   (``{"true": ..., "false": ...}``). TypeSafe's API calls this type ``noul``; both spellings are
@@ -37,7 +37,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 SCHEMA_VERSION = "0.1"
-MAX_OPTIONS = 255
+MAX_OPTIONS = 4096  # S1-Arena and TypeSafe's wire allow 255; K-sweeps (ToolRet) reach 2,048
 MAX_LEVELS = 10
 BOOLEAN_OPTIONS = ("true", "false")
 TYPE_ALIASES = {"noul": "boolean"}  # TypeSafe's name for a yes/no question
