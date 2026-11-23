@@ -1,0 +1,6 @@
+---
+import { roman } from '../lib/data';
+interface Props { no: number; title: string; id: string }
+const { no, title, id } = Astro.props;
+---
+<div class="sec-head"><span class="no" data-roman={roman(no)}>§{no}</span><h2 id={id}>{title}</h2></div>

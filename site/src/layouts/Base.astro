@@ -1,0 +1,120 @@
+---
+import '@fontsource/instrument-serif/400.css';
+import '@fontsource/instrument-serif/400-italic.css';
+import '@fontsource-variable/instrument-sans/wdth.css';
+import '@fontsource/ibm-plex-mono/400.css';
+import '@fontsource/ibm-plex-mono/500.css';
+import '@fontsource/ibm-plex-mono/600.css';
+import '@fontsource/ibm-plex-sans/400.css';
+import '@fontsource/ibm-plex-sans/500.css';
+import '@fontsource/ibm-plex-sans-condensed/500.css';
+import '@fontsource/ibm-plex-sans-condensed/600.css';
+import '@fontsource-variable/bodoni-moda/opsz.css';
+import '@fontsource-variable/bodoni-moda/opsz-italic.css';
+import '@fontsource/courier-prime/400.css';
+import '@fontsource/courier-prime/700.css';
+import '../styles/tokens.css';
+import '../styles/base.css';
+import { href } from '../lib/data';
+
+interface Props { title: string; description: string; current?: 'home' | 'models' }
+const { title, description, current } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+<!doctype html>
+<html lang="en" data-look="ledger">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href={href('favicon.svg')} />
+    <meta name="color-scheme" content="light dark" />
+    <script is:inline>
+      // Apply the reader's saved look and theme before first paint. Storage may be unavailable.
+      (function () {
+        // A shared link can name them: ?look=blueprint&theme=dark (the URL wins over storage).
+        var root = document.documentElement;
+        var q = new URLSearchParams(location.search);
+        var look = q.get('look'), theme = q.get('theme');
+        try {
+          if (!look) look = localStorage.getItem('s1.look');
+          if (!theme) theme = localStorage.getItem('s1.theme');
+        } catch (e) {}
+        if (look === 'ledger' || look === 'blueprint' || look === 'cinema') root.setAttribute('data-look', look);
+        if (theme === 'light' || theme === 'dark') root.setAttribute('data-theme', theme);
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <div class="grain" aria-hidden="true"></div>
+    <div class="vignette" aria-hidden="true"></div>
+    <header class="site-head">
+      <div class="wrap">
+        <a class="brand" href={href('')}>System One, from scratch</a>
+        <nav class="nav" aria-label="Site">
+          <a href={href('')} aria-current={current === 'home' ? 'page' : undefined}>Models</a>
+          <a href="https://github.com/sourav-dhar/system-one-from-scratch">Repository</a>
+        </nav>
+        <span class="spacer"></span>
+        <div class="switchers">
+          <div class="seg" role="group" aria-label="Look">
+            <button type="button" data-look-set="ledger">Ledger</button>
+            <button type="button" data-look-set="blueprint">Blueprint</button>
+            <button type="button" data-look-set="cinema">Monochrome</button>
+          </div>
+          <div class="seg small" role="group" aria-label="Theme">
+            <button type="button" data-theme-set="system">Auto</button>
+            <button type="button" data-theme-set="light">Light</button>
+            <button type="button" data-theme-set="dark">Dark</button>
+          </div>
+        </div>
+      </div>
+    </header>
+    <main class="wrap" id="main">
+      <slot />
+    </main>
+    <footer class="site-foot">
+      <div class="wrap">
+        <span>Every number on this site carries its source. Corrections are shown in place.</span>
+        <span>Code and data: <a href="https://github.com/sourav-dhar/system-one-from-scratch">sourav-dhar/system-one-from-scratch</a></span>
+      </div>
+    </footer>
+    <script>
+      const root = document.documentElement;
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const store = (k: string, v: string | null) => {
+        try { if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch { /* storage unavailable */ }
+      };
+      const lookBtns = [...document.querySelectorAll<HTMLButtonElement>('[data-look-set]')];
+      const themeBtns = [...document.querySelectorAll<HTMLButtonElement>('[data-theme-set]')];
+      const sync = () => {
+        const look = root.getAttribute('data-look') ?? 'ledger';
+        const theme = root.getAttribute('data-theme') ?? 'system';
+        lookBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lookSet === look)));
+        themeBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.themeSet === theme)));
+      };
+      lookBtns.forEach((b) => b.addEventListener('click', () => {
+        const next = b.dataset.lookSet ?? 'ledger';
+        const was = root.getAttribute('data-look');
+        root.setAttribute('data-look', next);
+        store('s1.look', next);
+        sync();
+        const main = document.getElementById('main');
+        if (next === 'cinema' && was !== 'cinema' && !reduce && main?.animate) {
+          main.animate([{ clipPath: 'circle(0% at 50% 30%)' }, { clipPath: 'circle(150% at 50% 30%)' }],
+            { duration: 950, easing: 'cubic-bezier(.6,0,.2,1)' });
+        }
+      }));
+      themeBtns.forEach((b) => b.addEventListener('click', () => {
+        const v = b.dataset.themeSet ?? 'system';
+        if (v === 'system') { root.removeAttribute('data-theme'); store('s1.theme', null); }
+        else { root.setAttribute('data-theme', v); store('s1.theme', v); }
+        sync();
+      }));
+      sync();
+    </script>
+  </body>
+</html>

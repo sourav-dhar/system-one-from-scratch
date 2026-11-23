@@ -1,0 +1,50 @@
+---
+import Base from '../layouts/Base.astro';
+import { registry, FAMILY_LABEL, href } from '../lib/data';
+
+const tiers = [
+  { tier: 'A', title: 'Tier A', note: 'deep pages: architecture, training, data, benchmarks, try it' },
+  { tier: 'B', title: 'Tier B', note: 'structure and key facts' },
+  { tier: 'C', title: 'Tier C', note: 'reference cards' },
+] as const;
+const counted = registry.filter((s) => s.family !== 'ours').length;
+---
+<Base title="System One, from scratch" description="How System One decision models are built, trained and measured, with every number tied to its source." current="home">
+  <section class="hero" aria-labelledby="h">
+    <p class="label">Companion to the System One research repository</p>
+    <h1 id="h">How System One models are built, trained and measured</h1>
+    <p>System One models answer typed questions about some state (yes or no, choose one of several options, score on a scale) with probabilities rather than generated text. Each page here takes one model apart from first principles, and every number on it is tied to its source.</p>
+    <div class="paths">
+      <div>
+        <h3 class="label">New to System One</h3>
+        <p>Start with the <a href={href('models/clm/')}>CLM page</a>, then the <a href="https://github.com/sourav-dhar/system-one-from-scratch/blob/main/docs/research/README.md">start-here research guide</a>.</p>
+      </div>
+      <div>
+        <h3 class="label">Building one</h3>
+        <p>Each model page states what is frozen, what is trained and what is cached, and links the code it comes from.</p>
+      </div>
+      <div>
+        <h3 class="label">Checking the evidence</h3>
+        <p>Every result is tagged as an independent measurement, the authors' own result, our run or our inference, and links to its source.</p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="idx">
+    <div class="sec-head"><span class="no" data-roman="I">§1</span><h2 id="idx">Models</h2></div>
+    <p class="lede">{counted} systems from the research notes, plus our own model in development. Pages are being written one at a time; names without a link are on the way.</p>
+    {tiers.map(({ tier, title, note }) => (
+      <div class="tier">
+        <h3>{title} <span class="label">{note}</span></h3>
+        <ul class="syslist">
+          {registry.filter((s) => s.tier === tier).map((s) => (
+            <li>
+              {s.has_page ? <a class="nm" href={href(`models/${s.id}/`)}>{s.name}</a> : <span class="nm soon">{s.name}</span>}
+              <span class="fam">{FAMILY_LABEL[s.family] ?? s.family}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
+  </section>
+</Base>

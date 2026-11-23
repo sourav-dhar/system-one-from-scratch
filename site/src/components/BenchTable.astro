@@ -1,0 +1,52 @@
+---
+import type { BenchTable, Reference } from '../lib/data';
+import ProvTag from './ProvTag.astro';
+import FactBlock from './FactBlock.astro';
+interface Props { table: BenchTable; refs: Map<string, Reference> }
+const { table, refs } = Astro.props;
+const ref = table.reference_line;
+const f = (v: number | null, d: number) => (v === null ? null : v.toFixed(d));
+---
+<div class="tbl-scroll" role="region" aria-label={`${table.title}, scrollable table`} tabindex="0">
+  <table class="ledger">
+    <caption>{table.caption}</caption>
+    <thead>
+      <tr>
+        <th scope="col">Row</th>
+        <th scope="col">Model</th>
+        <th scope="col">Probabilities from</th>
+        <th scope="col" class="num">Accuracy %</th>
+        <th scope="col"><span class="vh">Accuracy bar, </span>0–80%</th>
+        <th scope="col" class="num">Brier</th>
+        <th scope="col" class="num">p50</th>
+        <th scope="col">Measured on</th>
+        <th scope="col">Source</th>
+      </tr>
+    </thead>
+    <tbody>
+      {table.rows.map((r) => (
+        <tr class:list={[{ child: r.child, focus: r.focus }]}>
+          <td class="rank">{r.rank ?? ''}</td>
+          <td class="model">{r.label}</td>
+          <td class="readout">{r.readout}</td>
+          <td class="num">{f(r.accuracy, 2) ?? 'n/m'}{r.accuracy_ci && <> <span class="ci">{r.accuracy_ci[0].toFixed(2)}–{r.accuracy_ci[1].toFixed(2)}</span></>}</td>
+          <td>{r.accuracy !== null && (
+            <div class:list={['accbar', { c: r.provenance === 'ours' }]} style={`--v:${r.accuracy};--ref:${ref ?? 0}`}><i></i>{ref !== null && <b></b>}</div>
+          )}</td>
+          <td class="num">{f(r.brier, 4) ?? 'n/m'}</td>
+          <td class="num">{r.p50_ms === null ? 'n/m' : `${r.p50_ms.toFixed(1)} ms`}</td>
+          <td class="readout">{r.measured_on}</td>
+          <td><ProvTag kind={r.provenance} text={r.provenance === 'independent' ? 'independent' : undefined} /></td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+<div class="key-line">
+  {table.reference_label && <span><span class="tick" aria-hidden="true"></span>{table.reference_label}</span>}
+  <span>Row = position among the ranked rows</span>
+  <span>n/m = not measured</span>
+</div>
+{table.notes.length > 0 && (
+  <ul class="notes">{table.notes.map((n) => <li><FactBlock fact={n} refs={refs} as="p" /></li>)}</ul>
+)}

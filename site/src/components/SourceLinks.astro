@@ -1,0 +1,10 @@
+---
+import type { Reference, Source } from '../lib/data';
+interface Props { sources: Source[]; refs: Map<string, Reference> }
+const { sources, refs } = Astro.props;
+---
+{sources.map((s) => {
+  const r = refs.get(s.key);
+  const label = `${s.key.replace(/^repo:/, '')}${s.at ? ` · ${s.at}` : ''}`;
+  return r ? <a href={r.url} title={r.title}>{label}</a> : <span>{label}</span>;
+})}

@@ -1,0 +1,930 @@
+<title>CLM Look Bake-off</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..700&family=Courier+Prime:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500&family=Instrument+Sans:ital,wdth,wght@0,75..100,400..700;1,75..100,400..700&family=Instrument+Serif:ital@0;1&display=swap">
+<style>
+/* Layout: one 1120px reading column. Bake-off bar (sticky) → masthead → summary → §3 architecture drawing →
+   §4 request player + cosine ruler → §9 ledger table → sources. Three looks share one DOM; each look is a
+   token set (light + dark) plus a few look-specific rules. */
+:root{
+  /* LOOK 1 · Editorial ledger + line art (light) — the default */
+  --bg:#F6F4EF; --panel:#FCFBF8; --ink:#14161B; --ink2:#555B67; --ink3:#6B707A;
+  --rule:#DAD5CB; --rule-strong:#14161B; --grid:#E5E0D6;
+  --accent:#E2501E; --accent-text:#B8431A; --accent-soft:#F7E1D5; --on-accent:#FFFFFF;
+  --cool:#1F6F6B; --cool-soft:#DCEBE8; --margin-rule:#F0C9B8;
+  --now-fill:var(--accent-soft); --now-stroke:var(--accent); --now-text:var(--ink);
+  --paper-img:none; --paper-size:auto; --title-grad:none; --film:#14161B;
+  --f-display:"Instrument Serif","Iowan Old Style",Georgia,serif;
+  --f-body:"Instrument Sans","Helvetica Neue",Arial,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --f-label:var(--f-mono); --f-math:"Instrument Serif",Georgia,serif;
+  --d-weight:400; --d-style:normal; --d-transform:none; --d-track:-0.015em; --d-stretch:100%; --d-size:clamp(54px,10.5vw,128px); --d-lh:.88;
+  --h-font:var(--f-display); --h-weight:400; --h-transform:none; --h-track:0; --h-size:clamp(28px,3.6vw,40px); --h-stretch:100%;
+  --sw:1.25;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1014; --panel:#14171C; --ink:#ECE8E0; --ink2:#A7ADB7; --ink3:#8A909B;
+    --rule:#2A2E36; --rule-strong:#ECE8E0; --grid:#1C2027;
+    --accent:#FF6B3D; --accent-text:#FF8A63; --accent-soft:#3A1F15; --on-accent:#0E1014;
+    --cool:#4FB3A9; --cool-soft:#15302D; --margin-rule:#3A1F15; --film:#ECE8E0;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1014; --panel:#14171C; --ink:#ECE8E0; --ink2:#A7ADB7; --ink3:#8A909B;
+  --rule:#2A2E36; --rule-strong:#ECE8E0; --grid:#1C2027;
+  --accent:#FF6B3D; --accent-text:#FF8A63; --accent-soft:#3A1F15; --on-accent:#0E1014;
+  --cool:#4FB3A9; --cool-soft:#15302D; --margin-rule:#3A1F15; --film:#ECE8E0;
+  color-scheme:dark;
+}
+
+/* LOOK 2 · Blueprint engineering */
+:root[data-look="blueprint"]{
+  --bg:#EAF0F5; --panel:#F4F8FB; --ink:#0F3557; --ink2:#36597B; --ink3:#56718C;
+  --rule:#B9CBDB; --rule-strong:#0F3557; --grid:#D3DFEA;
+  --accent:#C8371D; --accent-text:#B0301A; --accent-soft:#F6DED7; --on-accent:#FFFFFF;
+  --cool:#0B6E7F; --cool-soft:#D5E9EE; --margin-rule:transparent;
+  --now-fill:var(--accent-soft); --now-stroke:var(--accent); --now-text:var(--ink);
+  --paper-img:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  --paper-size:24px 24px; --title-grad:none; --film:#0F3557;
+  --f-display:"IBM Plex Sans Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;
+  --f-label:"IBM Plex Sans Condensed","Arial Narrow",Arial,sans-serif;
+  --d-weight:600; --d-style:normal; --d-transform:uppercase; --d-track:.02em; --d-stretch:100%; --d-size:clamp(40px,7.4vw,90px); --d-lh:.95;
+  --h-font:"IBM Plex Sans Condensed","Arial Narrow",Arial,sans-serif; --h-weight:600; --h-transform:uppercase; --h-track:.06em; --h-size:clamp(20px,2.4vw,26px); --h-stretch:100%;
+  --sw:1;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"])[data-look="blueprint"]{
+    --bg:#0B2440; --panel:#0E2C4C; --ink:#DCEAF6; --ink2:#A3BDD6; --ink3:#86A3C0;
+    --rule:#2A4C72; --rule-strong:#DCEAF6; --grid:#143458;
+    --accent:#FF7A59; --accent-text:#FF957A; --accent-soft:#40283A; --on-accent:#0B2440;
+    --cool:#6FD3E0; --cool-soft:#123F55; --film:#DCEAF6;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"][data-look="blueprint"]{
+  --bg:#0B2440; --panel:#0E2C4C; --ink:#DCEAF6; --ink2:#A3BDD6; --ink3:#86A3C0;
+  --rule:#2A4C72; --rule-strong:#DCEAF6; --grid:#143458;
+  --accent:#FF7A59; --accent-text:#FF957A; --accent-soft:#40283A; --on-accent:#0B2440;
+  --cool:#6FD3E0; --cool-soft:#123F55; --film:#DCEAF6;
+  color-scheme:dark;
+}
+
+/* LOOK 3 · Monochrome, classic film: silver print (light) and nitrate black (dark) */
+:root[data-look="cinema"]{
+  --bg:#E8E6E1; --panel:#F0EEEA; --ink:#111111; --ink2:#363636; --ink3:#5E5E5E;
+  --rule:#ABA8A2; --rule-strong:#111111; --grid:#D8D5CF;
+  --accent:#111111; --accent-text:#111111; --accent-soft:#CFCCC6; --on-accent:#F0EEEA;
+  --cool:#111111; --cool-soft:#DAD7D1; --margin-rule:transparent;
+  --now-fill:var(--ink); --now-stroke:var(--ink); --now-text:var(--panel);
+  --paper-img:none; --paper-size:auto; --film:#111111;
+  --title-grad:linear-gradient(180deg,#000 0%,#2b2b2b 60%,#4a4a4a 100%);
+  --grain-op:.09; --vig:rgba(0,0,0,.16);
+  --f-display:"Bodoni Moda","Didot","Bodoni 72",Georgia,serif;
+  --f-body:"Instrument Sans","Helvetica Neue",Arial,sans-serif;
+  --f-label:"Courier Prime","Courier New",monospace; --f-mono:"Courier Prime","Courier New",monospace;
+  --f-math:"Bodoni Moda",Georgia,serif;
+  --d-weight:500; --d-style:normal; --d-transform:none; --d-track:-0.01em; --d-stretch:100%; --d-size:clamp(50px,10vw,124px); --d-lh:.95;
+  --h-font:"Bodoni Moda",Georgia,serif; --h-weight:500; --h-transform:none; --h-track:0; --h-size:clamp(26px,3.3vw,38px); --h-stretch:100%;
+  --sw:1.4;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"])[data-look="cinema"]{
+    --bg:#0A0A0A; --panel:#111111; --ink:#ECEAE4; --ink2:#BEBBB4; --ink3:#8F8C86;
+    --rule:#393835; --rule-strong:#ECEAE4; --grid:#191919;
+    --accent:#ECEAE4; --accent-text:#ECEAE4; --accent-soft:#2A2926; --on-accent:#0A0A0A;
+    --cool:#ECEAE4; --cool-soft:#1C1B19; --film:#1E1E1C;
+    --title-grad:linear-gradient(180deg,#FFFFFF 0%,#D9D6CF 45%,#8F8C86 100%);
+    --grain-op:.12; --vig:rgba(0,0,0,.62);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"][data-look="cinema"]{
+  --bg:#0A0A0A; --panel:#111111; --ink:#ECEAE4; --ink2:#BEBBB4; --ink3:#8F8C86;
+  --rule:#393835; --rule-strong:#ECEAE4; --grid:#191919;
+  --accent:#ECEAE4; --accent-text:#ECEAE4; --accent-soft:#2A2926; --on-accent:#0A0A0A;
+  --cool:#ECEAE4; --cool-soft:#1C1B19; --film:#1E1E1C;
+  --title-grad:linear-gradient(180deg,#FFFFFF 0%,#D9D6CF 45%,#8F8C86 100%);
+  --grain-op:.12; --vig:rgba(0,0,0,.62);
+  color-scheme:dark;
+}
+
+/* ---------- base ---------- */
+*{box-sizing:border-box}
+body{
+  background-color:var(--bg); background-image:var(--paper-img); background-size:var(--paper-size);
+  color:var(--ink); font-family:var(--f-body); font-size:16px; line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px));
+  -webkit-font-smoothing:antialiased;
+}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1120px;margin:0 auto}
+main.wrap{position:relative}
+@media (min-width:1200px){
+  :root[data-look="ledger"] main.wrap::before{content:"";position:absolute;top:0;bottom:0;left:-26px;width:4px;border-left:1px solid var(--margin-rule);border-right:1px solid var(--margin-rule)}
+}
+a{color:inherit;text-decoration-color:var(--rule);text-underline-offset:3px}
+a:hover{text-decoration-color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+code,.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+code{font-size:.9em}
+.label{font-family:var(--f-label);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3)}
+:root[data-look="blueprint"] .label{font-size:12px;letter-spacing:.1em}
+:root[data-look="cinema"] .label{font-size:12px;letter-spacing:.14em}
+.only-bp{display:none}
+:root[data-look="blueprint"] .only-bp{display:revert}
+.lede{max-width:68ch;margin:0 0 20px;font-size:17px;text-wrap:pretty}
+
+/* film grain + vignette (cinema only) */
+.grain,.vignette{display:none;position:fixed;pointer-events:none;z-index:4}
+.grain{inset:-40px;opacity:var(--grain-op,.1);background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 1.1 -.2'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");background-size:180px 180px}
+.vignette{inset:0;background:radial-gradient(ellipse 75% 70% at 50% 45%,transparent 55%,var(--vig,transparent) 100%)}
+:root[data-look="cinema"] .grain,:root[data-look="cinema"] .vignette{display:block}
+@keyframes grainshift{0%{transform:translate(0,0)}25%{transform:translate(-14px,9px)}50%{transform:translate(11px,-12px)}75%{transform:translate(-7px,-5px)}100%{transform:translate(0,0)}}
+@keyframes weave{0%,100%{transform:translate(0,0)}50%{transform:translate(.4px,.7px)}}
+@keyframes flick{0%,100%{opacity:var(--grain-op,.1)}50%{opacity:calc(var(--grain-op,.1) * 1.5)}}
+:root[data-look="cinema"].playing .grain{animation:grainshift .42s steps(4) infinite,flick .21s steps(2) infinite}
+:root[data-look="cinema"].playing #fig{animation:weave .2s steps(2) infinite}
+
+/* ---------- bake-off bar ---------- */
+.bake{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--rule);margin:0 calc(-1 * max(16px,env(safe-area-inset-left,0px)));padding:10px max(16px,env(safe-area-inset-left,0px))}
+.bake .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px}
+.bake .gate{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)}
+.seg{display:inline-flex;border:1px solid var(--rule-strong);border-radius:2px;overflow:hidden}
+.seg button{font:500 13px/1 "Instrument Sans","Helvetica Neue",Arial,sans-serif;color:var(--ink);background:transparent;border:0;padding:8px 12px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--rule-strong)}
+.seg button[aria-pressed="true"],.seg button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+.seg.small button{font:500 11px/1 "IBM Plex Mono",ui-monospace,monospace;padding:7px 9px;letter-spacing:.04em}
+.bake .spacer{flex:1 1 0}
+.look-note{flex:1 1 100%;font-size:13px;color:var(--ink2);margin:0;max-width:86ch}
+
+/* ---------- sections ---------- */
+section{padding-block:48px 8px}
+.sec-head{display:flex;align-items:baseline;gap:14px;border-top:1px solid var(--rule-strong);padding-top:10px;margin-bottom:22px}
+.sec-head .no{font-family:var(--f-mono);font-size:12px;color:var(--ink3)}
+.sec-head h2{margin:0;font-family:var(--h-font);font-weight:var(--h-weight);text-transform:var(--h-transform);letter-spacing:var(--h-track);font-size:var(--h-size);font-stretch:var(--h-stretch);line-height:1.05;text-wrap:balance}
+:root[data-look="ledger"] .sec-head{border-top:3px double var(--rule-strong)}
+/* cinema: section heads as intertitle cards */
+:root[data-look="cinema"] .sec-head{flex-direction:column;align-items:center;text-align:center;gap:6px;border-top:1px solid var(--rule-strong);border-bottom:1px solid var(--rule-strong);padding:16px 0 18px;position:relative;margin-bottom:28px}
+:root[data-look="cinema"] .sec-head::before,:root[data-look="cinema"] .sec-head::after{content:"";position:absolute;left:0;right:0;height:1px;background:var(--rule-strong)}
+:root[data-look="cinema"] .sec-head::before{top:3px}
+:root[data-look="cinema"] .sec-head::after{bottom:3px}
+:root[data-look="cinema"] .sec-head .no{font-size:0}
+:root[data-look="cinema"] .sec-head .no::after{content:attr(data-roman);font-family:var(--f-display);font-size:15px;font-style:italic;letter-spacing:.18em;color:var(--ink2)}
+:root[data-look="cinema"] .sec-head h2{font-style:italic}
+
+/* ---------- masthead ---------- */
+.mast{padding-top:40px}
+.eyebrow{display:flex;flex-wrap:wrap;gap:6px 14px;margin-bottom:14px}
+.mast h1{margin:0;font-family:var(--f-display);font-weight:var(--d-weight);font-style:var(--d-style);text-transform:var(--d-transform);letter-spacing:var(--d-track);font-stretch:var(--d-stretch);font-size:var(--d-size);line-height:var(--d-lh);overflow-wrap:anywhere}
+.mast h1 .ver{color:var(--accent-text)}
+.mast .dek{font-size:clamp(18px,2.1vw,23px);line-height:1.4;max-width:48ch;margin:18px 0 0;color:var(--ink);text-wrap:pretty}
+:root[data-look="ledger"] .mast .dek{font-family:var(--f-display);font-style:italic;font-size:clamp(21px,2.5vw,28px);line-height:1.3}
+.spec{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin:28px 0 0;border-top:1px solid var(--rule-strong);border-bottom:1px solid var(--rule-strong)}
+.spec div{padding:10px 12px 12px 0;min-width:0}
+.spec div+div{padding-left:12px;border-left:1px solid var(--rule)}
+.spec dt{margin:0 0 4px}
+.spec dd{margin:0;font-family:var(--f-mono);font-size:13px;line-height:1.4;font-variant-numeric:tabular-nums}
+.spec-src{margin-top:8px}
+:root[data-look="blueprint"] .spec{border:1px solid var(--rule-strong);background:var(--panel)}
+:root[data-look="blueprint"] .spec div{padding-left:12px;border-left:1px solid var(--rule-strong)}
+:root[data-look="blueprint"] .mast-frame{border:1px solid var(--rule-strong);padding:22px 22px 18px;background:var(--panel)}
+/* cinema: the masthead is a title card */
+:root[data-look="cinema"] .mast-frame{text-align:center;border:1px solid var(--rule-strong);outline:1px solid var(--rule-strong);outline-offset:-9px;padding:52px clamp(18px,4vw,48px) 30px;background:radial-gradient(ellipse 60% 55% at 50% 38%,var(--panel) 0%,transparent 100%)}
+:root[data-look="cinema"] .eyebrow{justify-content:center}
+:root[data-look="cinema"] .mast h1,:root[data-look="cinema"] .sec-head h2{font-variation-settings:"opsz" 30}
+:root[data-look="cinema"] .mast h1{background:var(--title-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+:root[data-look="cinema"] .mast h1 .ver{color:transparent;font-style:italic;font-weight:400}
+:root[data-look="cinema"] .mast .dek{margin-inline:auto;font-family:var(--f-display);font-style:italic;font-size:clamp(19px,2.3vw,25px)}
+:root[data-look="cinema"] .spec{text-align:left;border-top:1px solid var(--rule-strong);border-bottom:1px solid var(--rule-strong)}
+:root[data-look="cinema"] .spec-src{display:flex;justify-content:center}
+:root[data-look="cinema"] .rule-orn{display:flex}
+.rule-orn{display:none;align-items:center;justify-content:center;gap:12px;margin:16px auto 0;color:var(--ink3);font-family:var(--f-display);font-style:italic;font-size:14px;letter-spacing:.2em}
+.rule-orn::before,.rule-orn::after{content:"";width:64px;height:1px;background:var(--rule-strong)}
+
+/* provenance tags: shape carries the meaning, colour only reinforces it */
+.pv{display:inline-flex;align-items:center;gap:5px;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.03em;color:var(--ink2);white-space:nowrap}
+:root[data-look="cinema"] .pv{font-size:11.5px}
+.pv::before{content:"";width:8px;height:8px;flex:none;box-sizing:border-box}
+.pv-ind::before{border-radius:50%;background:var(--ink2)}
+.pv-self::before{border-radius:50%;border:1.5px solid var(--ink2)}
+.pv-code::before{border:1.5px solid var(--ink2)}
+.pv-ours{color:var(--cool)}
+.pv-ours::before{background:var(--cool)}
+.pv-inf::before{border-radius:50%;border:1.5px dashed var(--ink2)}
+.legend-pv{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:14px;align-items:center}
+.src{display:flex;width:fit-content;margin-top:8px}
+
+/* ---------- summary ---------- */
+.summary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0}
+.summary-grid article{padding:4px 20px 6px 0;min-width:0}
+.summary-grid article+article{padding-left:20px;border-left:1px solid var(--rule)}
+.summary-grid h3{margin:0 0 8px}
+.summary-grid p{margin:0 0 6px;font-size:16px;line-height:1.55;text-wrap:pretty}
+.summary-grid .src+.src{margin-top:4px}
+:root[data-look="blueprint"] .summary-grid{border:1px solid var(--rule-strong);background:var(--panel)}
+:root[data-look="blueprint"] .summary-grid article{padding:14px 16px}
+:root[data-look="blueprint"] .summary-grid article+article{border-left:1px solid var(--rule-strong)}
+@media (max-width:760px){
+  .summary-grid{grid-template-columns:1fr}
+  .summary-grid article+article{border-left:0;padding-left:0;border-top:1px solid var(--rule);padding-top:14px;margin-top:10px}
+  :root[data-look="blueprint"] .summary-grid article+article{border-left:0;padding-left:16px;margin-top:0;border-top:1px solid var(--rule-strong)}
+}
+
+/* ---------- diagrams (shared) ---------- */
+.fig-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);background:var(--panel)}
+:root[data-look="ledger"] .fig-scroll{background:transparent}
+:root[data-look="blueprint"] .fig-scroll{border:1px solid var(--rule-strong)}
+.fig-scroll svg{display:block;width:100%;min-width:760px;height:auto}
+/* cinema: frames run in a film strip */
+:root[data-look="cinema"] .fig-scroll{border:0;background:var(--panel);position:relative;padding:22px 0;
+  background-image:repeating-linear-gradient(90deg,var(--bg) 0 9px,transparent 9px 22px),repeating-linear-gradient(90deg,var(--bg) 0 9px,transparent 9px 22px);
+  background-size:100% 7px,100% 7px;background-position:0 7px,0 calc(100% - 7px);background-repeat:no-repeat;background-color:var(--panel);
+  box-shadow:inset 0 22px 0 -1px var(--film),inset 0 -22px 0 -1px var(--film)}
+:root[data-look="cinema"] .fig-scroll{background-image:repeating-linear-gradient(90deg,var(--bg) 0 9px,var(--film) 9px 22px),repeating-linear-gradient(90deg,var(--bg) 0 9px,var(--film) 9px 22px),linear-gradient(var(--film),var(--film)),linear-gradient(var(--film),var(--film));
+  background-size:100% 7px,100% 7px,100% 22px,100% 22px;background-position:0 7px,0 calc(100% - 7px),0 0,0 100%;background-repeat:no-repeat;box-shadow:none}
+.scroll-hint{display:none}
+@media (max-width:780px){.scroll-hint{display:block;margin-top:6px}}
+.dg .tl{font-family:var(--f-body);font-size:13px;fill:var(--ink)}
+.dg .tl.it,.dg .it{font-style:italic}
+.dg .tm{font-family:var(--f-mono);font-size:10.5px;fill:var(--ink2)}
+.dg .tc{font-family:var(--f-mono);font-size:10px;letter-spacing:.08em;fill:var(--ink3)}
+.dg .sub{font-size:9px}
+.dg .sup{font-size:9px}
+.dg .arrowhead{fill:var(--ink2)}
+.dg .hl{stroke:var(--ink3);stroke-width:.8}
+:root[data-look="blueprint"] .dg .tl{font-family:"IBM Plex Sans Condensed","Arial Narrow",Arial,sans-serif;font-size:13.5px}
+:root[data-look="cinema"] .dg .tl{font-family:"Bodoni Moda",Georgia,serif;font-size:13.5px}
+:root[data-look="cinema"] .dg .tm,:root[data-look="cinema"] .dg .tc{font-size:11px}
+
+/* §3 architecture drawing */
+#arch .c-layer{fill:var(--panel);stroke:var(--ink2);stroke-width:.55}
+#arch .c-frozen{fill:url(#ah);stroke:var(--ink);stroke-width:1}
+#arch .c-sheet{fill:var(--panel);stroke:var(--ink);stroke-width:1}
+#arch .txtline{stroke:var(--ink3);stroke-width:1.2;stroke-linecap:round}
+#arch .c-vec{fill:var(--panel);stroke:var(--ink);stroke-width:1}
+#arch .cell{stroke:var(--rule);stroke-width:.6}
+#arch .c-trained{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.3}
+#arch .c-out{fill:var(--accent);stroke:var(--accent);stroke-width:1}
+#arch .conn{stroke:var(--ink3);stroke-width:.6;stroke-dasharray:2 2}
+#arch .flow{fill:none;stroke:var(--ink2);stroke-width:1.25}
+#arch .cachel{stroke-dasharray:4 3;stroke:var(--ink3)}
+#arch .dot{fill:var(--accent)}
+#arch .sharedl{stroke:var(--ink3);stroke-width:1;stroke-dasharray:3 3}
+#arch .arena-top{fill:var(--panel);stroke:var(--ink);stroke-width:1}
+#arch .arena-side{fill:var(--grid);stroke:var(--ink);stroke-width:1}
+#arch .arena-front{fill:url(#ah2);stroke:var(--ink);stroke-width:1}
+#arch .grid-l{stroke:var(--ink3);stroke-width:.6}
+#arch .circ{fill:var(--panel);stroke:var(--ink);stroke-width:1}
+#arch .axis-f{stroke:var(--rule);stroke-width:.8}
+#arch .svec{stroke:var(--accent);stroke-width:2.4;stroke-linecap:round}
+#arch .avec{stroke:var(--ink);stroke-width:1.3;stroke-linecap:round}
+#arch .arc{fill:none;stroke:var(--ink2);stroke-width:1}
+#arch .sm-box{fill:var(--panel);stroke:var(--ink);stroke-width:1}
+:root[data-look="cinema"] #arch .c-trained{fill:var(--ink);stroke:var(--ink)}
+:root[data-look="cinema"] #arch .c-out{fill:var(--ink)}
+.arch-key{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin-top:14px;border-top:1px solid var(--rule)}
+.arch-key div{padding:10px 16px 4px 0;min-width:0;font-size:14px;color:var(--ink2)}
+.arch-key div+div{padding-left:16px;border-left:1px solid var(--rule)}
+.arch-key b{display:flex;align-items:center;gap:8px;color:var(--ink);font-weight:600;margin-bottom:3px}
+@media (max-width:760px){.arch-key{grid-template-columns:1fr}.arch-key div+div{border-left:0;padding-left:0;border-top:1px solid var(--rule)}}
+.sw{width:26px;height:14px;flex:none;border:1.25px solid var(--ink);background:var(--panel);display:inline-block}
+.sw.hatch{background:repeating-linear-gradient(45deg,var(--ink3) 0 1px,transparent 1px 5px)}
+.sw.dash{border-style:dashed;background:transparent}
+.sw.now{border:2px solid var(--now-stroke);background:var(--now-fill)}
+.sw.trained{border-color:var(--accent);background:var(--accent-soft)}
+:root[data-look="cinema"] .sw.trained{background:var(--ink);border-color:var(--ink)}
+.sw.grid{background-color:var(--panel);background-image:linear-gradient(var(--ink3) 1px,transparent 1px),linear-gradient(90deg,var(--ink3) 1px,transparent 1px);background-size:6px 6px}
+
+/* §4 request player drawing */
+#fig .box{fill:var(--panel);stroke:var(--ink);stroke-width:var(--sw)}
+#fig .box.frozen{fill:url(#hatch)}
+#fig .box.cached{fill:url(#hatch2)}
+#fig .box.skip{fill:none;stroke-dasharray:5 4}
+#fig .plate{fill:var(--panel)}
+#fig .wire{fill:none;stroke:var(--ink2);stroke-width:var(--sw)}
+#fig .wire.solid{stroke-dasharray:1 1;stroke-dashoffset:0}
+#fig .wire.skip{stroke-dasharray:4 4}
+#fig .dim{fill:none;stroke:var(--ink3);stroke-width:.9}
+#fig .val{font-family:var(--f-mono);font-size:10.5px;fill:var(--ink)}
+#fig .bar{fill:var(--cool);transform-box:fill-box;transform-origin:0 50%}
+#fig .axis{stroke:var(--ink3);stroke-width:1}
+#fig .balloon circle{fill:var(--bg);stroke:var(--ink);stroke-width:1}
+#fig .balloon text{font-family:var(--f-mono);font-size:11px;font-weight:600;fill:var(--ink)}
+#fig .tblock rect{fill:var(--panel);stroke:var(--ink);stroke-width:1}
+#fig .tblock line{stroke:var(--ink);stroke-width:.75}
+#fig [data-s]{transition:opacity .35s ease,filter .35s ease}
+#fig .future{opacity:.2}
+#fig .now .box,#fig .box.now{stroke:var(--now-stroke);stroke-width:calc(var(--sw) + .9)}
+#fig .now .box:not(.frozen):not(.cached):not(.skip){fill:var(--now-fill)}
+#fig .now .plate{fill:var(--now-fill)}
+#fig .now .tl,#fig .now .tm,#fig .now .tc{fill:var(--now-text)}
+#fig .wire.now{stroke:var(--now-stroke);stroke-width:calc(var(--sw) + .6)}
+#fig .balloon.now circle{fill:var(--now-stroke);stroke:var(--now-stroke)}
+#fig .balloon.now text{fill:var(--on-accent)}
+#fig .hlt .box{stroke:var(--accent);stroke-width:calc(var(--sw) + 1.2)}
+#fig #n-bars .tm{fill:var(--ink2)}
+#fig #n-bars .tc{fill:var(--ink3)}
+#fig #n-bars .gold{fill:var(--accent-text)}
+:root[data-look="cinema"] #fig .balloon circle{fill:var(--ink)}
+:root[data-look="cinema"] #fig .balloon text{fill:var(--panel)}
+:root[data-look="cinema"] #fig .balloon.now circle{fill:var(--panel);stroke-width:2}
+:root[data-look="cinema"] #fig .balloon.now text{fill:var(--ink)}
+:root[data-look="cinema"] #fig .future{opacity:.13}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"])[data-look="cinema"] #fig .now{filter:drop-shadow(0 0 9px rgba(236,234,228,.38))}}
+:root[data-theme="dark"][data-look="cinema"] #fig .now{filter:drop-shadow(0 0 9px rgba(236,234,228,.38))}
+
+.fig-legend{display:flex;flex-wrap:wrap;gap:8px 22px;margin:12px 0 0;padding:0;list-style:none;font-size:13px;color:var(--ink2)}
+.fig-legend li{display:flex;align-items:center;gap:8px}
+.caption{font-size:13px;color:var(--ink2);margin:10px 0 0;max-width:92ch}
+
+/* player */
+.player{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:26px;margin-top:22px}
+@media (max-width:820px){.player{grid-template-columns:1fr}}
+.controls{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:12px}
+.btn{font:500 13px/1 "Instrument Sans","Helvetica Neue",Arial,sans-serif;color:var(--ink);background:var(--panel);border:1px solid var(--rule-strong);border-radius:2px;padding:9px 13px;cursor:pointer}
+.btn.primary{background:var(--ink);color:var(--bg)}
+.btn:disabled{opacity:.4;cursor:default}
+.stepno{font-family:var(--f-mono);font-size:12px;color:var(--ink2)}
+:root[data-look="cinema"] .stepno{letter-spacing:.12em;text-transform:uppercase}
+.steps{list-style:none;margin:0;padding:0}
+.steps li{border-top:1px solid var(--rule)}
+.steps li:last-child{border-bottom:1px solid var(--rule)}
+.steps button{all:unset;box-sizing:border-box;display:grid;grid-template-columns:30px minmax(0,1fr);gap:10px;width:100%;padding:11px 4px;cursor:pointer}
+.steps button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.steps .n{font-family:var(--f-mono);font-size:12px;font-weight:600;color:var(--ink3);padding-top:2px}
+.steps .t{font-weight:600;font-size:15px}
+.steps .d{display:block;font-size:14px;color:var(--ink2);margin-top:3px;line-height:1.5}
+.steps .pv{margin-top:6px}
+.steps li[aria-current="step"]{background:var(--now-fill)}
+.steps li[aria-current="step"] .n{color:var(--accent-text)}
+.steps li[aria-current="step"] .t,.steps li[aria-current="step"] .d,.steps li[aria-current="step"] .pv{color:var(--now-text)}
+:root[data-look="cinema"] .steps li[aria-current="step"] .n{color:var(--panel)}
+:root[data-look="cinema"] .steps li[aria-current="step"] .pv::before{border-color:var(--panel)}
+:root[data-look="cinema"] .steps .t{font-family:"Bodoni Moda",Georgia,serif;font-weight:600;font-size:16px}
+
+/* equation walk (preview) */
+.eq{border:1px solid var(--rule);background:var(--panel);padding:16px 18px}
+:root[data-look="blueprint"] .eq{border-color:var(--rule-strong)}
+:root[data-look="cinema"] .eq{border:1px solid var(--rule-strong);outline:1px solid var(--rule-strong);outline-offset:-6px;padding:20px 22px}
+.eq .math{font-family:var(--f-math);font-size:clamp(19px,2.3vw,24px);line-height:1.5;overflow-x:auto;white-space:nowrap;padding-bottom:4px}
+.eq .math i{font-style:italic}
+.term{border:0;background:none;padding:0 1px;font:inherit;color:inherit;cursor:help;border-bottom:1.5px dotted var(--ink3)}
+.term:hover,.term:focus-visible,.term.on{background:var(--now-fill);color:var(--now-text);border-bottom-color:var(--now-stroke);outline:none}
+.gloss{margin:12px 0 0;padding:0;list-style:none;display:grid;gap:6px;font-size:13.5px;color:var(--ink2)}
+.gloss b{font-family:var(--f-math);font-style:italic;font-weight:400;font-size:16px;color:var(--ink)}
+.gloss .shape{font-family:var(--f-mono);font-size:11.5px;color:var(--ink3)}
+
+/* recording callout + ruler */
+.callout{margin-top:30px;display:grid;grid-template-columns:minmax(0,210px) minmax(0,1fr);gap:18px 26px;border-top:1px solid var(--rule-strong);padding-top:16px}
+@media (max-width:680px){.callout{grid-template-columns:1fr;gap:8px}}
+.callout p{margin:0 0 10px;max-width:72ch}
+.callout .big{font-family:var(--f-display);font-size:clamp(40px,5vw,58px);line-height:1;color:var(--cool)}
+.callout .big-l{display:block;font-size:12.5px;color:var(--ink2);margin:8px 0 6px;max-width:26ch}
+:root[data-look="blueprint"] .callout .big{font-weight:600}
+:root[data-look="cinema"] .callout .big{font-style:italic}
+.ruler-wrap{grid-column:1 / -1;overflow-x:auto;border:1px solid var(--rule);background:var(--panel);padding:8px 6px 2px}
+:root[data-look="cinema"] .ruler-wrap{border-color:var(--rule-strong)}
+.ruler-wrap svg{display:block;width:100%;max-width:760px;min-width:560px;height:auto;margin:0 auto}
+#ruler .rtick{stroke:var(--grid);stroke-width:1}
+#ruler .raxis{stroke:var(--ink2);stroke-width:1}
+#ruler .lead{stroke:var(--ink3);stroke-width:.8}
+#ruler .rmark{fill:var(--panel);stroke:var(--ink);stroke-width:1.5}
+#ruler .rmark.top{fill:var(--accent);stroke:var(--accent)}
+#ruler .rdot{fill:var(--cool);fill-opacity:.55}
+#ruler .rmed{stroke:var(--accent-text);stroke-width:1.25;stroke-dasharray:3 2}
+#ruler .pv-n{fill:var(--ink3)}
+
+/* ---------- ledger table ---------- */
+.tbl-scroll{overflow-x:auto}
+table.ledger{width:100%;min-width:840px;border-collapse:collapse;font-size:14px}
+.ledger caption{caption-side:top;text-align:left;font-size:13px;color:var(--ink2);padding-bottom:12px;max-width:96ch}
+.ledger th{font-family:var(--f-label);font-weight:500;font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3);text-align:left;padding:9px 10px 8px;border-bottom:1px solid var(--rule-strong);vertical-align:bottom}
+.ledger thead tr{border-top:3px double var(--rule-strong)}
+.ledger td{padding:9px 10px;border-bottom:1px solid var(--rule);vertical-align:middle}
+.ledger td.num,.ledger th.num{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.ledger .model{font-weight:600}
+.ledger .readout{color:var(--ink2);font-size:13px}
+.ledger tr.ours td{border-bottom-style:dotted}
+.ledger tr.ours .model{font-weight:400;padding-left:28px;position:relative;color:var(--cool)}
+.ledger tr.ours .model::before{content:"";position:absolute;left:12px;top:0;bottom:50%;width:9px;border-left:1px solid var(--cool);border-bottom:1px solid var(--cool)}
+.ledger tr.focus td{background:var(--accent-soft)}
+.ledger .ci{color:var(--ink3);font-size:11.5px}
+.ledger .row{color:var(--ink3);font-family:var(--f-mono);font-size:12px;white-space:nowrap}
+.vh{position:absolute;left:-9999px}
+.accbar{position:relative;width:120px;height:10px;background:linear-gradient(90deg,var(--grid),var(--grid)) 0 50%/100% 1px no-repeat}
+.accbar i{position:absolute;left:0;top:1px;height:8px;width:calc(var(--v) / 80 * 100%);background:var(--ink2)}
+.accbar.c i{background:var(--cool)}
+.accbar b{position:absolute;top:-4px;height:18px;width:0;left:calc(59.25 / 80 * 100%);border-left:1.25px dashed var(--accent-text)}
+:root[data-look="blueprint"] .ledger{background:var(--panel)}
+:root[data-look="blueprint"] .ledger th,:root[data-look="blueprint"] .ledger td{border:1px solid var(--rule-strong)}
+:root[data-look="blueprint"] .ledger thead tr{border-top:0}
+:root[data-look="blueprint"] .ledger th{background:var(--bg);color:var(--ink)}
+:root[data-look="cinema"] .ledger thead tr{border-top:3px double var(--rule-strong)}
+:root[data-look="cinema"] .ledger th{color:var(--ink);font-weight:700}
+:root[data-look="cinema"] .ledger tbody tr:last-child td{border-bottom:3px double var(--rule-strong)}
+:root[data-look="cinema"] .ledger tr.focus td{background:var(--ink);color:var(--panel)}
+:root[data-look="cinema"] .ledger tr.focus .accbar i{background:var(--panel)}
+:root[data-look="cinema"] .ledger tr.focus .row,:root[data-look="cinema"] .ledger tr.focus .readout,:root[data-look="cinema"] .ledger tr.focus .pv{color:var(--panel)}
+:root[data-look="cinema"] .ledger tr.focus .pv-ind::before{background:var(--panel)}
+:root[data-look="cinema"] .ledger .model{font-family:"Bodoni Moda",Georgia,serif}
+.key-line{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:10px;font-size:12.5px;color:var(--ink2);align-items:center}
+.key-line .tick{display:inline-block;width:0;height:14px;border-left:1.25px dashed var(--accent-text);margin-right:6px;vertical-align:middle}
+
+/* corrections ledger */
+.corr{margin-top:28px;display:grid;grid-template-columns:minmax(0,150px) minmax(0,1fr);gap:8px 18px;border-top:1px solid var(--rule);padding-top:12px}
+@media (max-width:620px){.corr{grid-template-columns:1fr}}
+.corr p{margin:0 0 6px;max-width:80ch;font-size:15px}
+.corr del{color:var(--ink3);text-decoration-color:var(--accent);text-decoration-thickness:1.5px}
+.corr ins{text-decoration:none;background:var(--cool-soft);color:var(--ink);padding:0 3px}
+:root[data-look="cinema"] .corr del{text-decoration-color:var(--ink)}
+:root[data-look="cinema"] .corr ins{border-bottom:1.5px solid var(--ink);background:none}
+
+/* sources */
+.sources{font-size:13px;color:var(--ink2);columns:2 340px;column-gap:32px;padding:0;list-style:none;margin:0}
+.sources li{break-inside:avoid;margin:0 0 8px}
+.sources code{color:var(--ink)}
+footer{padding-block:28px 56px;font-size:12.5px;color:var(--ink3)}
+:root[data-look="cinema"] footer{text-align:center;font-family:var(--f-display);font-style:italic;font-size:14px}
+
+@media (prefers-reduced-motion: reduce){
+  #fig [data-s]{transition:none}
+  :root[data-look="cinema"].playing .grain,:root[data-look="cinema"].playing #fig{animation:none}
+}
+</style>
+
+<div class="grain" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+
+<header class="bake" role="banner">
+  <div class="wrap">
+    <span class="gate">Gate A0 · look bake-off · v3</span>
+    <div class="seg" role="tablist" aria-label="Look">
+      <button role="tab" id="tab-ledger" data-look="ledger" aria-selected="true">Ledger + line art</button>
+      <button role="tab" id="tab-blueprint" data-look="blueprint" aria-selected="false">Blueprint</button>
+      <button role="tab" id="tab-cinema" data-look="cinema" aria-selected="false">Monochrome</button>
+    </div>
+    <span class="spacer"></span>
+    <div class="seg small" role="group" aria-label="Theme">
+      <button id="th-system" data-theme-set="system" aria-pressed="true">System</button>
+      <button id="th-light" data-theme-set="light" aria-pressed="false">Light</button>
+      <button id="th-dark" data-theme-set="dark" aria-pressed="false">Dark</button>
+    </div>
+    <p class="look-note" id="look-note"></p>
+  </div>
+</header>
+
+<main class="wrap" id="main">
+
+  <!-- §1 MASTHEAD -->
+  <section class="mast" aria-labelledby="m-title">
+    <div class="mast-frame">
+      <div class="eyebrow">
+        <span class="label">Tier A model page</span>
+        <span class="label">Family: bi-encoder, two towers</span>
+        <span class="label">Open code + weights · no paper</span>
+      </div>
+      <h1 id="m-title">CLM<span class="ver">-v0.1-8B</span></h1>
+      <p class="dek">A frozen Qwen3-8B reads the state, with its question, and each option separately. Two small trained heads map both into one space, and the option whose vector points most nearly the same way wins.</p>
+      <div class="rule-orn" aria-hidden="true">Contrastive Language Models</div>
+      <dl class="spec">
+        <div><dt class="label">Backbone</dt><dd>Qwen3-8B, 36 layers, frozen</dd></div>
+        <div><dt class="label">Trained</dt><dd>2 MLP heads, 9,443,840 params each, + scale λ</dd></div>
+        <div><dt class="label">Embedding</dt><dd>last token, 4096-d → 512-d</dd></div>
+        <div><dt class="label">Served context cap</dt><dd>2,048 tokens</dd></div>
+        <div><dt class="label">Licence</dt><dd>Apache-2.0</dd></div>
+        <div><dt class="label">Released</dt><dd>2026-09-19 (engine.py)</dd></div>
+      </dl>
+      <span class="spec-src src pv pv-code">source: CLM code, released checkpoint, Qwen3-8B config</span>
+    </div>
+    <div class="legend-pv" aria-label="Provenance key">
+      <span class="label">Every result and design fact is tagged:</span>
+      <span class="pv pv-ind">independent measurement</span>
+      <span class="pv pv-self">authors' own result</span>
+      <span class="pv pv-code">authors' code or config</span>
+      <span class="pv pv-ours">our run</span>
+      <span class="pv pv-inf">our inference</span>
+    </div>
+  </section>
+
+  <!-- §2 SUMMARY -->
+  <section aria-labelledby="s2">
+    <div class="sec-head"><span class="no" data-roman="II">§2</span><h2 id="s2">Thirty-second summary</h2></div>
+    <div class="summary-grid">
+      <article>
+        <h3 class="label">What it is</h3>
+        <p>Qwen3-8B embeds the state-plus-question text and every option text separately. A state head and an action head project the 4096-d embeddings to 512-d unit vectors, and a softmax over cosines × 100 gives one probability per option.</p>
+        <span class="src pv pv-code">CLM code: schema.py, heads.py, engine.py</span>
+      </article>
+      <article>
+        <h3 class="label">Why it matters</h3>
+        <p>An option's vector never depends on the state, so it is computed once and cached on the GPU, and state vectors are cached by their text too. A revisited state with cached options takes 0.6–0.7 ms on an RTX 4090 (1.7–2.0 ms without the GPU cache). A new state takes about 28 ms, mostly the backbone pass.</p>
+        <span class="src pv pv-self">CLM README: server-side p50, fixed action set</span>
+        <span class="src pv pv-inf">"mostly the backbone pass": our inference</span>
+      </article>
+      <article>
+        <h3 class="label">Main weakness</h3>
+        <p>The options never see the state, and the scale ships at its cap with no calibration. On System1-Arena CLM scores 41.4% with Brier 0.749, 17.8 points below an answer-token readout of its own backbone.</p>
+        <p>No experiment has isolated why. Rescaling cannot change which option wins, and our temperature fit moves CLM's Brier from 0.741 to 0.607 at unchanged accuracy. The benchmark also cut CLM's inputs to their last 2,048 tokens but not the readout's.</p>
+        <span class="src pv pv-code">design: CLM code</span>
+        <span class="src pv pv-ind">scores and input cut: S1-Arena leaderboard and paper</span>
+        <span class="src pv pv-ours">Brier fit: our run</span>
+        <span class="src pv pv-inf">"no cause isolated": our assessment</span>
+      </article>
+    </div>
+  </section>
+
+  <!-- §3 ARCHITECTURE -->
+  <section aria-labelledby="s3">
+    <div class="sec-head"><span class="no" data-roman="III">§3</span><h2 id="s3">Architecture</h2></div>
+    <p class="lede">Two towers share one frozen backbone. Only the two small heads and one scalar are trained: 18.9 million parameters on top of the frozen Qwen3-8B. Plate heights are proportional to layer width (4096 : 1536 : 512).</p>
+    <div class="fig-scroll" role="region" aria-label="Architecture drawing, scrollable" tabindex="0">
+<!--ARCH-->
+    </div>
+    <p class="label scroll-hint">Scroll the drawing sideways</p>
+    <div class="arch-key">
+      <div><b><span class="sw hatch" aria-hidden="true"></span>Frozen</b>Qwen3-8B, 36 decoder layers, used by both towers with the same weights. Never updated. <span class="src pv pv-code">Qwen3-8B config.json</span></div>
+      <div><b><span class="sw trained" aria-hidden="true"></span>Trained</b>The state head, the action head (9,443,840 parameters each; 18.9 million together) and the logit scale λ. <span class="src pv pv-code">finetune.py, released checkpoint</span></div>
+      <div><b><span class="sw grid" aria-hidden="true"></span>Cached</b>State and option projections, keyed by head and text, in one fixed GPU block (2% of memory by default, least recently used evicted). A repeat skips the backbone. <span class="src pv pv-code">cache.py, engine.py, README</span></div>
+    </div>
+    <p class="caption">The backbone's 4096-d last-token state is L2-normalised before the heads. Each head: Linear 4096→1536, GELU; Linear 1536→1536, LayerNorm, GELU; Linear 1536→512; then L2 normalisation, so the dot product of two outputs is a cosine. <span class="pv pv-code">heads.py, released checkpoint</span></p>
+  </section>
+
+  <!-- §4 PLAY THE REQUEST -->
+  <section aria-labelledby="s4">
+    <div class="sec-head"><span class="no" data-roman="IV">§4</span><h2 id="s4">One request, step by step</h2></div>
+
+    <div class="fig-scroll" role="region" aria-label="Request diagram, scrollable" tabindex="0">
+      <svg id="fig" class="dg" viewBox="0 0 1040 440" role="img" aria-labelledby="fig-t fig-d">
+        <title id="fig-t">CLM inference path for one choice question with four cached options</title>
+        <desc id="fig-d">The state and question pass once through frozen Qwen3-8B, are pooled to a 4096-dimensional vector and projected by the state head to 512 dimensions. The four options' 512-dimensional vectors come from the GPU vector arena, drawn as a cache hit, so their backbone and head passes are skipped. Each option is scored by cosine similarity times 100, and a softmax gives the probabilities recorded on our harness: GPT-4 Turbo 0.322, Mixtral 0.523, Claude 2 0.094, GPT-3.5 Turbo 0.061.</desc>
+        <defs>
+          <pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line class="hl" x1="0" y1="0" x2="0" y2="6"/></pattern>
+          <pattern id="hatch2" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)"><line class="hl" x1="0" y1="0" x2="0" y2="6"/></pattern>
+          <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path class="arrowhead" d="M0,1 L9,5 L0,9 Z"/></marker>
+        </defs>
+
+        <g data-s="1" id="n-state">
+          <rect class="box" x="16" y="28" width="214" height="134" rx="2"/>
+          <text class="tc" x="28" y="46">STATE</text>
+          <text class="tl" x="28" y="66">“Please answer with the letter</text>
+          <text class="tl" x="28" y="83">of the correct answer. Which of</text>
+          <text class="tl" x="28" y="100">these words is an adverb? …”</text>
+          <text class="tc" x="28" y="122">QUESTION · CHOICE · PARAPHRASED</text>
+          <text class="tl" x="28" y="140">Route to the cheapest model</text>
+          <text class="tl" x="28" y="156">that answers correctly.</text>
+        </g>
+        <path data-s="1" class="wire solid" pathLength="1" d="M230,92 L260,92" marker-end="url(#arr)"/>
+        <g data-s="1" id="n-A">
+          <rect class="box frozen" x="262" y="50" width="150" height="84" rx="2"/>
+          <rect class="plate" x="274" y="62" width="126" height="60"/>
+          <text class="tl" x="337" y="82" text-anchor="middle">Qwen3-8B</text>
+          <text class="tm" x="337" y="99" text-anchor="middle">frozen weights</text>
+          <text class="tm" x="337" y="114" text-anchor="middle">last-token pool</text>
+          <path class="dim" d="M262,150 L412,150 M262,144 L262,156 M412,144 L412,156"/>
+          <text class="tm" x="337" y="170" text-anchor="middle">cap: 2,048 tokens</text>
+        </g>
+        <path data-s="1" class="wire solid" pathLength="1" d="M412,92 L434,92" marker-end="url(#arr)"/>
+        <g data-s="1" id="n-vec">
+          <rect class="box" x="436" y="76" width="64" height="32" rx="2"/>
+          <text class="tm" x="468" y="96" text-anchor="middle">4096-d</text>
+          <text class="tc" x="468" y="124" text-anchor="middle">L2-NORM</text>
+        </g>
+        <g data-s="1" class="balloon"><circle cx="254" cy="42" r="10"/><text x="254" y="46" text-anchor="middle">1</text></g>
+
+        <text data-s="2" class="tc" x="16" y="222">OPTIONS · K = 4 · SHORT NAMES</text>
+        <g data-s="2" id="n-opts">
+          <rect class="box" x="16" y="232" width="214" height="36" rx="2"/>
+          <text class="tl" x="28" y="247">GPT-4 Turbo (1106)</text><text class="tm" x="28" y="261">avg $0.001688 / request</text>
+          <rect class="box" x="16" y="276" width="214" height="36" rx="2"/>
+          <text class="tl" x="28" y="291">Mixtral 8x7B Instruct</text><text class="tm" x="28" y="305">avg $0.000100 / request</text>
+          <rect class="box" x="16" y="320" width="214" height="36" rx="2"/>
+          <text class="tl" x="28" y="335">Claude 2</text><text class="tm" x="28" y="349">avg $0.001343 / request</text>
+          <rect class="box" x="16" y="364" width="214" height="36" rx="2"/>
+          <text class="tl" x="28" y="379">GPT-3.5 Turbo (1106)</text><text class="tm" x="28" y="393">avg $0.000168 / request</text>
+        </g>
+        <path data-s="2" class="wire skip" d="M230,250 C248,250 244,292 262,292 M230,294 C248,294 244,292 262,292 M230,338 C248,338 244,292 262,292 M230,382 C248,382 244,292 262,292"/>
+        <g data-s="2" id="n-B">
+          <rect class="box skip" x="262" y="250" width="150" height="84" rx="2"/>
+          <text class="tl" x="337" y="282" text-anchor="middle">Qwen3-8B</text>
+          <text class="tm" x="337" y="300" text-anchor="middle">same frozen weights</text>
+          <text class="tm" x="337" y="316" text-anchor="middle">skipped on a hit</text>
+        </g>
+        <path data-s="2" class="wire skip" d="M412,292 L436,292"/>
+        <g data-s="2" id="n-fa">
+          <rect class="box skip" x="436" y="260" width="76" height="64" rx="2"/>
+          <text class="tl" x="474" y="288" text-anchor="middle">action</text>
+          <text class="tl" x="474" y="306" text-anchor="middle">head <tspan font-style="italic">f</tspan><tspan class="sub" dy="3">a</tspan></text>
+        </g>
+        <path data-s="2" class="wire skip" d="M512,292 L536,292"/>
+        <text data-s="2" class="tc" x="536" y="216">GPU VECTOR ARENA</text>
+        <g data-s="2" id="n-arena">
+          <rect class="box cached" x="536" y="224" width="148" height="188" rx="2"/>
+          <rect class="box" x="548" y="234" width="124" height="32"/><text class="tm" x="558" y="254">a<tspan class="sub" dy="3">1</tspan><tspan dy="-3">  GPT-4 Turbo</tspan></text>
+          <rect class="box" x="548" y="278" width="124" height="32"/><text class="tm" x="558" y="298">a<tspan class="sub" dy="3">2</tspan><tspan dy="-3">  Mixtral</tspan></text>
+          <rect class="box" x="548" y="322" width="124" height="32"/><text class="tm" x="558" y="342">a<tspan class="sub" dy="3">3</tspan><tspan dy="-3">  Claude 2</tspan></text>
+          <rect class="box" x="548" y="366" width="124" height="32"/><text class="tm" x="558" y="386">a<tspan class="sub" dy="3">4</tspan><tspan dy="-3">  GPT-3.5 Turbo</tspan></text>
+        </g>
+        <text data-s="2" class="tm" x="536" y="430">512-d option vectors, cached</text>
+        <g data-s="2" class="balloon"><circle cx="254" cy="242" r="10"/><text x="254" y="246" text-anchor="middle">2</text></g>
+
+        <path data-s="3" class="wire solid" pathLength="1" d="M500,92 L522,92" marker-end="url(#arr)"/>
+        <g data-s="3" id="n-fs">
+          <rect class="box" x="524" y="60" width="124" height="64" rx="2"/>
+          <text class="tl" x="586" y="86" text-anchor="middle">state head <tspan font-style="italic">f</tspan><tspan class="sub" dy="3">s</tspan></text>
+          <text class="tm" x="586" y="108" text-anchor="middle">4096→1536→1536→512</text>
+        </g>
+        <path data-s="3" class="wire solid" pathLength="1" d="M648,92 L670,92" marker-end="url(#arr)"/>
+        <g data-s="3" id="n-s">
+          <rect class="box" x="672" y="76" width="44" height="32" rx="2"/>
+          <text class="tl it" x="694" y="97" text-anchor="middle">s</text>
+          <text class="tc" x="694" y="124" text-anchor="middle">512-D</text>
+        </g>
+        <g data-s="3" class="balloon"><circle cx="516" cy="52" r="10"/><text x="516" y="56" text-anchor="middle">3</text></g>
+
+        <path data-s="4" class="wire solid" pathLength="1" d="M716,92 C800,92 800,120 800,174" marker-end="url(#arr)"/>
+        <path data-s="4" class="wire solid" pathLength="1" d="M684,250 C716,250 716,230 746,230"/>
+        <path data-s="4" class="wire solid" pathLength="1" d="M684,294 C716,294 716,230 746,230"/>
+        <path data-s="4" class="wire solid" pathLength="1" d="M684,338 C716,338 716,230 746,230"/>
+        <path data-s="4" class="wire solid" pathLength="1" d="M684,382 C716,382 716,230 746,230" marker-end="url(#arr)"/>
+        <g data-s="4" id="n-score">
+          <rect class="box" x="748" y="176" width="104" height="108" rx="2"/>
+          <text class="tl" x="800" y="200" text-anchor="middle">score</text>
+          <text class="tm" x="800" y="220" text-anchor="middle">cos(s, a<tspan class="sub" dy="3">i</tspan><tspan dy="-3">)</tspan></text>
+          <text class="tm" x="800" y="238" text-anchor="middle">× 100 (cap)</text>
+          <text class="tm" x="800" y="258" text-anchor="middle">λ = 4.6132</text>
+          <text class="tm" x="800" y="274" text-anchor="middle">e^λ ≈ 100.8</text>
+        </g>
+        <g data-s="4" class="balloon"><circle cx="740" cy="168" r="10"/><text x="740" y="172" text-anchor="middle">4</text></g>
+
+        <path data-s="5" class="wire solid" pathLength="1" d="M852,230 L874,230" marker-end="url(#arr)"/>
+        <g data-s="5" id="n-bars">
+          <text class="tc" x="880" y="152">P · OUR HARNESS</text>
+          <line class="axis" x1="878" y1="162" x2="878" y2="296"/>
+          <text class="tm" x="884" y="174">GPT-4 Turbo</text>
+          <rect class="bar" x="878" y="180" width="48.3" height="10"/><text class="val" x="932" y="189">0.322</text>
+          <text class="tm" x="884" y="208">Mixtral <tspan class="gold">· gold</tspan></text>
+          <rect class="bar" x="878" y="214" width="78.4" height="10"/><text class="val" x="962" y="223">0.523</text>
+          <text class="tm" x="884" y="242">Claude 2</text>
+          <rect class="bar" x="878" y="248" width="14.1" height="10"/><text class="val" x="898" y="257">0.094</text>
+          <text class="tm" x="884" y="276">GPT-3.5 Turbo</text>
+          <rect class="bar" x="878" y="282" width="9.2" height="10"/><text class="val" x="893" y="291">0.061</text>
+        </g>
+        <g data-s="5" class="balloon"><circle cx="864" cy="148" r="10"/><text x="864" y="152" text-anchor="middle">5</text></g>
+
+        <g class="tblock only-bp">
+          <rect x="748" y="318" width="282" height="110"/>
+          <line x1="748" y1="340" x2="1030" y2="340"/><line x1="748" y1="362" x2="1030" y2="362"/><line x1="748" y1="384" x2="1030" y2="384"/><line x1="748" y1="406" x2="1030" y2="406"/>
+          <text class="tc" x="758" y="334">CLM-V0.1-8B · INFERENCE PATH</text>
+          <text class="tc" x="758" y="356">ITEM ROUTERBENCH:4066BDDF0C7E</text>
+          <text class="tc" x="758" y="378">PROBABILITIES: OUR HARNESS</text>
+          <text class="tc" x="758" y="400">CACHE HIT: DRAWN FOR ILLUSTRATION</text>
+          <text class="tc" x="758" y="421">NOT TO SCALE</text>
+        </g>
+      </svg>
+    </div>
+    <p class="label scroll-hint">Scroll the drawing sideways</p>
+    <ul class="fig-legend" aria-label="Diagram key">
+      <li><span class="sw" aria-hidden="true"></span>computed for this request</li>
+      <li><span class="sw hatch" aria-hidden="true"></span>frozen weights or cached vectors</li>
+      <li><span class="sw dash" aria-hidden="true"></span>skipped on a cache hit</li>
+      <li><span class="sw now" aria-hidden="true"></span>current step</li>
+    </ul>
+    <p class="caption">Item <code>route.model_selection.routerbench:4066bddf0c7e</code> from System1-Arena. The option boxes show short names; CLM reads each option's full description, for example “Mixtral 8x7B Instruct (Mistral AI, open-weight mixture of experts, December 2023); average cost per request $0.000100”. The cache hit is drawn for illustration: our recorded run embedded every text afresh. The probabilities are CLM-v0.1-8B's output on our harness (official heads, our Qwen3-8B encoder). <span class="pv pv-ours">our run</span></p>
+
+    <div class="player">
+      <div>
+        <div class="controls">
+          <button class="btn primary" id="play" type="button">Play the request (5 s)</button>
+          <button class="btn" id="prev" type="button" aria-label="Previous step">Previous</button>
+          <button class="btn" id="next" type="button" aria-label="Next step">Next</button>
+          <span class="stepno" id="stepno" aria-live="polite">Step 5 of 5</span>
+        </div>
+        <ol class="steps" id="steps">
+          <li data-k="1"><button type="button"><span class="n">1</span><span><span class="t">Read the state</span><span class="d">The state and the question's instructions are joined into one text (state, blank line, instructions) and run once through the frozen Qwen3-8B. The last token's 4096-d hidden state is L2-normalised. The client asks vLLM to cap the text at 2,048 tokens; on vLLM 0.13 and later that keeps the first 2,048, which can drop the question at the end (pull requests #6 and #29 propose a fix; both open). Training keeps the tail, up to 8,192 tokens; S1-Arena and our port keep the last 2,048 of each text.</span><span class="pv pv-code">embedder.py, train/embed_utils.py, PRs #6 #29</span> <span class="pv pv-ind">S1-Arena paper</span> <span class="pv pv-ours">our port</span></span></button></li>
+          <li data-k="2"><button type="button"><span class="n">2</span><span><span class="t">Fetch the options</span><span class="d">Each option text is embedded and projected the first time it is seen, then kept in the GPU vector arena: a fixed block reserved at start-up (2% of GPU memory by default, least-recently-used eviction). On a hit no backbone pass runs. By default, yes/no options include the question's text, so they are reused only when the question repeats.</span><span class="pv pv-code">cache.py, schema.py</span></span></button></li>
+          <li data-k="3"><button type="button"><span class="n">3</span><span><span class="t">Project the state</span><span class="d">The state head maps the 4096-d embedding to a 512-d unit vector through two hidden layers of width 1536. The new state's vector is also written to the cache, so a revisited state skips the backbone as well.</span><span class="pv pv-code">heads.py, released checkpoint</span></span></button></li>
+          <li data-k="4"><button type="button"><span class="n">4</span><span><span class="t">Compare</span><span class="d">Each option's logit is its cosine with the state vector times a learned scale. The released λ = 4.6132 gives e<sup>λ</sup> ≈ 100.8, so the scale sits at its cap of 100.</span><span class="pv pv-code">engine.py, released checkpoint</span></span></button></li>
+          <li data-k="5"><button type="button"><span class="n">5</span><span><span class="t">Decide</span><span class="d">A softmax over the four logits (T = 1) gives one probability per option. Recorded: Mixtral 0.523, the gold answer, so CLM is right on this item.</span><span class="pv pv-ours">our run</span></span></button></li>
+        </ol>
+      </div>
+      <div class="eq" aria-labelledby="eq-h">
+        <h3 class="label" id="eq-h" style="margin:0 0 10px">The score, term by term</h3>
+        <div class="math" role="math" aria-label="l sub i equals min of e to the lambda and 100, times cosine of f s of e s and f a of e a i. p sub i equals exp of l i over T divided by the sum over j of exp of l j over T.">
+          <i>ℓ</i><sub>i</sub> = <button class="term" type="button" data-target="n-score">min(<i>e</i><sup><i>λ</i></sup>, 100)</button> · cos(<button class="term" type="button" data-target="n-fs"><i>f</i><sub>s</sub>(<i>e</i><sub>s</sub>)</button>, <button class="term" type="button" data-target="n-arena"><i>f</i><sub>a</sub>(<i>e</i><sub>a<sub>i</sub></sub>)</button>)
+          <br><i>p</i><sub>i</sub> = <button class="term" type="button" data-target="n-bars">exp(<i>ℓ</i><sub>i</sub>/<i>T</i>) / Σ<sub>j</sub> exp(<i>ℓ</i><sub>j</sub>/<i>T</i>)</button>
+        </div>
+        <ul class="gloss">
+          <li><b>e</b><sub>s</sub>: the backbone's last-token embedding of the state-plus-instructions text. <b>e</b><sub>a<sub>i</sub></sub>: the same for option <i>i</i>'s text. <span class="shape">4096, L2-normalised</span></li>
+          <li><b>f</b><sub>s</sub>, <b>f</b><sub>a</sub>: the trained state and action heads, each ending in L2 normalisation. <span class="shape">4096 → 512</span></li>
+          <li><b>λ</b>: the learned logit scale; the factor is clamped at 100. <span class="shape">scalar, released 4.6132</span></li>
+          <li><b>T</b>: an optional request temperature, 1 unless the request sets it. <span class="shape">scalar, 0 &lt; T ≤ 100</span></li>
+          <li><b>K</b>: the number of options; the sum over <i>j</i> runs over them. <span class="shape">here 4</span></li>
+        </ul>
+        <p class="caption" style="margin-top:12px">Hover or focus a term to find it in the drawing. <span class="pv pv-code">engine.py, heads.py</span></p>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div>
+        <div class="big mono">0 / 250</div>
+        <span class="big-l">RouterBench items where CLM's top pick is GPT-3.5 Turbo or Claude 2</span>
+        <span class="pv pv-ours">our run</span>
+      </div>
+      <div>
+        <p><strong>On all 250 RouterBench items in System1-Arena, CLM's top pick is one of two options:</strong> Mixtral (196 items) or GPT-4 Turbo (54). It never picks GPT-3.5 Turbo, although that is the gold answer on 56 items. Its accuracy here is 51.6%, below the 60.8% of always answering Mixtral (152 of 250 gold labels).</p>
+        <p><strong>The four options sit very close together.</strong> Inverting the softmax (scale 100, T = 1 in our port) recovers each option's cosine relative to the top one. On this item they span 0.021; across all 250 items the span runs from 0.011 to 0.027 (median 0.018). The ×100 scale turns this item's largest gap, 0.0214, into a probability ratio of 8.5. <span class="pv pv-ours">our run, exact arithmetic</span></p>
+        <p>Issue #15 reports that a shared question suffix seems to dominate last-token pooling. Here all 250 items share one 75-token routing instruction, appended to states of 62–467 tokens (median 124). That could explain why the top pick barely changes from item to item; it does not explain the small gaps within an item. Issue #3's short-label effect is less likely to apply, because these options are full descriptions, though their shared template could itself pull them together. None of this is tested here. <span class="pv pv-inf">our inference</span> <span class="pv pv-ours">token counts: our run, Qwen3-8B tokenizer</span></p>
+      </div>
+      <div class="ruler-wrap">
+<!--RULER-->
+      </div>
+    </div>
+  </section>
+
+  <!-- §9 BENCHMARKS -->
+  <section aria-labelledby="s9">
+    <div class="sec-head"><span class="no" data-roman="IX">§9</span><h2 id="s9">Benchmarks: System1-Arena</h2></div>
+    <div class="tbl-scroll" role="region" aria-label="Benchmark table, scrollable" tabindex="0">
+      <table class="ledger">
+        <caption>System1-Arena, 13 non-agentic domains, 43,226 requests. Leaderboard snapshot of 2026-10-14 (harness <code>28e16b1</code>). Accuracy is the mean over 87 leaves; Brier is measured against the gold distribution, lower is better; p50 is the median single-request latency where stated, so network rows are not comparable with local ones. Five of the 30 rows are shown; indented rows are our own runs of the same model, scored with the leaderboard's own aggregation.</caption>
+        <thead>
+          <tr>
+            <th scope="col">Row</th>
+            <th scope="col">Model</th>
+            <th scope="col">Probabilities from</th>
+            <th scope="col" class="num">Accuracy %</th>
+            <th scope="col"><span class="vh">Accuracy bar, </span>0–80%</th>
+            <th scope="col" class="num">Brier</th>
+            <th scope="col" class="num">p50</th>
+            <th scope="col">Measured on</th>
+            <th scope="col">Source</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="row">7 / 29</td><td class="model">Decision-2.0-Vega-27B</td><td class="readout">native</td><td class="num">73.03</td><td><div class="accbar" style="--v:73.03"><i></i><b></b></div></td><td class="num">0.3427</td><td class="num">228.0 ms</td><td class="readout">H100, local</td><td><span class="pv pv-ind">independent</span></td></tr>
+          <tr><td class="row">8 / 29</td><td class="model">Jev 1.13</td><td class="readout">native</td><td class="num">72.57</td><td><div class="accbar" style="--v:72.57"><i></i><b></b></div></td><td class="num">0.3489</td><td class="num">321.4 ms</td><td class="readout">network API</td><td><span class="pv pv-ind">independent</span></td></tr>
+          <tr><td class="row">24 / 29</td><td class="model">Qwen3-8B</td><td class="readout">answer-token label probabilities</td><td class="num">59.25</td><td><div class="accbar" style="--v:59.25"><i></i><b></b></div></td><td class="num">0.7153</td><td class="num">30.4 ms</td><td class="readout">H100, local</td><td><span class="pv pv-ind">independent</span></td></tr>
+          <tr class="ours"><td></td><td class="model">our run, raw</td><td class="readout">same readout, our port</td><td class="num">59.50 <span class="ci">58.01–61.11</span></td><td><div class="accbar c" style="--v:59.50"><i></i><b></b></div></td><td class="num">0.7139</td><td class="num">n/m</td><td class="readout">H100, Modal</td><td><span class="pv pv-ours">our run</span></td></tr>
+          <tr class="ours"><td></td><td class="model">our run, calibrated</td><td class="readout">+ T per question type</td><td class="num">59.50</td><td><div class="accbar c" style="--v:59.50"><i></i><b></b></div></td><td class="num">0.4890</td><td class="num">n/m</td><td class="readout">CPU, post hoc</td><td><span class="pv pv-ours">our run</span></td></tr>
+          <tr><td class="row">27 / 29</td><td class="model">Laya (421M)</td><td class="readout">native</td><td class="num">44.47</td><td><div class="accbar" style="--v:44.47"><i></i><b></b></div></td><td class="num">0.6605</td><td class="num">136.5 ms</td><td class="readout">H100, local</td><td><span class="pv pv-ind">independent</span></td></tr>
+          <tr class="focus"><td class="row">28 / 29</td><td class="model">CLM-v0.1-8B</td><td class="readout">native</td><td class="num">41.43</td><td><div class="accbar" style="--v:41.43"><i></i><b></b></div></td><td class="num">0.7492</td><td class="num">40.8 ms</td><td class="readout">H100, local</td><td><span class="pv pv-ind">independent</span></td></tr>
+          <tr class="ours"><td></td><td class="model">our run, raw</td><td class="readout">official heads, our encoder</td><td class="num">41.86 <span class="ci">40.30–43.43</span></td><td><div class="accbar c" style="--v:41.86"><i></i><b></b></div></td><td class="num">0.7411</td><td class="num">n/m</td><td class="readout">H100, Modal</td><td><span class="pv pv-ours">our run</span></td></tr>
+          <tr class="ours"><td></td><td class="model">our run, calibrated</td><td class="readout">+ T per question type</td><td class="num">41.86</td><td><div class="accbar c" style="--v:41.86"><i></i><b></b></div></td><td class="num">0.6069</td><td class="num">n/m</td><td class="readout">CPU, post hoc</td><td><span class="pv pv-ours">our run</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="key-line">
+      <span><span class="tick" aria-hidden="true"></span>Qwen3-8B answer-token readout, 59.25%: CLM's own backbone, read zero-shot</span>
+      <span>Row = position among the 29 ranked rows</span>
+      <span>n/m = not measured</span>
+    </div>
+    <p class="caption">Our runs use the pinned public dataset (<code>ad05ed5</code>, 41,183 of the 43,226 requests), which lacks 14 restricted sources (2,043 requests), so their overall figures cover the public subset. Over the eight complete domains, overall accuracy agrees with the published value within 0.12 points; single domains agree within 0.9. Intervals are 95% paired bootstrap, resampling tasks within leaves and items within tasks. Calibrated rows fit temperatures leave-one-domain-out; temperature never changes the top option, so accuracy is unchanged.</p>
+
+    <div class="corr">
+      <div>
+        <span class="label">Correction</span><br>
+        <span class="mono" style="font-size:12px;color:var(--ink2)">2026-11-22 · eb6f2f5</span>
+      </div>
+      <div>
+        <p>Re-scoring the authors' published heads with our evaluation code gives 51.73 / 69.16 / 68.63% on <del>all</del> 191,161 <del>held-out</del> hard-negative questions, <del>matching the reference to four digits</del> <ins>within 0.4 points of the published 52.1 / 69.2 / 68.5, which were measured on a different sample of about 100k</ins>.</p>
+        <span class="pv pv-ours">our README, corrected in place</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- §13 SOURCES -->
+  <section aria-labelledby="s13">
+    <div class="sec-head"><span class="no" data-roman="XIII">§13</span><h2 id="s13">Sources for this sample</h2></div>
+    <ul class="sources">
+      <li><code>clm-repo</code> Contrastive-LM/CLM: <code>engine.py</code> (scoring, temperature, RELEASE constant), <code>heads.py</code>, <code>embedder.py</code> (L2 normalisation, 2,048-token cap), <code>schema.py</code> (text layout), <code>cache.py</code> (vector arena), <code>train/finetune.py</code>, <code>serve_qwen3_8b.sh</code>, README (vector-cache latencies). Issues #3 and #15; pull requests #6 and #29 (truncation side, open).</li>
+      <li><code>clm-card</code> Hugging Face, Contrastive-LM/CLM-v0.1-8B: model card (Apache-2.0) and the released checkpoint (head config, 9,443,840 parameters per head, λ = 4.6132).</li>
+      <li><code>qwen3-8b</code> Qwen/Qwen3-8B <code>config.json</code>: 36 layers, hidden size 4096.</li>
+      <li><code>s1arena-lb</code> TianyuCodings/S1-Arena <code>leaderboard/results.json</code> at <code>28e16b1</code>, snapshot 2026-10-14, Apache-2.0. Truncation of CLM inputs: S1-Arena paper, arXiv 2610.21244.</li>
+      <li><code>ours-anchors</code> <code>results/references/s1arena/ANCHORS.md</code> (both anchors within 1 pp, ADR 0003).</li>
+      <li><code>ours-cal</code> <code>results/references/s1arena/CALIBRATION.md</code> and <code>calibration.json</code>.</li>
+      <li><code>ours-rec</code> <code>results/references/s1arena/Contrastive-LM__CLM-v0.1-8B/static/responses.jsonl.gz</code>; RouterBench task, 250 items.</li>
+      <li><code>ours-guide</code> <code>docs/research/README.md</code>, findings table row 4 (no cause of the gap isolated); <code>docs/research/systems/clm.md</code>.</li>
+    </ul>
+  </section>
+
+  <footer>Gate A0 mockup for the System One companion site, v3. One sample, three looks, each in light and dark. Private review copy: the RouterBench item's display licence is checked before anything goes on the public site.</footer>
+</main>
+
+<script>
+(function(){
+  var root=document.documentElement;
+  var LOOKS={
+    ledger:"Warm paper and fine line art. One orange marks what is active or trained, verdigris marks our own measurements. Tables are ruled like an account book, and corrections stay visible, struck through in place.",
+    blueprint:"A drafting sheet: cyanotype ink on a measured grid, condensed capitals, a title block and numbered balloons. A single redline marks the active step.",
+    cinema:"Classic black-and-white film: silver-print greys, grain and a vignette, a title card, intertitle section heads and figures framed in a film strip. The active step is lit, and the projector runs while the request plays."
+  };
+  var tabs=[].slice.call(document.querySelectorAll('[role="tab"]'));
+  var reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var main=document.getElementById("main");
+  function setLook(l,fromUser){
+    if(l==="mono") l="cinema";
+    if(!LOOKS[l]) l="ledger";
+    var was=root.getAttribute("data-look");
+    root.setAttribute("data-look",l);
+    tabs.forEach(function(t){t.setAttribute("aria-selected",String(t.dataset.look===l));t.tabIndex=t.dataset.look===l?0:-1;});
+    document.getElementById("look-note").textContent=LOOKS[l];
+    if(fromUser&&l==="cinema"&&was!=="cinema"&&!reduce&&main.animate){
+      main.animate([{clipPath:"circle(0% at 50% 30%)"},{clipPath:"circle(150% at 50% 30%)"}],{duration:950,easing:"cubic-bezier(.6,0,.2,1)"});
+    }
+    updateStepno();
+  }
+  function fromHash(user){setLook((location.hash||"").replace("#",""),user);}
+  tabs.forEach(function(t,i){
+    t.addEventListener("click",function(){location.hash=t.dataset.look;});
+    t.addEventListener("keydown",function(e){
+      if(e.key==="ArrowRight"||e.key==="ArrowLeft"){
+        var j=(i+(e.key==="ArrowRight"?1:-1)+tabs.length)%tabs.length;tabs[j].focus();location.hash=tabs[j].dataset.look;e.preventDefault();
+      }
+    });
+  });
+  window.addEventListener("hashchange",function(){fromHash(true);});
+
+  var themeBtns=[].slice.call(document.querySelectorAll("[data-theme-set]"));
+  themeBtns.forEach(function(b){
+    b.addEventListener("click",function(){
+      var v=b.dataset.themeSet;
+      if(v==="system") root.removeAttribute("data-theme"); else root.setAttribute("data-theme",v);
+      themeBtns.forEach(function(x){x.setAttribute("aria-pressed",String(x===b));});
+    });
+  });
+
+  /* ---- step player ---- */
+  var els=[].slice.call(document.querySelectorAll("#fig [data-s]"));
+  var bars=[].slice.call(document.querySelectorAll("#fig .bar"));
+  var lis=[].slice.call(document.querySelectorAll("#steps li"));
+  var playBtn=document.getElementById("play"),prev=document.getElementById("prev"),next=document.getElementById("next"),stepno=document.getElementById("stepno");
+  var cur=5,timer=null,played=false;
+  function updateStepno(){
+    if(!stepno) return;
+    stepno.textContent=(root.getAttribute("data-look")==="cinema"?"Frame "+cur+" of 5":"Step "+cur+" of 5");
+  }
+  function show(k,animate){
+    els.forEach(function(el){
+      var s=+el.dataset.s,wasNow=el.classList.contains("now");
+      el.classList.toggle("future",s>k);
+      el.classList.toggle("now",s===k);
+      el.classList.toggle("past",s<k);
+      if(animate&&s===k&&!wasNow&&el.classList.contains("solid")&&el.animate){
+        el.animate([{strokeDashoffset:1},{strokeDashoffset:0}],{duration:650,easing:"cubic-bezier(.2,.7,.2,1)"});
+      }
+    });
+    if(animate&&k===5&&cur!==5){
+      bars.forEach(function(b,i){ if(b.animate) b.animate([{transform:"scaleX(0)"},{transform:"scaleX(1)"}],{duration:700,delay:120+i*60,easing:"cubic-bezier(.2,.7,.2,1)",fill:"backwards"}); });
+    }
+    cur=k;
+    lis.forEach(function(li){ if(+li.dataset.k===k) li.setAttribute("aria-current","step"); else li.removeAttribute("aria-current"); });
+    updateStepno();
+    prev.disabled=k<=1; next.disabled=k>=5;
+  }
+  function stop(){ if(timer){clearInterval(timer);timer=null;} root.classList.remove("playing"); playBtn.textContent="Play the request (5 s)"; }
+  function play(){
+    stop(); played=true;
+    if(reduce){ show(5,false); return; }
+    root.classList.add("playing");
+    show(1,true); playBtn.textContent="Pause";
+    timer=setInterval(function(){ if(cur>=5){stop();return;} show(cur+1,true); if(cur>=5) setTimeout(stop,700); },1000);
+  }
+  playBtn.addEventListener("click",function(){ if(timer) stop(); else play(); });
+  prev.addEventListener("click",function(){stop(); if(cur>1) show(cur-1,!reduce);});
+  next.addEventListener("click",function(){stop(); if(cur<5) show(cur+1,!reduce);});
+  lis.forEach(function(li){ li.querySelector("button").addEventListener("click",function(){stop(); show(+li.dataset.k,!reduce);}); });
+  document.querySelector(".player").addEventListener("keydown",function(e){
+    if(e.target.classList&&e.target.classList.contains("term")) return;
+    if(e.key==="ArrowRight"&&cur<5){stop();show(cur+1,!reduce);e.preventDefault();}
+    if(e.key==="ArrowLeft"&&cur>1){stop();show(cur-1,!reduce);e.preventDefault();}
+  });
+  fromHash(false);
+  show(5,false); /* complete at rest: the final frame */
+
+  var fig=document.getElementById("fig").parentNode;
+  if("IntersectionObserver" in window && !reduce){
+    new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting && !played){ play(); }
+        else if(!en.isIntersecting && timer){ stop(); show(5,false); }
+      });
+    },{threshold:.45}).observe(fig);
+  }
+
+  /* ---- equation terms ↔ drawing ---- */
+  [].slice.call(document.querySelectorAll(".term")).forEach(function(t){
+    var tgt=document.getElementById(t.dataset.target);
+    function on(){ if(tgt) tgt.classList.add("hlt"); t.classList.add("on"); }
+    function off(){ if(tgt) tgt.classList.remove("hlt"); t.classList.remove("on"); }
+    t.addEventListener("mouseenter",on); t.addEventListener("mouseleave",off);
+    t.addEventListener("focus",on); t.addEventListener("blur",off);
+  });
+})();
+</script>

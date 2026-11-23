@@ -1,0 +1,115 @@
+/* Design tokens for the three looks approved at Gate A0 (2026-11-23).
+   Every look is a full token set, light and dark. The look is chosen by `data-look` on <html>
+   (ledger is the default); the theme follows the OS unless `data-theme` is set.
+   Layout and components use only these tokens. */
+
+:root {
+  /* LOOK 1 · Editorial ledger + line art (light) — default */
+  --bg: #F6F4EF; --panel: #FCFBF8; --ink: #14161B; --ink2: #555B67; --ink3: #6B707A;
+  --rule: #DAD5CB; --rule-strong: #14161B; --grid: #E5E0D6;
+  --accent: #E2501E; --accent-text: #B8431A; --accent-soft: #F7E1D5; --on-accent: #FFFFFF;
+  --cool: #1F6F6B; --cool-soft: #DCEBE8; --margin-rule: #F0C9B8;
+  --now-fill: var(--accent-soft); --now-stroke: var(--accent); --now-text: var(--ink);
+  --paper-img: none; --paper-size: auto; --title-grad: none; --film: #14161B;
+  --grain-op: 0; --vig: transparent;
+  --f-display: "Instrument Serif", "Iowan Old Style", Georgia, serif;
+  --f-body: "Instrument Sans Variable", "Instrument Sans", "Helvetica Neue", Arial, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  --f-label: var(--f-mono); --f-math: "Instrument Serif", Georgia, serif;
+  --d-weight: 400; --d-style: normal; --d-transform: none; --d-track: -0.015em; --d-stretch: 100%;
+  --d-size: clamp(54px, 10.5vw, 128px); --d-lh: .88;
+  --h-font: var(--f-display); --h-weight: 400; --h-transform: none; --h-track: 0;
+  --h-size: clamp(28px, 3.6vw, 40px); --h-style: normal;
+  --sw: 1.25;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E1014; --panel: #14171C; --ink: #ECE8E0; --ink2: #A7ADB7; --ink3: #8A909B;
+    --rule: #2A2E36; --rule-strong: #ECE8E0; --grid: #1C2027;
+    --accent: #FF6B3D; --accent-text: #FF8A63; --accent-soft: #3A1F15; --on-accent: #0E1014;
+    --cool: #4FB3A9; --cool-soft: #15302D; --margin-rule: #3A1F15; --film: #ECE8E0;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E1014; --panel: #14171C; --ink: #ECE8E0; --ink2: #A7ADB7; --ink3: #8A909B;
+  --rule: #2A2E36; --rule-strong: #ECE8E0; --grid: #1C2027;
+  --accent: #FF6B3D; --accent-text: #FF8A63; --accent-soft: #3A1F15; --on-accent: #0E1014;
+  --cool: #4FB3A9; --cool-soft: #15302D; --margin-rule: #3A1F15; --film: #ECE8E0;
+  color-scheme: dark;
+}
+
+/* LOOK 2 · Blueprint engineering */
+:root[data-look="blueprint"] {
+  --bg: #EAF0F5; --panel: #F4F8FB; --ink: #0F3557; --ink2: #36597B; --ink3: #56718C;
+  --rule: #B9CBDB; --rule-strong: #0F3557; --grid: #D3DFEA;
+  --accent: #C8371D; --accent-text: #B0301A; --accent-soft: #F6DED7; --on-accent: #FFFFFF;
+  --cool: #0B6E7F; --cool-soft: #D5E9EE; --margin-rule: transparent;
+  --now-fill: var(--accent-soft); --now-stroke: var(--accent); --now-text: var(--ink);
+  --paper-img: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  --paper-size: 24px 24px; --title-grad: none; --film: #0F3557; --grain-op: 0; --vig: transparent;
+  --f-display: "IBM Plex Sans Condensed", "Arial Narrow", Arial, sans-serif;
+  --f-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --f-label: "IBM Plex Sans Condensed", "Arial Narrow", Arial, sans-serif;
+  --d-weight: 600; --d-transform: uppercase; --d-track: .02em; --d-size: clamp(40px, 7.4vw, 90px); --d-lh: .95;
+  --h-font: "IBM Plex Sans Condensed", "Arial Narrow", Arial, sans-serif; --h-weight: 600; --h-transform: uppercase;
+  --h-track: .06em; --h-size: clamp(20px, 2.4vw, 26px);
+  --sw: 1;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"])[data-look="blueprint"] {
+    --bg: #0B2440; --panel: #0E2C4C; --ink: #DCEAF6; --ink2: #A3BDD6; --ink3: #86A3C0;
+    --rule: #2A4C72; --rule-strong: #DCEAF6; --grid: #143458;
+    --accent: #FF7A59; --accent-text: #FF957A; --accent-soft: #40283A; --on-accent: #0B2440;
+    --cool: #6FD3E0; --cool-soft: #123F55; --film: #DCEAF6;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"][data-look="blueprint"] {
+  --bg: #0B2440; --panel: #0E2C4C; --ink: #DCEAF6; --ink2: #A3BDD6; --ink3: #86A3C0;
+  --rule: #2A4C72; --rule-strong: #DCEAF6; --grid: #143458;
+  --accent: #FF7A59; --accent-text: #FF957A; --accent-soft: #40283A; --on-accent: #0B2440;
+  --cool: #6FD3E0; --cool-soft: #123F55; --film: #DCEAF6;
+  color-scheme: dark;
+}
+
+/* LOOK 3 · Monochrome, classic film: silver print (light) and nitrate black (dark) */
+:root[data-look="cinema"] {
+  --bg: #E8E6E1; --panel: #F0EEEA; --ink: #111111; --ink2: #363636; --ink3: #5E5E5E;
+  --rule: #ABA8A2; --rule-strong: #111111; --grid: #D8D5CF;
+  --accent: #111111; --accent-text: #111111; --accent-soft: #CFCCC6; --on-accent: #F0EEEA;
+  --cool: #111111; --cool-soft: #DAD7D1; --margin-rule: transparent;
+  --now-fill: var(--ink); --now-stroke: var(--ink); --now-text: var(--panel);
+  --paper-img: none; --paper-size: auto; --film: #111111;
+  --title-grad: linear-gradient(180deg, #000 0%, #2b2b2b 60%, #4a4a4a 100%);
+  --grain-op: .09; --vig: rgba(0, 0, 0, .16);
+  --f-display: "Bodoni Moda Variable", "Bodoni Moda", Didot, "Bodoni 72", Georgia, serif;
+  --f-label: "Courier Prime", "Courier New", monospace; --f-mono: "Courier Prime", "Courier New", monospace;
+  --f-math: "Bodoni Moda Variable", Georgia, serif;
+  --d-weight: 500; --d-track: -0.01em; --d-size: clamp(50px, 10vw, 124px); --d-lh: .95;
+  --h-font: var(--f-display); --h-weight: 500; --h-style: italic; --h-size: clamp(26px, 3.3vw, 38px);
+  --sw: 1.4;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"])[data-look="cinema"] {
+    --bg: #0A0A0A; --panel: #111111; --ink: #ECEAE4; --ink2: #BEBBB4; --ink3: #8F8C86;
+    --rule: #393835; --rule-strong: #ECEAE4; --grid: #191919;
+    --accent: #ECEAE4; --accent-text: #ECEAE4; --accent-soft: #2A2926; --on-accent: #0A0A0A;
+    --cool: #ECEAE4; --cool-soft: #1C1B19; --film: #1E1E1C;
+    --title-grad: linear-gradient(180deg, #FFFFFF 0%, #D9D6CF 45%, #8F8C86 100%);
+    --grain-op: .12; --vig: rgba(0, 0, 0, .62);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"][data-look="cinema"] {
+  --bg: #0A0A0A; --panel: #111111; --ink: #ECEAE4; --ink2: #BEBBB4; --ink3: #8F8C86;
+  --rule: #393835; --rule-strong: #ECEAE4; --grid: #191919;
+  --accent: #ECEAE4; --accent-text: #ECEAE4; --accent-soft: #2A2926; --on-accent: #0A0A0A;
+  --cool: #ECEAE4; --cool-soft: #1C1B19; --film: #1E1E1C;
+  --title-grad: linear-gradient(180deg, #FFFFFF 0%, #D9D6CF 45%, #8F8C86 100%);
+  --grain-op: .12; --vig: rgba(0, 0, 0, .62);
+  color-scheme: dark;
+}

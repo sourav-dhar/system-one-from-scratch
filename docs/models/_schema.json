@@ -1,0 +1,698 @@
+{
+  "$defs": {
+    "BenchRow": {
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "rank": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rank"
+        },
+        "readout": {
+          "title": "Readout",
+          "type": "string"
+        },
+        "accuracy": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Accuracy"
+        },
+        "accuracy_ci": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Accuracy Ci"
+        },
+        "brier": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Brier"
+        },
+        "p50_ms": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "P50 Ms"
+        },
+        "measured_on": {
+          "title": "Measured On",
+          "type": "string"
+        },
+        "provenance": {
+          "enum": [
+            "independent",
+            "self-reported",
+            "code",
+            "ours",
+            "inferred"
+          ],
+          "title": "Provenance",
+          "type": "string"
+        },
+        "sources": {
+          "items": {
+            "$ref": "#/$defs/Source"
+          },
+          "minItems": 1,
+          "title": "Sources",
+          "type": "array"
+        },
+        "harness": {
+          "title": "Harness",
+          "type": "string"
+        },
+        "checks": {
+          "additionalProperties": {
+            "$ref": "#/$defs/CheckRef"
+          },
+          "description": "Field name -> the file that must reproduce the shown number.",
+          "title": "Checks",
+          "type": "object"
+        },
+        "focus": {
+          "default": false,
+          "title": "Focus",
+          "type": "boolean"
+        },
+        "child": {
+          "default": false,
+          "title": "Child",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "label",
+        "readout",
+        "measured_on",
+        "provenance",
+        "sources",
+        "harness"
+      ],
+      "title": "BenchRow",
+      "type": "object"
+    },
+    "BenchTable": {
+      "additionalProperties": false,
+      "properties": {
+        "suite": {
+          "title": "Suite",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "caption": {
+          "title": "Caption",
+          "type": "string"
+        },
+        "reference_line": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reference Line"
+        },
+        "reference_label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reference Label"
+        },
+        "notes": {
+          "items": {
+            "$ref": "#/$defs/Fact"
+          },
+          "title": "Notes",
+          "type": "array"
+        },
+        "rows": {
+          "items": {
+            "$ref": "#/$defs/BenchRow"
+          },
+          "minItems": 1,
+          "title": "Rows",
+          "type": "array"
+        }
+      },
+      "required": [
+        "suite",
+        "title",
+        "caption",
+        "rows"
+      ],
+      "title": "BenchTable",
+      "type": "object"
+    },
+    "CheckRef": {
+      "additionalProperties": false,
+      "description": "Ties a displayed number to the file it came from (required for `ours` rows, allowed for any row).\n\nEither ``pointer`` (a JSON pointer into ``file``; the value is multiplied by ``scale`` and rounded to\n``decimals``) or ``text`` (an exact string that must appear in ``file``, for figures that exist only in a\ngenerated report).",
+      "properties": {
+        "file": {
+          "title": "File",
+          "type": "string"
+        },
+        "pointer": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pointer"
+        },
+        "scale": {
+          "default": 1.0,
+          "title": "Scale",
+          "type": "number"
+        },
+        "decimals": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Decimals"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Text"
+        }
+      },
+      "required": [
+        "file"
+      ],
+      "title": "CheckRef",
+      "type": "object"
+    },
+    "Claim": {
+      "additionalProperties": false,
+      "properties": {
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "sources": {
+          "items": {
+            "$ref": "#/$defs/Source"
+          },
+          "minItems": 1,
+          "title": "Sources",
+          "type": "array"
+        },
+        "verified_by": {
+          "title": "Verified By",
+          "type": "string"
+        },
+        "date": {
+          "format": "date",
+          "title": "Date",
+          "type": "string"
+        }
+      },
+      "required": [
+        "text",
+        "sources",
+        "verified_by",
+        "date"
+      ],
+      "title": "Claim",
+      "type": "object"
+    },
+    "Correction": {
+      "additionalProperties": false,
+      "description": "A published correction, shown in place: struck text stays readable beside its replacement.",
+      "properties": {
+        "date": {
+          "format": "date",
+          "title": "Date",
+          "type": "string"
+        },
+        "commit": {
+          "title": "Commit",
+          "type": "string"
+        },
+        "where": {
+          "title": "Where",
+          "type": "string"
+        },
+        "segments": {
+          "items": {
+            "$ref": "#/$defs/Segment"
+          },
+          "minItems": 2,
+          "title": "Segments",
+          "type": "array"
+        },
+        "provenance": {
+          "enum": [
+            "independent",
+            "self-reported",
+            "code",
+            "ours",
+            "inferred"
+          ],
+          "title": "Provenance",
+          "type": "string"
+        },
+        "sources": {
+          "items": {
+            "$ref": "#/$defs/Source"
+          },
+          "minItems": 1,
+          "title": "Sources",
+          "type": "array"
+        }
+      },
+      "required": [
+        "date",
+        "commit",
+        "where",
+        "segments",
+        "provenance",
+        "sources"
+      ],
+      "title": "Correction",
+      "type": "object"
+    },
+    "Coverage": {
+      "additionalProperties": false,
+      "description": "One element of the primary sources and where the page explains it.\n\n``covered``: explained in ``section``. ``planned``: assigned to ``section`` but not written yet (allowed\nonly while the page is a draft). ``n/a``: deliberately left out, with a ``reason``.",
+      "properties": {
+        "element": {
+          "title": "Element",
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "status": {
+          "enum": [
+            "covered",
+            "planned",
+            "n/a"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "section": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Section"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reason"
+        }
+      },
+      "required": [
+        "element",
+        "source",
+        "status"
+      ],
+      "title": "Coverage",
+      "type": "object"
+    },
+    "Fact": {
+      "additionalProperties": false,
+      "description": "One sentence, with every kind of evidence it rests on.",
+      "properties": {
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "provenance": {
+          "items": {
+            "enum": [
+              "independent",
+              "self-reported",
+              "code",
+              "ours",
+              "inferred"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Provenance",
+          "type": "array"
+        },
+        "sources": {
+          "items": {
+            "$ref": "#/$defs/Source"
+          },
+          "minItems": 1,
+          "title": "Sources",
+          "type": "array"
+        }
+      },
+      "required": [
+        "text",
+        "provenance",
+        "sources"
+      ],
+      "title": "Fact",
+      "type": "object"
+    },
+    "Segment": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "keep",
+            "del",
+            "ins"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "text"
+      ],
+      "title": "Segment",
+      "type": "object"
+    },
+    "Source": {
+      "additionalProperties": false,
+      "description": "Where a fact comes from: a library key, or ``repo:<path>`` for a file in this repository.",
+      "properties": {
+        "key": {
+          "title": "Key",
+          "type": "string"
+        },
+        "at": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Locator inside the source: file, section, table, issue.",
+          "title": "At"
+        }
+      },
+      "required": [
+        "key"
+      ],
+      "title": "Source",
+      "type": "object"
+    },
+    "SpecItem": {
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        },
+        "provenance": {
+          "enum": [
+            "independent",
+            "self-reported",
+            "code",
+            "ours",
+            "inferred"
+          ],
+          "title": "Provenance",
+          "type": "string"
+        },
+        "sources": {
+          "items": {
+            "$ref": "#/$defs/Source"
+          },
+          "minItems": 1,
+          "title": "Sources",
+          "type": "array"
+        }
+      },
+      "required": [
+        "label",
+        "value",
+        "provenance",
+        "sources"
+      ],
+      "title": "SpecItem",
+      "type": "object"
+    },
+    "Summary": {
+      "additionalProperties": false,
+      "properties": {
+        "what": {
+          "items": {
+            "$ref": "#/$defs/Fact"
+          },
+          "minItems": 1,
+          "title": "What",
+          "type": "array"
+        },
+        "why": {
+          "items": {
+            "$ref": "#/$defs/Fact"
+          },
+          "minItems": 1,
+          "title": "Why",
+          "type": "array"
+        },
+        "weakness": {
+          "items": {
+            "$ref": "#/$defs/Fact"
+          },
+          "minItems": 1,
+          "title": "Weakness",
+          "type": "array"
+        }
+      },
+      "required": [
+        "what",
+        "why",
+        "weakness"
+      ],
+      "title": "Summary",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "``docs/models/<id>/model.yaml``.",
+  "properties": {
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "version": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Version"
+    },
+    "full_name": {
+      "title": "Full Name",
+      "type": "string"
+    },
+    "tier": {
+      "enum": [
+        "A",
+        "B",
+        "C"
+      ],
+      "title": "Tier",
+      "type": "string"
+    },
+    "family": {
+      "enum": [
+        "biencoder",
+        "late-interaction",
+        "decoder-readout",
+        "encoder",
+        "encoder-decoder",
+        "looped",
+        "frozen-reader",
+        "generative",
+        "undisclosed",
+        "ours"
+      ],
+      "title": "Family",
+      "type": "string"
+    },
+    "note": {
+      "description": "Repo path of the research note this page is drawn from.",
+      "title": "Note",
+      "type": "string"
+    },
+    "eyebrow": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Eyebrow",
+      "type": "array"
+    },
+    "dek": {
+      "title": "Dek",
+      "type": "string"
+    },
+    "spec": {
+      "items": {
+        "$ref": "#/$defs/SpecItem"
+      },
+      "minItems": 1,
+      "title": "Spec",
+      "type": "array"
+    },
+    "summary": {
+      "$ref": "#/$defs/Summary"
+    },
+    "benchmarks": {
+      "items": {
+        "$ref": "#/$defs/BenchTable"
+      },
+      "title": "Benchmarks",
+      "type": "array"
+    },
+    "corrections": {
+      "items": {
+        "$ref": "#/$defs/Correction"
+      },
+      "title": "Corrections",
+      "type": "array"
+    },
+    "coverage": {
+      "items": {
+        "$ref": "#/$defs/Coverage"
+      },
+      "minItems": 1,
+      "title": "Coverage",
+      "type": "array"
+    },
+    "claims": {
+      "items": {
+        "$ref": "#/$defs/Claim"
+      },
+      "minItems": 1,
+      "title": "Claims",
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "full_name",
+    "tier",
+    "family",
+    "note",
+    "dek",
+    "spec",
+    "summary",
+    "coverage",
+    "claims"
+  ],
+  "title": "ModelPage",
+  "type": "object"
+}

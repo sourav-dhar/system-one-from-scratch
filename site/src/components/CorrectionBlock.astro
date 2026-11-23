@@ -1,0 +1,17 @@
+---
+import type { Correction, Reference } from '../lib/data';
+import ProvTag from './ProvTag.astro';
+import SourceLinks from './SourceLinks.astro';
+interface Props { c: Correction; refs: Map<string, Reference> }
+const { c, refs } = Astro.props;
+---
+<div class="corr">
+  <div>
+    <span class="label">Correction</span><br />
+    <span class="mono" style="font-size:12px;color:var(--ink2)">{c.date} · {c.commit}</span>
+  </div>
+  <div>
+    <p>{c.segments.map((s) => s.kind === 'del' ? <del>{s.text}</del> : s.kind === 'ins' ? <ins>{s.text}</ins> : s.text)}</p>
+    <div class="srcline"><ProvTag kind={c.provenance} text={`${c.where}, corrected in place`} /><SourceLinks sources={c.sources} refs={refs} /></div>
+  </div>
+</div>
