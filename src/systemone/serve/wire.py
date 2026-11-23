@@ -39,7 +39,6 @@ from pydantic import BaseModel, Field, field_validator
 
 from systemone.decisions.schema import (
     MAX_LEVELS,
-    MAX_OPTIONS,
     Answer,
     DecisionRequest,
     ModelResponse,
@@ -48,6 +47,7 @@ from systemone.decisions.schema import (
 from systemone.decisions.text import to_text
 
 JSONValue = str | int | float | bool | dict[str, Any] | list[Any] | None
+WIRE_MAX_OPTIONS = 255  # TypeSafe's documented limit (our internal schema allows more, for K-sweeps)
 
 
 class NoulQuestion(BaseModel):
@@ -66,7 +66,7 @@ class NoulQuestion(BaseModel):
 class ChoiceQuestion(BaseModel):
     type: Literal["choice"]
     instructions: JSONValue = None
-    criteria: dict[str, JSONValue] = Field(min_length=1, max_length=MAX_OPTIONS)
+    criteria: dict[str, JSONValue] = Field(min_length=1, max_length=WIRE_MAX_OPTIONS)
 
 
 class ScoreQuestion(BaseModel):
