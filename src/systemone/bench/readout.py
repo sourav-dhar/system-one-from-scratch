@@ -129,17 +129,15 @@ class Readout:
         config = AutoConfig.from_pretrained(hf_id)
         context = int(kwargs.pop("context", None) or getattr(config, "max_position_embeddings", 32768))
         dev = torch.device(device or ("cuda" if torch.cuda.is_available() else "cpu"))
-        model = None
+        model: Any = None
         if load_model:
             from transformers import AutoModelForCausalLM
 
-            model = (
-                AutoModelForCausalLM.from_pretrained(
-                    hf_id, dtype=dtype or torch.bfloat16, attn_implementation="sdpa"
-                )
-                .to(dev)  # type: ignore[arg-type]
-                .eval()
+            # typed as Any: transformers' wrapped ``.to`` confuses mypy when it is installed
+            model = AutoModelForCausalLM.from_pretrained(
+                hf_id, dtype=dtype or torch.bfloat16, attn_implementation="sdpa"
             )
+            model = model.to(dev).eval()
         return cls(tok, model, hf_id, context, dev, **kwargs)
 
     @property
