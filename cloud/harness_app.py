@@ -111,8 +111,10 @@ def _volume_dir(model_id: str, scope: str, limit: int) -> str:
     return f"references/s1arena/{slug(model_id)}/{_run_name(scope, limit)}"
 
 
-@app.function(gpu="H100", cpu=8, memory=65536, volumes={ROOT: vol}, timeout=8 * 3600)
+@app.function(gpu="H100", cpu=4, memory=32768, volumes={ROOT: vol}, timeout=8 * 3600)
 def answer_shard(kind: str, spec: str, scope: str, limit: int, shard: int, shards: int) -> dict[str, Any]:
+    """One shard of a run. The container is sized to the job: the weights (16 GB in bf16) pass through
+    CPU memory once, prompts are tokenised on one core, and every extra core or GiB is billed by the hour."""
     from systemone.bench.runner import run
 
     vol.reload()
