@@ -61,7 +61,23 @@ This repository rebuilds the open CLM-8B recipe from scratch. It maps the whole 
   - a linear probe on the same embeddings beats the fine-tuned head (0.900 vs 0.795).
 
   See [survey §7](docs/research/survey.md#7-evaluation-landscape-and-failure-modes).
-- **One temperature removes most of the shipped heads' calibration error.** The published heads ship with their scale saturated at the cap of 100. One scalar, fitted in-distribution, removes 79–90% of the calibration error, and top-1 cannot change. A cross-dataset fit and a tie-corrected re-measurement come next; elsewhere, calibration has cost other metrics ([survey §5.6](docs/research/survey.md#56-our-measurements)).
+- **One temperature removes most of the shipped heads' calibration error, within their own data.** The published heads ship with their scale saturated at the cap of 100. On their hard-negative test, one scalar fitted in-distribution removes 79–90% of the calibration error, and top-1 cannot change ([survey §5.6](docs/research/survey.md#56-our-measurements)). Fitted *across* datasets the gain is smaller: on System1-Arena, a temperature fitted on the other domains cuts CLM's ECE from 0.286 to 0.149, about half ([CALIBRATION.md](results/references/s1arena/CALIBRATION.md)).
+
+### M0: our harness, on System1-Arena
+
+The benchmark is pinned to dataset commit `ad05ed5`: 41,183 public static items, scored as the leaderboard scores them, as a mean over 87 leaves. Every number below comes from a file in [`results/references/s1arena/`](results/references/s1arena/).
+
+| | Accuracy (95% CI) | Published | Brier, raw → calibrated* |
+|---|---|---|---|
+| Qwen3-8B answer-token readout | **59.50** (58.0–61.1) | 59.25 | 0.714 → **0.489** |
+| CLM-v0.1-8B | **41.86** (40.3–43.4) | 41.43 | 0.741 → 0.607 |
+| BM25, a lexical floor | 37.84 | — | 0.821 → 0.612 |
+
+\* A temperature per question type, fitted on the *other* 12 domains (leave-one-domain-out).
+
+- **Both anchors reproduce.** The gaps are +0.25 and +0.43 points, against an acceptance bar of 1.0. The mean gap over the 8 domains the public data holds completely is +0.05 for Qwen3-8B and +0.12 for CLM ([ANCHORS.md](results/references/s1arena/ANCHORS.md)).
+- **The bar for our model is a calibrated zero-shot readout: 59.5% at Brier 0.489.** On both accuracy and Brier it beats the published, as-shipped numbers of three System One models: Kai-0.6B (50.3%, 0.537), Laya (44.5%, 0.660) and CLM (41.4%, 0.749). Theirs were scored on the full set; ours is on the public subset. Both anchors ship badly overconfident: the fitted temperatures are about 9 for Qwen3-8B and about 6 for CLM ([CALIBRATION.md](results/references/s1arena/CALIBRATION.md)).
+- **On choice questions, CLM is below word overlap.** BM25 scores 33.7% there against CLM's 29.8%, and is at least as accurate as CLM in 6 of 13 domains. CLM's overall lead comes from yes/no questions, where BM25 can only answer "true" ([BASELINES.md](results/references/s1arena/BASELINES.md)).
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/readme/frontier-dark.svg">
@@ -183,7 +199,7 @@ probs = heads.option_probs(state_vec, option_vecs)  # 4096-d Qwen3-8B vectors in
 
 | Milestone | Scope | Tracking |
 |---|---|---|
-| **M0** Harness, anchors & baselines | Two anchors on a pinned System1-Arena (CLM 41.4%, the Qwen3-8B readout 59.3%); the calibrated same-backbone readout as the bar; probe, DeBERTa and BM25 baselines; reference models and a W2 quality suite on one harness | [#33](../../issues/33)–[#37](../../issues/37) |
+| **M0** Harness, anchors & baselines | **Done:** the schema and pinned loaders (System1-Arena, OpenDecisions, typed-decisions, Jeva-Eval), upstream-exact scoring with paired bootstraps, the probe battery, a `/v1/systemone` server and client, **both anchors reproduced (+0.25 / +0.43 pp)**, the calibrated bar, and the BM25 floor. **Next:** official-adapter parity, DeBERTa and probe baselines, reference models, the T-Rex loop | [#33](../../issues/33)–[#37](../../issues/37) |
 | **M1** Typed decisions | Qwen3.5-4B + LoRA on a forked state with per-option lanes; a baseline-anchored factorial with drop-one ablations, 3 seeds per cell | [#38](../../issues/38) |
 | **M2** Cached path | Options cached once plus a late-interaction block, behind a pre-registered go/no-go; serving on one GPU | — |
 | **M3** Release | Model card with data licences, results, `v0.2.0` | [#13](../../issues/13) |
