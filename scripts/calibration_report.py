@@ -104,7 +104,7 @@ def main() -> None:
         "  - CLM needs about T = 6 on top of its capped scale of 100.",
         "- **The calibrated Qwen3-8B readout is M1's bar** (plan v3: the calibrated zero-shot readout of the backbone).",
         "  - With per-type temperatures it reaches Brier 0.489 at 59.5% accuracy.",
-        "  - That already beats three published System One models on both accuracy and Brier: Decision 2.0 Kai-0.6B (50.3%, 0.537), Laya (44.5%, 0.660) and CLM-v0.1-8B (41.4%, 0.749).",
+        "  - On both accuracy and Brier it already beats the published, as-shipped numbers of three System One models: Decision 2.0 Kai-0.6B (50.3%, 0.537), Laya (44.5%, 0.660) and CLM-v0.1-8B (41.4%, 0.749). Theirs come from the leaderboard's full set; ours is on the public subset (41,183 of 43,226 requests).",
         "- **One temperature cannot fix everything.** ECE stays near 0.15 after calibration, and per-domain miscalibration differs in sign and size (see the per-domain values in `calibration.json`). That is the room a trained, per-type calibrated M1 model has to win.",
         "",
     ]
