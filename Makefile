@@ -1,7 +1,7 @@
 .PHONY: install lint format typecheck test check demo
 
 install:      ## dev environment (CPU torch)
-	uv sync --extra dev --extra data --extra viz
+	uv sync --extra dev --extra data --extra viz --extra serve
 
 lint:
 	uv run ruff check .

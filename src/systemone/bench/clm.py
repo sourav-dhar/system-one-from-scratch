@@ -34,41 +34,12 @@ import torch.nn.functional as F
 from torch import Tensor
 
 from systemone.decisions.schema import Answer, DecisionRequest, ModelResponse, Question
+from systemone.decisions.text import to_text
 from systemone.model import DualEncoder
 
 REPO = "Contrastive-LM/CLM-v0.1-8B"
 ENCODER = "Qwen/Qwen3-8B"
 REJECTED = "rejected: "
-
-
-def to_text(x: Any, indent: int = 0) -> str:
-    """A state or description as prose: ``key: value`` fields for objects, ``- item`` lines for arrays."""
-    if x is None:
-        return ""
-    if isinstance(x, str):
-        return x
-    if isinstance(x, bool):
-        return "true" if x else "false"
-    if isinstance(x, int | float):
-        return str(x)
-    pad = " " * indent
-    if isinstance(x, dict):
-        parts = []
-        for k, v in x.items():
-            if isinstance(v, dict | list) and v:
-                parts.append(f"{pad}{k}:\n{to_text(v, indent + 2)}")
-            else:
-                parts.append(f"{pad}{k}: {to_text(v)}")
-        return ("\n\n" if indent == 0 else "\n").join(parts)
-    if isinstance(x, list | tuple):
-        parts = []
-        for v in x:
-            if isinstance(v, dict | list) and v:
-                parts.append(f"{pad}-\n{to_text(v, indent + 2)}")
-            else:
-                parts.append(f"{pad}- {to_text(v)}")
-        return "\n".join(parts)
-    return json.dumps(x, ensure_ascii=False)
 
 
 def state_text(state: Any, instructions: str) -> str:
