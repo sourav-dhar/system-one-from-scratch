@@ -69,6 +69,8 @@ explicit = true
 line-length = 110
 target-version = "py311"
 src = ["src", "tests", "cloud", "scripts"]
+# A frozen record of the approved Gate A0 mockup, kept as reference rather than maintained code.
+extend-exclude = ["site/design"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "N", "SIM", "RUF", "PT"]

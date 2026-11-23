@@ -1,0 +1,22 @@
+---
+import type { Correction } from '../lib/data';
+import type { Notes } from '../lib/notes';
+import Cite from './Cite.astro';
+interface Props { c: Correction; notes: Notes }
+const { c, notes } = Astro.props;
+const commitUrl = `https://github.com/sourav-dhar/system-one-from-scratch/commit/${c.commit}`;
+---
+<div class="corr">
+  <div>
+    <span class="label">Corrected</span><br />
+    <span class="mono corr-meta">{c.date} · <a href={commitUrl}>{c.commit}</a></span>
+  </div>
+  <div>
+    {c.context && <p class="corr-context">{c.context}</p>}
+    <p>{c.segments.map((s) =>
+      s.kind === 'del' ? <del><span class="vh">removed: </span>{s.text}</del>
+      : s.kind === 'ins' ? <ins><span class="vh">added: </span>{s.text}</ins>
+      : s.text)}<Cite sources={c.sources} notes={notes} /></p>
+    <p class="corr-where">Where: {c.where} (<code>{c.file}</code>)</p>
+  </div>
+</div>

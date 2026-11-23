@@ -1,0 +1,785 @@
+{
+  "$defs": {
+    "BenchRow": {
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "rank": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rank"
+        },
+        "readout": {
+          "title": "Readout",
+          "type": "string"
+        },
+        "accuracy": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Accuracy"
+        },
+        "accuracy_ci": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Accuracy Ci"
+        },
+        "brier": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Brier"
+        },
+        "p50_ms": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "P50 Ms"
+        },
+        "measured_on": {
+          "title": "Measured On",
+          "type": "string"
+        },
+        "provenance": {
+          "enum": [
+            "independent",
+            "self-reported",
+            "code",
+            "ours",
+            "inferred"
+          ],
+          "title": "Provenance",
+          "type": "string"
+        },
+        "sources": {
+          "items": {
+            "$ref": "#/$defs/Source"
+          },
+          "minItems": 1,
+          "title": "Sources",
+          "type": "array"
+        },
+        "entity": {
+          "description": "The model's identity in the tied files; every check must name it.",
+          "title": "Entity",
+          "type": "string"
+        },
+        "harness": {
+          "pattern": "^[a-z0-9-]+@[0-9a-f]{7,40}$",
+          "title": "Harness",
+          "type": "string"
+        },
+        "checks": {
+          "additionalProperties": {
+            "$ref": "#/$defs/CheckRef"
+          },
+          "description": "Field name -> the file that must reproduce the shown number.",
+          "title": "Checks",
+          "type": "object"
+        },
+        "focus": {
+          "default": false,
+          "title": "Focus",
+          "type": "boolean"
+        },
+        "child": {
+          "default": false,
+          "title": "Child",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "label",
+        "readout",
+        "measured_on",
+        "provenance",
+        "sources",
+        "entity",
+        "harness",
+        "checks"
+      ],
+      "title": "BenchRow",
+      "type": "object"
+    },
+    "BenchTable": {
+      "additionalProperties": false,
+      "properties": {
+        "suite": {
+          "title": "Suite",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "caption": {
+          "title": "Caption",
+          "type": "string"
+        },
+        "caption_sources": {
+          "items": {
+            "$ref": "#/$defs/Source"
+          },
+          "minItems": 1,
+          "title": "Caption Sources",
+          "type": "array"
+        },
+        "axis_max": {
+          "default": 100.0,
+          "title": "Axis Max",
+          "type": "number"
+        },
+        "reference": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Reference"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "notes": {
+          "items": {
+            "$ref": "#/$defs/Fact"
+          },
+          "title": "Notes",
+          "type": "array"
+        },
+        "rows": {
+          "items": {
+            "$ref": "#/$defs/BenchRow"
+          },
+          "minItems": 1,
+          "title": "Rows",
+          "type": "array"
+        }
+      },
+      "required": [
+        "suite",
+        "title",
+        "caption",
+        "caption_sources",
+        "rows"
+      ],
+      "title": "BenchTable",
+      "type": "object"
+    },
+    "CheckRef": {
+      "additionalProperties": false,
+      "description": "Ties a displayed number to the tracked file it came from.\n\n``pointer`` mode: an RFC 6901 JSON pointer into ``file``; the value times ``scale`` must equal the shown\nnumber at the site's display precision. ``match`` (pointer -> expected value) checks identity on the entry\nthe value comes from: its pointers are relative to the last array element on ``pointer``'s path (or to the\ndocument root when the path has no array). A pointer through an array must give ``match``, so a row is\ntied to the right entry and not just to a position.\n\n``text`` mode: for figures that exist only in a generated report. The shown value, formatted exactly as\nthe site shows it, must occur in ``file`` as a whole number on a line that also contains ``line``.",
+      "properties": {
+        "file": {
+          "title": "File",
+          "type": "string"
+        },
+        "pointer": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pointer"
+        },
+        "scale": {
+          "default": 1,
+          "enum": [
+            1,
+            100
+          ],
+          "title": "Scale",
+          "type": "integer"
+        },
+        "match": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Match",
+          "type": "object"
+        },
+        "text": {
+          "default": false,
+          "title": "Text",
+          "type": "boolean"
+        },
+        "line": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Line"
+        }
+      },
+      "required": [
+        "file"
+      ],
+      "title": "CheckRef",
+      "type": "object"
+    },
+    "Claim": {
+      "additionalProperties": false,
+      "properties": {
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "sources": {
+          "items": {
+            "$ref": "#/$defs/Source"
+          },
+          "minItems": 1,
+          "title": "Sources",
+          "type": "array"
+        },
+        "verified_by": {
+          "title": "Verified By",
+          "type": "string"
+        },
+        "date": {
+          "format": "date",
+          "title": "Date",
+          "type": "string"
+        }
+      },
+      "required": [
+        "text",
+        "sources",
+        "verified_by",
+        "date"
+      ],
+      "title": "Claim",
+      "type": "object"
+    },
+    "Correction": {
+      "additionalProperties": false,
+      "description": "A published correction, shown in place: struck text stays readable beside its replacement.\n\n``keep`` + ``del`` must reproduce text in ``file`` before ``commit``; ``keep`` + ``ins`` text in it after.",
+      "properties": {
+        "date": {
+          "format": "date",
+          "title": "Date",
+          "type": "string"
+        },
+        "commit": {
+          "pattern": "^[0-9a-f]{7,40}$",
+          "title": "Commit",
+          "type": "string"
+        },
+        "file": {
+          "title": "File",
+          "type": "string"
+        },
+        "where": {
+          "title": "Where",
+          "type": "string"
+        },
+        "context": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "What the corrected passage is about.",
+          "title": "Context"
+        },
+        "segments": {
+          "items": {
+            "$ref": "#/$defs/Segment"
+          },
+          "minItems": 2,
+          "title": "Segments",
+          "type": "array"
+        },
+        "provenance": {
+          "enum": [
+            "independent",
+            "self-reported",
+            "code",
+            "ours",
+            "inferred"
+          ],
+          "title": "Provenance",
+          "type": "string"
+        },
+        "sources": {
+          "items": {
+            "$ref": "#/$defs/Source"
+          },
+          "minItems": 1,
+          "title": "Sources",
+          "type": "array"
+        }
+      },
+      "required": [
+        "date",
+        "commit",
+        "file",
+        "where",
+        "segments",
+        "provenance",
+        "sources"
+      ],
+      "title": "Correction",
+      "type": "object"
+    },
+    "Coverage": {
+      "additionalProperties": false,
+      "description": "One element of the primary sources and where the page explains it.\n\n``covered``: explained in ``section``, which the site must render. ``planned``: assigned to ``section``\nbut not written yet (allowed only while the page is a draft). ``n/a``: left out, with a ``reason``.",
+      "properties": {
+        "element": {
+          "title": "Element",
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "status": {
+          "enum": [
+            "covered",
+            "planned",
+            "n/a"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "section": {
+          "anyOf": [
+            {
+              "enum": [
+                "spec",
+                "summary",
+                "architecture",
+                "inference",
+                "equations",
+                "training",
+                "data",
+                "calibration",
+                "benchmarks",
+                "hardware",
+                "try-it",
+                "limits",
+                "references"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Section"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reason"
+        }
+      },
+      "required": [
+        "element",
+        "source",
+        "status"
+      ],
+      "title": "Coverage",
+      "type": "object"
+    },
+    "Fact": {
+      "additionalProperties": false,
+      "description": "One sentence, with every kind of evidence it rests on.",
+      "properties": {
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "provenance": {
+          "items": {
+            "enum": [
+              "independent",
+              "self-reported",
+              "code",
+              "ours",
+              "inferred"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Provenance",
+          "type": "array"
+        },
+        "sources": {
+          "items": {
+            "$ref": "#/$defs/Source"
+          },
+          "minItems": 1,
+          "title": "Sources",
+          "type": "array"
+        }
+      },
+      "required": [
+        "text",
+        "provenance",
+        "sources"
+      ],
+      "title": "Fact",
+      "type": "object"
+    },
+    "Reference": {
+      "additionalProperties": false,
+      "properties": {
+        "row": {
+          "description": "Label of a row in this table whose checked accuracy draws the reference line.",
+          "title": "Row",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "row",
+        "label"
+      ],
+      "title": "Reference",
+      "type": "object"
+    },
+    "Segment": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "keep",
+            "del",
+            "ins"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "text"
+      ],
+      "title": "Segment",
+      "type": "object"
+    },
+    "Source": {
+      "additionalProperties": false,
+      "description": "Where a fact comes from: a library key, or ``repo:<path>`` for a tracked file in this repository.",
+      "properties": {
+        "key": {
+          "title": "Key",
+          "type": "string"
+        },
+        "at": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Locator inside the source: file, section, table, issue.",
+          "title": "At"
+        }
+      },
+      "required": [
+        "key"
+      ],
+      "title": "Source",
+      "type": "object"
+    },
+    "SpecItem": {
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        },
+        "provenance": {
+          "enum": [
+            "independent",
+            "self-reported",
+            "code",
+            "ours",
+            "inferred"
+          ],
+          "title": "Provenance",
+          "type": "string"
+        },
+        "sources": {
+          "items": {
+            "$ref": "#/$defs/Source"
+          },
+          "minItems": 1,
+          "title": "Sources",
+          "type": "array"
+        }
+      },
+      "required": [
+        "label",
+        "value",
+        "provenance",
+        "sources"
+      ],
+      "title": "SpecItem",
+      "type": "object"
+    },
+    "Summary": {
+      "additionalProperties": false,
+      "properties": {
+        "what": {
+          "items": {
+            "$ref": "#/$defs/Fact"
+          },
+          "minItems": 1,
+          "title": "What",
+          "type": "array"
+        },
+        "why": {
+          "items": {
+            "$ref": "#/$defs/Fact"
+          },
+          "minItems": 1,
+          "title": "Why",
+          "type": "array"
+        },
+        "weakness": {
+          "items": {
+            "$ref": "#/$defs/Fact"
+          },
+          "minItems": 1,
+          "title": "Weakness",
+          "type": "array"
+        }
+      },
+      "required": [
+        "what",
+        "why",
+        "weakness"
+      ],
+      "title": "Summary",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "``docs/models/<id>/model.yaml``.",
+  "properties": {
+    "id": {
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "title": "Id",
+      "type": "string"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "version": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Version"
+    },
+    "full_name": {
+      "title": "Full Name",
+      "type": "string"
+    },
+    "tier": {
+      "enum": [
+        "A",
+        "B",
+        "C"
+      ],
+      "title": "Tier",
+      "type": "string"
+    },
+    "family": {
+      "enum": [
+        "biencoder",
+        "late-interaction",
+        "decoder-readout",
+        "encoder",
+        "encoder-decoder",
+        "looped",
+        "frozen-reader",
+        "generative",
+        "undisclosed",
+        "ours"
+      ],
+      "title": "Family",
+      "type": "string"
+    },
+    "note": {
+      "description": "Repo path of the research note this page is drawn from.",
+      "title": "Note",
+      "type": "string"
+    },
+    "eyebrow": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Eyebrow",
+      "type": "array"
+    },
+    "dek": {
+      "title": "Dek",
+      "type": "string"
+    },
+    "dek_sources": {
+      "items": {
+        "$ref": "#/$defs/Source"
+      },
+      "minItems": 1,
+      "title": "Dek Sources",
+      "type": "array"
+    },
+    "primer": {
+      "description": "Glossary ids shown as 'Read this first'.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Primer",
+      "type": "array"
+    },
+    "spec": {
+      "items": {
+        "$ref": "#/$defs/SpecItem"
+      },
+      "minItems": 1,
+      "title": "Spec",
+      "type": "array"
+    },
+    "summary": {
+      "$ref": "#/$defs/Summary"
+    },
+    "benchmarks": {
+      "items": {
+        "$ref": "#/$defs/BenchTable"
+      },
+      "title": "Benchmarks",
+      "type": "array"
+    },
+    "corrections": {
+      "items": {
+        "$ref": "#/$defs/Correction"
+      },
+      "title": "Corrections",
+      "type": "array"
+    },
+    "coverage": {
+      "items": {
+        "$ref": "#/$defs/Coverage"
+      },
+      "minItems": 1,
+      "title": "Coverage",
+      "type": "array"
+    },
+    "claims": {
+      "items": {
+        "$ref": "#/$defs/Claim"
+      },
+      "minItems": 1,
+      "title": "Claims",
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "full_name",
+    "tier",
+    "family",
+    "note",
+    "dek",
+    "dek_sources",
+    "primer",
+    "spec",
+    "summary",
+    "coverage",
+    "claims"
+  ],
+  "title": "ModelPage",
+  "type": "object"
+}

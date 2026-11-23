@@ -1,0 +1,8 @@
+---
+import type { Source } from '../lib/data';
+import type { Notes } from '../lib/notes';
+interface Props { sources: Source[]; notes: Notes }
+const { sources, notes } = Astro.props;
+const nums = [...new Set(sources.map((s) => notes.num(s)))].sort((a, b) => a - b);
+---
+<sup class="cite">[{nums.map((n, i) => <>{i > 0 && ', '}<a href={`#src-${n}`} aria-label={`source ${n}`}>{n}</a></>)}]</sup>

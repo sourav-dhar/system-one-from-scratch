@@ -1,0 +1,68 @@
+---
+import type { BenchTable } from '../lib/data';
+import type { Notes } from '../lib/notes';
+import ProvTag from './ProvTag.astro';
+import FactBlock from './FactBlock.astro';
+import Cite from './Cite.astro';
+interface Props { table: BenchTable; notes: Notes; id: string }
+const { table, notes, id } = Astro.props;
+const ref = table.reference;
+const axis = table.axis_max;
+// Indented rows belong to the row above them; screen readers get that model's name as a prefix.
+let parent = '';
+const rows = table.rows.map((r) => {
+  if (!r.child) parent = r.label;
+  return { ...r, parent: r.child ? parent : '' };
+});
+const hasOurs = table.rows.some((r) => r.provenance === 'ours');
+const refShown = ref ? table.rows.find((r) => r.label === ref.row)?.display.accuracy : undefined;
+---
+<p class="tbl-caption" id={`${id}-cap`}>{table.caption}<Cite sources={table.caption_sources} notes={notes} /></p>
+<div class="tbl-scroll" role="region" aria-label={`${table.title}, scrollable table`} tabindex="0">
+  <table class="ledger" aria-describedby={`${id}-cap`}>
+    <caption class="vh">{table.title}</caption>
+    <thead>
+      <tr>
+        <th scope="col">Model</th>
+        <th scope="col" class="num">Accuracy %</th>
+        <th scope="col" class="num">95% interval</th>
+        <th scope="col"><span class="vh">Accuracy bar, scale </span>0–{axis}%</th>
+        <th scope="col" class="num">Brier <span aria-hidden="true">↓</span><span class="vh">(lower is better)</span></th>
+        <th scope="col" class="num">p50</th>
+        <th scope="col">Rank</th>
+        <th scope="col">Probabilities from</th>
+        <th scope="col">Measured on</th>
+        <th scope="col">Source</th>
+      </tr>
+    </thead>
+    <tbody>
+      {rows.map((r) => (
+        <tr class:list={[{ child: r.child, focus: r.focus }]}>
+          <th scope="row" class="model">{r.child && <span class="vh">{r.parent}, </span>}{r.label}</th>
+          <td class="num">{r.display.accuracy ?? 'n/m'}</td>
+          <td class="num ci">{r.display.accuracy_ci ?? ''}</td>
+          <td>{r.accuracy !== null && (
+            <div class:list={['accbar', { c: r.provenance === 'ours' }]} style={`--v:${r.accuracy};--ref:${ref?.value ?? 0};--max:${axis}`}><i></i>{ref !== null && <b></b>}</div>
+          )}</td>
+          <td class="num">{r.display.brier ?? 'n/m'}</td>
+          <td class="num">{r.display.p50_ms ?? 'n/m'}</td>
+          <td class="rank">{r.rank ?? ''}</td>
+          <td class="readout">{r.readout}</td>
+          <td class="readout">{r.measured_on}</td>
+          <td class="srccell"><ProvTag kind={r.provenance} text={r.provenance === 'independent' ? 'independent' : undefined} /><Cite sources={r.sources} notes={notes} /></td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+<p class="scroll-cue label" aria-hidden="true">Scroll the table sideways for all columns</p>
+<div class="key-line">
+  {ref && <span><span class="tick" aria-hidden="true"></span>{ref.label}, {refShown}%</span>}
+  <span><span class="keybar" aria-hidden="true"></span>published rows</span>
+  {hasOurs && <span><span class="keybar c" aria-hidden="true"></span>our runs (indented)</span>}
+  <span>Rank: position by accuracy among the leaderboard's ranked rows</span>
+  <span>n/m: not measured</span>
+</div>
+{table.notes.length > 0 && (
+  <div class="notes">{table.notes.map((n) => <FactBlock fact={n} notes={notes} />)}</div>
+)}

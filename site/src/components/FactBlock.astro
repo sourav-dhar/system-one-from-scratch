@@ -1,0 +1,12 @@
+---
+import type { Fact } from '../lib/data';
+import type { Notes } from '../lib/notes';
+import ProvTag from './ProvTag.astro';
+import Cite from './Cite.astro';
+interface Props { fact: Fact; notes: Notes }
+const { fact, notes } = Astro.props;
+---
+<div class="fact">
+  <p>{fact.text}<Cite sources={fact.sources} notes={notes} /></p>
+  <div class="tagline">{fact.provenance.map((p) => <ProvTag kind={p} />)}</div>
+</div>

@@ -401,6 +401,7 @@ links:
   - {key: clm-blog, url: "https://contrastive-lm.notion.site", title: "Contrastive Language Models (Notion blog)", system: CLM, family: biencoder, role: implementation}
   - {key: clm-card, url: "https://huggingface.co/Contrastive-LM/CLM-v0.1-8B", title: "CLM-v0.1-8B model card", system: CLM, family: biencoder, role: implementation}
   - {key: clm-heads, url: "https://huggingface.co/jackyk02/qwen3_8b_head", title: "Published pre/mid/post-trained CLM heads", system: CLM, family: biencoder, role: implementation}
+  - {key: qwen3-8b, url: "https://huggingface.co/Qwen/Qwen3-8B", title: "Qwen3-8B model card and config.json (36 layers, hidden size 4096, 8 KV heads)", system: backbones, family: foundations, role: background}
   - {key: kev-repo, url: "https://github.com/jaredpalmer/kev", title: "Kev: Jev-like decision models (code, PLAN.md, model cards)", system: Kev, family: decoder-readout, role: implementation}
   - {key: jeff-repo, url: "https://github.com/j-geuter/Jeff", title: "Jeff code", system: Jeff-1.1, family: decoder-readout, role: implementation}
   - {key: strands, url: "https://github.com/strands-labs/strands-decider", title: "Strands Decider", system: Strands Decider, family: decoder-readout, role: implementation}

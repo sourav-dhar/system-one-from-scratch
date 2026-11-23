@@ -1,0 +1,46 @@
+# Every system the companion site covers, in the three tiers of the site plan.
+#
+#   A  deep, animated page          B  structural diagram + facts          C  reference card
+#
+# `family` uses the research library's taxonomy (research/papers/index.yaml) plus `generative`,
+# `undisclosed` (hosted APIs whose architecture is not published) and `ours`. A system gets a page once
+# docs/models/<id>/model.yaml exists; `status` tracks it. Validated by scripts/site_data.py.
+
+systems:
+  # --- Tier A ---------------------------------------------------------------------------------
+  - {id: clm, name: CLM-v0.1-8B, tier: A, family: biencoder, note: docs/research/systems/clm.md, status: draft}
+  - {id: laya, name: Laya, tier: A, family: encoder, note: docs/research/systems/laya.md}
+  - {id: kev, name: Kev, tier: A, family: decoder-readout, note: docs/research/systems/kev.md}
+  - {id: jeva, name: Jeva, tier: A, family: late-interaction, note: docs/research/systems/jeva.md}
+  - {id: jeff, name: Jeff-1.1, tier: A, family: decoder-readout, note: docs/research/systems/jeff.md}
+  - {id: bongard, name: Bongard, tier: A, family: encoder-decoder, note: docs/research/systems/bongard.md}
+  - {id: strands-decider, name: Strands Decider, tier: A, family: decoder-readout, note: docs/research/systems/strands-decider.md}
+  - {id: decider, name: decider (Mapika), tier: A, family: decoder-readout, note: docs/research/systems/decider.md}
+  - {id: startlux, name: StartLux-Decision, tier: A, family: decoder-readout, note: docs/research/systems/startlux.md}
+  - {id: vegaml, name: vegaml, tier: A, family: frozen-reader, note: docs/research/systems/vegaml.md}
+  - {id: ndm, name: Narrow Decision Models, tier: A, family: encoder, note: docs/research/systems/ndm.md}
+  - {id: sansi, name: SanSi, tier: A, family: looped, note: docs/research/systems/sansi.md}
+  - {id: ours, name: "System One (ours, M1)", tier: A, family: ours}
+
+  # --- Tier B ---------------------------------------------------------------------------------
+  - {id: intern-decision, name: Intern-Decision, tier: B, family: decoder-readout, note: docs/research/systems/intern-decision.md}
+  - {id: jeeves, name: Jeeves, tier: B, family: decoder-readout, note: docs/research/systems/jeeves.md}
+  - {id: von, name: Von, tier: B, family: encoder, note: docs/research/systems/von.md}
+  - {id: decision2, name: vLLM-SR Decision 2.0, tier: B, family: decoder-readout, note: docs/research/systems/decision2.md}
+  - {id: anyjev, name: AnyJev / Tacit, tier: B, family: decoder-readout, note: docs/research/systems/anyjev.md}
+  - {id: anys1, name: AnyS1, tier: B, family: decoder-readout, note: docs/research/systems/anys1.md}
+  - {id: beveridge, name: Beveridge, tier: B, family: encoder, note: docs/research/systems/beveridge.md}
+  - {id: clef, name: Cloudflare Clef, tier: B, family: decoder-readout, note: docs/research/systems/clef.md}
+  - {id: nanojev, name: NanoJev, tier: B, family: decoder-readout, note: docs/research/systems/nanojev.md}
+  - {id: sbert2s1, name: sbert2s1, tier: B, family: biencoder, note: docs/research/systems/sbert2s1.md}
+  - {id: small-heads, name: "Small Heads, Strong Decisions", tier: B, family: decoder-readout, note: docs/research/systems/small-heads.md}
+  - {id: this-that, name: this-that-model-1.0, tier: B, family: decoder-readout, note: docs/research/systems/this-that.md}
+  - {id: semif, name: SemIf, tier: B, family: decoder-readout, note: docs/research/systems/semif.md}
+
+  # --- Tier C ---------------------------------------------------------------------------------
+  - {id: hosted-apis, name: "Hosted APIs: Jev, Microsoft-Decision-1, OpenAI Decisions", tier: C, family: undisclosed, note: docs/research/systems/hosted-apis.md}
+  - {id: inkling, name: Inkling, tier: C, family: generative, note: docs/research/systems/inkling.md}
+  - {id: gliner-decide, name: GLiNER2.5-Decide, tier: C, family: encoder, note: docs/research/systems/gliner-decide.md}
+  - {id: pplx-decider, name: pplx-decider, tier: C, family: decoder-readout, note: docs/research/systems/pplx-decider.md}
+  - {id: liquid-d1, name: Liquid d1, tier: C, family: decoder-readout, note: docs/research/systems/liquid-d1.md}
+  - {id: phocinae, name: Phocinae-Largha-150M-v1, tier: C, family: encoder, note: docs/research/systems/phocinae.md}

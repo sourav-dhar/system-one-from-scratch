@@ -1,0 +1,387 @@
+# CLM-v0.1-8B: the companion site's flagship page (Tier A, draft).
+# Every fact carries provenance and sources. Every benchmark-table number (accuracy, interval, Brier, p50,
+# rank, reference line) is tied to its file and checked by scripts/site_data.py; numbers in prose are
+# checked by review. Reviewed: two independent rounds on the Gate A0 mockup, then PR #56's review.
+
+id: clm
+name: CLM
+version: "-v0.1-8B"
+full_name: Contrastive Language Models, CLM-v0.1-8B
+tier: A
+family: biencoder
+note: docs/research/systems/clm.md
+eyebrow: [Tier A model page, "Family: bi-encoder, two towers", Open code + weights · no paper]
+dek: >-
+  A frozen Qwen3-8B reads the state, with its question, and each option separately. Two small trained heads
+  map both into one space, and the option whose vector points most nearly the same way gets the most
+  probability.
+dek_sources: [{key: clm-repo, at: "src/clm/schema.py, heads.py, engine.py"}, {key: qwen3-8b, at: config.json}]
+primer: [system-one-model, state, option, question-types, backbone, bi-encoder, head, last-token-embedding, cosine,
+  softmax, logit-scale, calibration, lru-cache, vllm, brier, native-probabilities, answer-token-readout,
+  system1-arena, leaves, harness, p50, bootstrap, leave-one-domain-out, modal]
+
+spec:
+  - label: Backbone
+    value: Qwen3-8B, 36 layers, frozen
+    provenance: code
+    sources: [{key: qwen3-8b, at: config.json}, {key: clm-repo, at: serve_qwen3_8b.sh}]
+  - label: Encoder serving
+    value: vLLM pooling runner, last token, L2-normalised
+    provenance: code
+    sources: [{key: clm-repo, at: "serve_qwen3_8b.sh, src/clm/embedder.py"}]
+  - label: Trained
+    value: 2 MLP heads, 9,443,840 params each, + scale λ
+    provenance: ours
+    sources:
+      - {key: clm-card, at: "released checkpoint CLM_v0.1-8B.pt (parameters counted by us)"}
+      - {key: clm-repo, at: "README: '20M-parameter' head = the pair"}
+  - label: Head output
+    value: 4096-d → 512-d unit vector
+    provenance: code
+    sources: [{key: clm-repo, at: src/clm/heads.py}]
+  - label: Served context cap
+    value: 2,048 tokens (default)
+    provenance: code
+    sources: [{key: clm-repo, at: "src/clm/embedder.py (truncate_prompt_tokens), serve_qwen3_8b.sh"}]
+  - label: Licence
+    value: Apache-2.0, code and weights
+    provenance: code
+    sources: [{key: clm-card}, {key: clm-repo, at: LICENSE}]
+  - label: Release date in code
+    value: "2026-09-19"
+    provenance: code
+    sources: [{key: clm-repo, at: "src/clm/engine.py: RELEASE"}]
+
+summary:
+  what:
+    - text: >-
+        Qwen3-8B embeds the state-plus-question text and every option text separately. A state head and an
+        action head project the 4096-d embeddings to 512-d unit vectors. Each option's logit is its cosine
+        with the state vector times a learned scale, which the released checkpoint sets to the cap of 100,
+        and a softmax turns the logits into one probability per option (at the default temperature).
+      provenance: [code, inferred]
+      sources:
+        - {key: clm-repo, at: "src/clm/schema.py, heads.py, engine.py"}
+        - {key: clm-card, at: "released checkpoint: λ = 4.6132, e^λ ≈ 100.8, clamped to 100"}
+  why:
+    - text: >-
+        An option's vector never depends on the state, so it is computed once per option text and kept in a
+        bounded, least-recently-used cache on the GPU; state vectors are cached by their text too.
+      provenance: [code]
+      sources: [{key: clm-repo, at: "src/clm/cache.py, engine.py"}]
+    - text: >-
+        Server-side median latency on an RTX 4090: a revisited state with cached options takes 0.6–0.7 ms
+        (1.7–2.0 ms without the GPU cache), and a new state about 28 ms, mostly the backbone pass.
+      provenance: [self-reported, inferred]
+      sources: [{key: clm-repo, at: "README: vector-cache table (server-side p50, fixed action set); arrow direction and 'mostly the backbone pass' are our reading"}]
+  weakness:
+    - text: >-
+        The options never see the state, and the scale ships at its cap with no calibration step. On the
+        System1-Arena leaderboard CLM scores 41.4% with Brier 0.749, 17.8 points below an answer-token readout
+        of its own backbone, which uses the same Qwen3-8B with no extra training.
+      provenance: [code, inferred, independent]
+      sources:
+        - {key: clm-repo, at: "src/clm/schema.py, heads.py"}
+        - {key: clm-card, at: released checkpoint}
+        - {key: s1arena-repo, at: "leaderboard/results.json @28e16b1, snapshot 2026-10-14"}
+    - text: >-
+        The separation that makes caching possible is also the limitation: an option's vector cannot change
+        with the state, so CLM ranks options by how close their text is to the state-plus-question text,
+        rather than by applying the question to the state.
+      provenance: [inferred]
+      sources:
+        - {key: "repo:docs/research/systems/clm.md", at: "Flaws (a) 11-12"}
+        - {key: "repo:docs/research/README.md", at: "findings table, row 4"}
+    - text: >-
+        No experiment on System1-Arena has isolated why it scores lower. Candidates reported in the CLM
+        repository: short option labels make the state irrelevant (issue #3), a shared question suffix makes
+        different states embed alike (#15), and a logistic regression on the same frozen embeddings beats the
+        trained heads (#13).
+      provenance: [inferred, independent]
+      sources:
+        - {key: "repo:docs/research/README.md", at: "findings table, row 4"}
+        - {key: clm-repo, at: "issues #3, #13, #15"}
+    - text: >-
+        Rescaling cannot change which option wins; on our run over the public subset, per-type temperatures
+        move CLM's Brier from 0.741 to 0.607 at unchanged accuracy. The benchmark also kept only the last 2,048
+        tokens of each CLM input, while the readout's inputs were not shortened (prompts over its limit were
+        refused).
+      provenance: [inferred, ours, independent]
+      sources:
+        - {key: "repo:results/references/s1arena/CALIBRATION.md"}
+        - {key: s1arena-repo, at: "s1arena/models/clm.py, local_lm.py @28e16b1"}
+
+benchmarks:
+  - suite: s1arena
+    title: "Benchmarks: System1-Arena"
+    caption: >-
+      System1-Arena, 13 non-agentic domains, 43,226 requests. Leaderboard snapshot of 2026-10-14 (harness
+      28e16b1). Accuracy is the mean over 87 leaves; Brier is measured against the gold distribution, lower is
+      better; p50 is the median single-request latency where stated, so network rows are not comparable with
+      local ones. Five of the 30 rows are shown; ranks are out of 29 because Decision-2.0-Sol-2B has no score.
+      Indented rows are our runs of the same model with our port of the harness, scored with the
+      leaderboard's own aggregation.
+    caption_sources:
+      - {key: s1arena-repo, at: "leaderboard/results.json @28e16b1"}
+      - {key: "repo:results/references/s1arena/leaderboard-2026-10-14.json"}
+      - {key: "repo:results/references/s1arena/ANCHORS.md"}
+    axis_max: 80
+    reference: {row: Qwen3-8B, label: "Qwen3-8B answer-token readout: CLM's own backbone, read zero-shot"}
+    notes:
+      - text: >-
+          Our runs use the pinned public dataset (ad05ed5, 41,183 of the 43,226 requests), which lacks 14
+          restricted sources (2,043 requests), so their overall figures cover the public subset. Averaged over
+          the eight complete domains, the gap to the published value is +0.05 points for Qwen3-8B and +0.12 for
+          CLM, and each of those domains is within 0.9; the five incomplete domains differ by up to 4.8.
+          Intervals are 95% paired bootstrap, resampling tasks within leaves and items within tasks.
+        provenance: [ours]
+        sources: [{key: "repo:results/references/s1arena/ANCHORS.md"}]
+      - text: >-
+          Calibrated rows fit one temperature per question type, leave-one-domain-out; temperature never
+          changes the top option, so accuracy is unchanged.
+        provenance: [ours]
+        sources: [{key: "repo:results/references/s1arena/CALIBRATION.md"}]
+    rows:
+      - label: Decision-2.0-Vega-27B
+        entity: "Decision-2.0-Vega-27B"
+        rank: 7 / 29
+        readout: native
+        accuracy: 73.03
+        brier: 0.3427
+        p50_ms: 228.0
+        measured_on: H100, local
+        provenance: independent
+        harness: s1arena@28e16b1
+        sources: [{key: s1arena-repo, at: leaderboard/results.json}]
+        checks:
+          accuracy: {file: results/references/s1arena/leaderboard-2026-10-14.json, pointer: /models/6/accuracy, scale: 100, match: {"/name": "Decision-2.0-Vega-27B"}}
+          brier: {file: results/references/s1arena/leaderboard-2026-10-14.json, pointer: /models/6/brier, match: {"/name": "Decision-2.0-Vega-27B"}}
+          p50_ms: {file: results/references/s1arena/leaderboard-2026-10-14.json, pointer: /models/6/latency_ms, match: {"/name": "Decision-2.0-Vega-27B"}}
+      - label: Jev 1.13
+        entity: "Jev 1.13"
+        rank: 8 / 29
+        readout: native
+        accuracy: 72.57
+        brier: 0.3489
+        p50_ms: 321.4
+        measured_on: network API
+        provenance: independent
+        harness: s1arena@28e16b1
+        sources: [{key: s1arena-repo, at: leaderboard/results.json}]
+        checks:
+          accuracy: {file: results/references/s1arena/leaderboard-2026-10-14.json, pointer: /models/7/accuracy, scale: 100, match: {"/name": "Jev 1.13"}}
+          brier: {file: results/references/s1arena/leaderboard-2026-10-14.json, pointer: /models/7/brier, match: {"/name": "Jev 1.13"}}
+          p50_ms: {file: results/references/s1arena/leaderboard-2026-10-14.json, pointer: /models/7/latency_ms, match: {"/name": "Jev 1.13"}}
+      - label: Qwen3-8B
+        entity: "Qwen3-8B"
+        rank: 24 / 29
+        readout: answer-token label probabilities
+        accuracy: 59.25
+        brier: 0.7153
+        p50_ms: 30.4
+        measured_on: H100, local
+        provenance: independent
+        harness: s1arena@28e16b1
+        sources: [{key: s1arena-repo, at: leaderboard/results.json}]
+        checks:
+          accuracy: {file: results/references/s1arena/leaderboard-2026-10-14.json, pointer: /models/23/accuracy, scale: 100, match: {"/name": "Qwen3-8B"}}
+          brier: {file: results/references/s1arena/leaderboard-2026-10-14.json, pointer: /models/23/brier, match: {"/name": "Qwen3-8B"}}
+          p50_ms: {file: results/references/s1arena/leaderboard-2026-10-14.json, pointer: /models/23/latency_ms, match: {"/name": "Qwen3-8B"}}
+      - label: our run, raw
+        entity: "Qwen/Qwen3-8B@label-think0"
+        child: true
+        readout: same readout, our port
+        accuracy: 59.50
+        accuracy_ci: [58.01, 61.11]
+        brier: 0.7139
+        measured_on: H100, Modal
+        provenance: ours
+        harness: s1arena@28e16b1
+        sources: [{key: "repo:results/references/s1arena/ANCHORS.md"}]
+        checks:
+          accuracy: {file: "results/references/s1arena/Qwen__Qwen3-8B@label-think0/static/summary.json", pointer: /aggregate/overall/accuracy, scale: 100, match: {"/model": "Qwen/Qwen3-8B@label-think0"}}
+          accuracy_ci: {file: results/references/s1arena/ANCHORS.md, text: true, line: "Qwen/Qwen3-8B@label-think0"}
+          brier: {file: "results/references/s1arena/Qwen__Qwen3-8B@label-think0/static/summary.json", pointer: /aggregate/overall/brier, match: {"/model": "Qwen/Qwen3-8B@label-think0"}}
+      - label: our run, calibrated
+        entity: "Qwen/Qwen3-8B@label-think0"
+        child: true
+        readout: + T per question type
+        accuracy: 59.50
+        brier: 0.4890
+        measured_on: CPU, post hoc
+        provenance: ours
+        harness: s1arena@28e16b1
+        sources: [{key: "repo:results/references/s1arena/CALIBRATION.md"}]
+        checks:
+          accuracy: {file: results/references/s1arena/calibration.json, pointer: "/Qwen~1Qwen3-8B@label-think0/overall/per_type/accuracy", scale: 100}
+          brier: {file: results/references/s1arena/calibration.json, pointer: "/Qwen~1Qwen3-8B@label-think0/overall/per_type/brier"}
+      - label: Laya (421M)
+        entity: "Laya (421M)"
+        rank: 27 / 29
+        readout: native
+        accuracy: 44.47
+        brier: 0.6605
+        p50_ms: 136.5
+        measured_on: H100, local
+        provenance: independent
+        harness: s1arena@28e16b1
+        sources: [{key: s1arena-repo, at: leaderboard/results.json}]
+        checks:
+          accuracy: {file: results/references/s1arena/leaderboard-2026-10-14.json, pointer: /models/26/accuracy, scale: 100, match: {"/name": "Laya (421M)"}}
+          brier: {file: results/references/s1arena/leaderboard-2026-10-14.json, pointer: /models/26/brier, match: {"/name": "Laya (421M)"}}
+          p50_ms: {file: results/references/s1arena/leaderboard-2026-10-14.json, pointer: /models/26/latency_ms, match: {"/name": "Laya (421M)"}}
+      - label: CLM-v0.1-8B
+        entity: "CLM-v0.1-8B"
+        rank: 28 / 29
+        readout: native
+        accuracy: 41.43
+        brier: 0.7492
+        p50_ms: 40.8
+        measured_on: H100, local
+        provenance: independent
+        harness: s1arena@28e16b1
+        focus: true
+        sources: [{key: s1arena-repo, at: leaderboard/results.json}]
+        checks:
+          accuracy: {file: results/references/s1arena/leaderboard-2026-10-14.json, pointer: /models/27/accuracy, scale: 100, match: {"/name": "CLM-v0.1-8B"}}
+          brier: {file: results/references/s1arena/leaderboard-2026-10-14.json, pointer: /models/27/brier, match: {"/name": "CLM-v0.1-8B"}}
+          p50_ms: {file: results/references/s1arena/leaderboard-2026-10-14.json, pointer: /models/27/latency_ms, match: {"/name": "CLM-v0.1-8B"}}
+      - label: our run, raw
+        entity: "Contrastive-LM/CLM-v0.1-8B"
+        child: true
+        readout: official heads, our encoder
+        accuracy: 41.86
+        accuracy_ci: [40.30, 43.43]
+        brier: 0.7411
+        measured_on: H100, Modal
+        provenance: ours
+        harness: s1arena@28e16b1
+        sources: [{key: "repo:results/references/s1arena/ANCHORS.md"}]
+        checks:
+          accuracy: {file: results/references/s1arena/Contrastive-LM__CLM-v0.1-8B/static/summary.json, pointer: /aggregate/overall/accuracy, scale: 100, match: {"/model": "Contrastive-LM/CLM-v0.1-8B"}}
+          accuracy_ci: {file: results/references/s1arena/ANCHORS.md, text: true, line: "Contrastive-LM/CLM-v0.1-8B"}
+          brier: {file: results/references/s1arena/Contrastive-LM__CLM-v0.1-8B/static/summary.json, pointer: /aggregate/overall/brier, match: {"/model": "Contrastive-LM/CLM-v0.1-8B"}}
+      - label: our run, calibrated
+        entity: "Contrastive-LM/CLM-v0.1-8B"
+        child: true
+        readout: + T per question type
+        accuracy: 41.86
+        brier: 0.6069
+        measured_on: CPU, post hoc
+        provenance: ours
+        harness: s1arena@28e16b1
+        sources: [{key: "repo:results/references/s1arena/CALIBRATION.md"}]
+        checks:
+          accuracy: {file: results/references/s1arena/calibration.json, pointer: "/Contrastive-LM~1CLM-v0.1-8B/overall/per_type/accuracy", scale: 100}
+          brier: {file: results/references/s1arena/calibration.json, pointer: "/Contrastive-LM~1CLM-v0.1-8B/overall/per_type/brier"}
+
+corrections:
+  - date: 2026-11-22
+    commit: eb6f2f5
+    file: README.md
+    where: our README, findings
+    context: >-
+      Our re-scoring of the authors' published pre-, mid- and post-training heads on their hard-negative
+      test (top-1 accuracy per head).
+    provenance: ours
+    sources:
+      - {key: "repo:README.md"}
+      - {key: "repo:results/benchmark/heads.json", at: "hard / top1"}
+    segments:
+      - {kind: keep, text: "Re-scoring the authors' published heads with our evaluation code gives 51.73 / 69.16 / 68.63% on "}
+      - {kind: del, text: "all"}
+      - {kind: keep, text: " 191,161 "}
+      - {kind: del, text: "held-out"}
+      - {kind: keep, text: " hard-negative questions, "}
+      - {kind: del, text: "matching the reference to four digits"}
+      - {kind: ins, text: "within 0.4 points of the published 52.1 / 69.2 / 68.5 (measured on a different sample of about 100k)"}
+      - {kind: keep, text: "."}
+
+coverage:
+  # Every element of the primary sources (as gathered in docs/research/systems/clm.md) and the page section
+  # that explains it. `planned` sections arrive in later PRs while the page is a draft.
+  # --- identity and access
+  - {element: "Team, release dates (code constant, model card, repository), no paper, unreadable blog, non-public research branch", source: {key: "repo:docs/research/systems/clm.md", at: header}, status: planned, section: references}
+  - {element: "Licence: Apache-2.0 for code and weights", source: {key: clm-card}, status: covered, section: spec}
+  - {element: "Access: weights, serving script, /v1/systemone-style interface, /v1/rank", source: {key: clm-repo, at: "README, serve_qwen3_8b.sh, schema.py"}, status: planned, section: try-it}
+  - {element: "Unreleased multimodal CLM-35B", source: {key: clm-card}, status: planned, section: try-it}
+  # --- architecture
+  - {element: "Backbone, encoder serving (vLLM pooling runner), head output width and served context cap", source: {key: clm-repo, at: "serve_qwen3_8b.sh, embedder.py, heads.py"}, status: covered, section: spec}
+  - {element: "Client-side L2 normalisation of the 4096-d embeddings; host LRU of 200k embeddings", source: {key: clm-repo, at: embedder.py}, status: planned, section: architecture}
+  - {element: "Head architecture: Linear 4096→1536, GELU; Linear, LayerNorm, GELU; Linear →512; L2 norm", source: {key: clm-repo, at: heads.py}, status: planned, section: architecture}
+  - {element: "heads.py function defaults vs fine-tuning defaults; parameter count vs the README's '20M' and '75 MB'", source: {key: clm-repo, at: "heads.py, train/finetune.py, README"}, status: planned, section: architecture}
+  - {element: "Score: min(e^λ,100)·cos, per-question softmax, request temperature T ∈ (0,100]", source: {key: clm-repo, at: engine.py}, status: planned, section: equations}
+  - {element: "Alternative scoring: clm-raw (raw 4096-d cosine × 100) and /v1/rank", source: {key: clm-repo, at: engine.py}, status: planned, section: equations}
+  - {element: "The `confidence` field (top probability minus mean of the others) vs TypeSafe's normalised margin", source: {key: clm-repo, at: engine.py}, status: planned, section: equations}
+  - {element: "Permutation invariance by construction; no option interaction; no null outcome", source: {key: "repo:docs/research/systems/clm.md", at: Architecture}, status: planned, section: architecture}
+  # --- inference
+  - {element: "Text layout per type (choice, score, noul templates)", source: {key: clm-repo, at: schema.py}, status: planned, section: inference}
+  - {element: "Passes per request: one state pass per question; noul options reused only when the question repeats", source: {key: "repo:docs/research/systems/clm.md", at: "Passes per request"}, status: planned, section: inference}
+  - {element: "GPU vector arena (2% default, LRU, generation-stamped keys, states and options)", source: {key: clm-repo, at: "cache.py, engine.py"}, status: planned, section: inference}
+  - {element: "Truncation: client cap 2,048; vLLM ≥0.13 keeps the head; PRs #6, #29; training keeps the tail up to 8,192", source: {key: clm-repo, at: "embedder.py, train/embed_utils.py, PRs #6 #29"}, status: planned, section: inference}
+  - {element: "Vector-cache latencies (RTX 4090, server-side p50)", source: {key: clm-repo, at: README}, status: covered, section: summary}
+  - {element: "Speed claims: 13× (card), up to 9× (press), 4.1–5.7× (verifiers); independent latencies (S1-Arena, Reading Right)", source: {key: "repo:docs/research/systems/clm.md", at: "Serving and efficiency"}, status: planned, section: hardware}
+  # --- training and data
+  - {element: "Training objective: bidirectional InfoNCE; hard negatives in the state→action denominator", source: {key: clm-repo, at: README Training Algorithm}, status: planned, section: training}
+  - {element: "Three stages: ~60M Nemotron DQA, ~30M Gemini hard negatives, ~1M trajectories with 40% replay", source: {key: clm-repo, at: README Data Recipe}, status: planned, section: training}
+  - {element: "Task-head stage: DeepSWE PRM data and typed-decisions; DeepSWE train and eval share tasks", source: {key: "repo:docs/research/systems/clm.md", at: Training}, status: planned, section: training}
+  - {element: "Ablations 52.1 / 69.2 / 62.4 / 68.5 / 56.2", source: {key: clm-repo, at: README}, status: planned, section: training}
+  - {element: "Our reproduction of the ablation: tricky and general top-1, and 64/128/256-d truncation", source: {key: "repo:results/benchmark/heads.json"}, status: planned, section: training}
+  - {element: "Scaling statements without exponents", source: {key: clm-repo, at: README}, status: planned, section: training}
+  - {element: "Fine-tuning recipe, clm task (same-document masking, LR rule, OneCycle, batch 2048, 8,192-token tail)", source: {key: clm-repo, at: "train/finetune.py, train/embed_utils.py"}, status: planned, section: training}
+  - {element: "Fine-tuning recipe, choice task (soft targets, infonce vs softce, LR 5e-4, batch 256)", source: {key: clm-repo, at: train/finetune.py}, status: planned, section: training}
+  - {element: "Selection evaluation: bon_eval.py mean cosine over the last 12 steps, exact best-of-N", source: {key: clm-repo, at: evaluation/bon_eval.py}, status: planned, section: training}
+  - {element: "Datasets: vector releases (1.02 TB, no README or licence), ~5% false-negative hard negatives", source: {key: "repo:docs/research/systems/clm.md", at: Training}, status: planned, section: data}
+  - {element: "Data licensing: NVIDIA Data Agreement vs ungated mirrors", source: {key: "repo:docs/research/systems/clm.md", at: Training}, status: planned, section: data}
+  # --- calibration
+  - {element: "Calibration: none ships; S1-Arena Brier worsens vs its backbone (the only such pair)", source: {key: s1arena}, status: planned, section: calibration}
+  - {element: "Our head-level temperature fits (ECE before and after, per head)", source: {key: "repo:results/benchmark/heads.json"}, status: planned, section: calibration}
+  - {element: "Our System1-Arena temperature fits (leave-one-domain-out)", source: {key: "repo:results/references/s1arena/CALIBRATION.md"}, status: planned, section: calibration}
+  # --- results
+  - {element: "System1-Arena overall (Table 1): accuracy, Brier, p50; our reproduction", source: {key: s1arena}, status: covered, section: benchmarks}
+  - {element: "System1-Arena per-domain scores, agentic Table 2 (step accuracy 40.6%, loop success 1.7%), 19 GPU-s per 1k requests", source: {key: s1arena}, status: planned, section: benchmarks}
+  - {element: "Authors' zero-shot and verifier results (T-Rex, BFCL, WikiRacing, Mario, DeepSWE, Terminal-Bench)", source: {key: clm-repo, at: "README images"}, status: planned, section: benchmarks}
+  - {element: "T-Rex result JSONs: planner agreement, shield interventions, model p50", source: {key: clm-repo, at: "examples/t_rex/results"}, status: planned, section: benchmarks}
+  - {element: "Other independent evaluations: Jeva, Reading Right, JevAdvBench, intent routing (#13), JevBench, Decision Index, PCA-Ridge study", source: {key: "repo:docs/research/systems/clm.md", at: Results}, status: planned, section: benchmarks}
+  # --- flaws and implications
+  - {element: "Flaws (a)1–13: issues #3, #6, #13, #15, #22, #23, #27–29, #35, plus findings from S1-Arena, Jeva, our measurements and inference", source: {key: "repo:docs/research/systems/clm.md", at: "Flaws and failure modes (a)"}, status: planned, section: limits}
+  - {element: "The README's and card's own stated limitations", source: {key: clm-repo, at: README}, status: planned, section: limits}
+  - {element: "Flaws of other systems CLM claims to fix (b)", source: {key: "repo:docs/research/systems/clm.md", at: "Flaws and failure modes (b)"}, status: planned, section: limits}
+  - {element: "Implications for our design (adopt, avoid, baselines to beat)", source: {key: "repo:docs/research/systems/clm.md", at: "Implications for our design"}, status: planned, section: limits}
+
+claims:
+  - text: "Head shape 4096→1536→1536→512 with GELU and LayerNorm; 9,443,840 parameters per head; λ = 4.613249 so e^λ = 100.81, clamped to 100"
+    sources: [{key: clm-card, at: released checkpoint}, {key: clm-repo, at: heads.py}]
+    verified_by: "automated review agents run in separate sessions: Gate A0 mockup round 2 and PR #56, each reading the checkpoint's config and tensors"
+    date: 2026-11-23
+  - text: "Qwen3-8B has 36 layers and hidden size 4096"
+    sources: [{key: qwen3-8b, at: config.json}]
+    verified_by: "automated review agents run in separate sessions: Gate A0 mockup round 2 and PR #56"
+    date: 2026-11-23
+  - text: "The client caps text at 2,048 tokens; vLLM 0.13+ keeps the first tokens; PRs #6 and #29 are open; training keeps the tail up to 8,192"
+    sources: [{key: clm-repo, at: "embedder.py, train/embed_utils.py, PRs #6 #29"}]
+    verified_by: "automated review agents run in separate sessions: Gate A0 mockup rounds 1 and 2, PR #56"
+    date: 2026-11-23
+  - text: "S1-Arena keeps CLM's last 2,048 tokens; the readout's input is not cut (over-long prompts are refused)"
+    sources: [{key: s1arena-repo, at: "s1arena/models/clm.py, local_lm.py @28e16b1"}]
+    verified_by: "an automated review agent run in a separate session, PR #56 (read the pinned harness code)"
+    date: 2026-11-23
+  - text: "State and option projections are cached in the GPU arena (default 2% of memory, LRU)"
+    sources: [{key: clm-repo, at: "engine.py, cache.py, README"}]
+    verified_by: "automated review agents run in separate sessions: Gate A0 mockup round 2 and PR #56"
+    date: 2026-11-23
+  - text: "README vector-cache table: 1.7 → 0.6 and 2.0 → 0.7 ms for revisited states, 28.6 → 28.0 and 28.8 → 28.1 ms for new states (RTX 4090, server-side p50); that the arrows mean without → with the GPU cache is our reading"
+    sources: [{key: clm-repo, at: "README vector-cache table"}]
+    verified_by: "automated review agents run in separate sessions: Gate A0 mockup rounds 1 and 2, PR #56"
+    date: 2026-11-23
+  - text: "Every benchmark-table number (accuracy, interval, Brier, p50, rank, reference line) matches the 2026-10-14 snapshot, ANCHORS.md, the run summaries or calibration.json; numbers in prose are checked by review only"
+    sources:
+      - {key: "repo:results/references/s1arena/leaderboard-2026-10-14.json"}
+      - {key: "repo:results/references/s1arena/ANCHORS.md"}
+      - {key: "repo:results/references/s1arena/calibration.json"}
+    verified_by: "scripts/site_data.py check on every CI run; PR #56 review"
+    date: 2026-11-23
+  - text: "No experiment on System1-Arena isolates the cause of the 41.4 vs 59.3 gap; rescaling cannot change the argmax"
+    sources: [{key: "repo:docs/research/README.md", at: "findings table, row 4"}]
+    verified_by: "automated review agents run in separate sessions: Gate A0 mockup round 1 and PR #56"
+    date: 2026-11-23
