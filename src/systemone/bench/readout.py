@@ -41,6 +41,9 @@ CONTEXT_MARGIN = 64
 
 
 def state_text(request: DecisionRequest) -> str:
+    """The state as upstream renders it (indented JSON); a string state is shown as written."""
+    if isinstance(request.state, str):
+        return "Input:\n" + request.state
     return "Input:\n" + json.dumps(request.state, ensure_ascii=False, indent=1)
 
 

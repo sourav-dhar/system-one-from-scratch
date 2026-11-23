@@ -80,7 +80,8 @@ def test_noul_is_an_alias_of_boolean() -> None:
         ({"type": "choice", "criteria": {str(i): str(i) for i in range(256)}}, "choice questions need"),
         ({"type": "score", "criteria": ["one level"]}, "score questions need"),
         ({"type": "score", "criteria": [str(i) for i in range(11)]}, "score questions need"),
-        ({"type": "boolean", "criteria": {"true": "yes", "false": "no"}}, "take no criteria"),
+        ({"type": "boolean", "criteria": ["yes", "no"]}, "describe"),
+        ({"type": "boolean", "criteria": {"maybe": "unsure"}}, "describe"),
         ({"type": "ranking", "criteria": None}, "type"),
     ],
 )
@@ -106,6 +107,15 @@ def test_gold_must_fit_its_question() -> None:
             request=DecisionRequest(state={}, questions={"q": q}),
             gold={"other": Gold(label="a")},
         )
+
+
+def test_typesafe_states_and_boolean_descriptions() -> None:
+    described = Question(type="noul", instructions="On-prem?", criteria={"true": "Must stay on-prem."})  # type: ignore[arg-type]
+    assert described.option_texts() == ["Must stay on-prem.", "false"]
+    assert Question(type="boolean", instructions="?").option_texts() == ["true", "false"]
+    for state in ("a plain string", [{"role": "user", "content": "hi"}], {"k": 1}):
+        assert item(described, Gold(label="true")).id  # parses and hashes
+        assert DecisionRequest(state=state, questions={"q": described}).state == state
 
 
 def test_option_ids_and_texts_align() -> None:
