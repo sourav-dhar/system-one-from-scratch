@@ -3,82 +3,118 @@ import Base from '../../layouts/Base.astro';
 import SectionHead from '../../components/SectionHead.astro';
 import FactBlock from '../../components/FactBlock.astro';
 import ProvTag from '../../components/ProvTag.astro';
-import SourceLinks from '../../components/SourceLinks.astro';
+import Cite from '../../components/Cite.astro';
 import BenchTable from '../../components/BenchTable.astro';
 import CorrectionBlock from '../../components/CorrectionBlock.astro';
 import { models, registry, type ModelPage, type Provenance, type Source } from '../../lib/data';
+import { pageNotes } from '../../lib/notes';
+
+type Term = { id: string; term: string; definition: string; sources: Source[] };
+type Page = ModelPage & { primer: Term[] };
 
 export function getStaticPaths() {
   return models.map((m) => ({ params: { id: m.id }, props: { m } }));
 }
-interface Props { m: ModelPage }
+interface Props { m: Page }
 const { m } = Astro.props;
+const notes = pageNotes(m);
 const refs = new Map(m.references.map((r) => [r.key, r]));
 const status = registry.find((r) => r.id === m.id)?.status ?? 'draft';
 const planned = m.coverage.filter((c) => c.status === 'planned');
 const kinds: Provenance[] = ['independent', 'self-reported', 'code', 'ours', 'inferred'];
 const title = `${m.name}${m.version ?? ''}`;
-const specSources: Source[] = m.spec
-  .flatMap((s) => s.sources)
-  .filter((s, i, a) => a.findIndex((t) => t.key === s.key && t.at === s.at) === i);
-const specKinds = [...new Set(m.spec.map((s) => s.provenance))];
+const SECTION_TITLE: Record<string, string> = {
+  spec: 'Masthead', summary: 'Summary', architecture: 'Architecture', inference: 'Inference', equations: 'Equations',
+  training: 'Training', data: 'Data', calibration: 'Calibration', benchmarks: 'Benchmarks', hardware: 'Hardware',
+  'try-it': 'Try it', limits: 'Limits and failure modes', references: 'Sources',
+};
+// Sections are numbered in reading order.
+let n = 0;
+const no = () => ++n;
+const sec = {
+  primer: no(),
+  summary: no(),
+  tables: m.benchmarks.map(() => no()),
+  corrections: m.corrections.length > 0 ? no() : 0,
+  coverage: no(),
+  sources: no(),
+};
 ---
 <Base title={`${title} · System One, from scratch`} description={m.dek}>
   <section class="mast" aria-labelledby="m-title">
     <div class="mast-frame">
       <div class="eyebrow">{m.eyebrow.map((e) => <span class="label">{e}</span>)}</div>
       <h1 id="m-title">{m.name}{m.version && <span class="ver">{m.version}</span>}</h1>
-      <p class="dek">{m.dek}</p>
-      <div class="rule-orn" aria-hidden="true">{m.full_name.split(',')[0]}</div>
+      <p class="full-name">{m.full_name}</p>
+      <p class="dek">{m.dek}<Cite sources={m.dek_sources} notes={notes} /></p>
       <dl class="spec">
         {m.spec.map((s) => (
-          <div><dt class="label">{s.label}</dt><dd>{s.value}</dd></div>
+          <div>
+            <dt class="label">{s.label}</dt>
+            <dd>{s.value}<Cite sources={s.sources} notes={notes} /><span class="spec-tag"><ProvTag kind={s.provenance} /></span></dd>
+          </div>
         ))}
       </dl>
-      <div class="srcline">
-        {specKinds.map((p) => <ProvTag kind={p} />)}
-        <SourceLinks sources={specSources} refs={refs} />
-      </div>
     </div>
-    <div class="legend-pv" aria-label="Provenance key">
-      <span class="label">Every result and design fact is tagged:</span>
+    <div class="legend-pv" role="group" aria-label="Provenance key">
+      <span class="label">Every fact is tagged by where it comes from:</span>
       {kinds.map((k) => <ProvTag kind={k} />)}
+      <span class="label">[n] = numbered source, listed at the end</span>
     </div>
     {status !== 'published' && (
-      <p class="lede" style="margin-top:22px"><strong>Draft page.</strong> {planned.length} elements of the primary sources are assigned to sections that are still being written; the coverage list below shows which.</p>
+      <p class="draft-note"><strong>Draft page.</strong> {planned.length} elements of the sources are assigned to sections that are still being written; the coverage list shows which.</p>
     )}
   </section>
 
-  <section aria-labelledby="s2">
-    <SectionHead no={2} title="Thirty-second summary" id="s2" />
+  <section aria-labelledby="s-primer">
+    <SectionHead no={sec.primer} title="Read this first" id="s-primer" />
+    <p class="lede">The terms this page uses, in the order a newcomer needs them.</p>
+    <dl class="primer">
+      {m.primer.map((t) => (
+        <div id={`term-${t.id}`}>
+          <dt>{t.term}</dt>
+          <dd>{t.definition}<Cite sources={t.sources} notes={notes} /></dd>
+        </div>
+      ))}
+    </dl>
+  </section>
+
+  <section aria-labelledby="s-summary">
+    <SectionHead no={sec.summary} title="Thirty-second summary" id="s-summary" />
     <div class="summary-grid">
-      <article><h3 class="label">What it is</h3>{m.summary.what.map((f) => <FactBlock fact={f} refs={refs} />)}</article>
-      <article><h3 class="label">Why it matters</h3>{m.summary.why.map((f) => <FactBlock fact={f} refs={refs} />)}</article>
-      <article><h3 class="label">Main weakness</h3>{m.summary.weakness.map((f) => <FactBlock fact={f} refs={refs} />)}</article>
+      <article><h3 class="label">What it is</h3>{m.summary.what.map((f) => <FactBlock fact={f} notes={notes} />)}</article>
+      <article><h3 class="label">Why it matters</h3>{m.summary.why.map((f) => <FactBlock fact={f} notes={notes} />)}</article>
+      <article><h3 class="label">Main weakness</h3>{m.summary.weakness.map((f) => <FactBlock fact={f} notes={notes} />)}</article>
     </div>
   </section>
 
   {m.benchmarks.map((t, i) => (
-    <section aria-labelledby={`s9-${i}`}>
-      <SectionHead no={9} title={t.title} id={`s9-${i}`} />
-      <BenchTable table={t} refs={refs} />
-      {i === m.benchmarks.length - 1 && m.corrections.map((c) => <CorrectionBlock c={c} refs={refs} />)}
+    <section aria-labelledby={`s-bench-${i}`}>
+      <SectionHead no={sec.tables[i]} title={t.title} id={`s-bench-${i}`} />
+      <BenchTable table={t} notes={notes} id={`bench-${i}`} />
     </section>
   ))}
 
-  <section aria-labelledby="s12">
-    <SectionHead no={12} title="Coverage of the primary sources" id="s12" />
-    <p class="lede">Every element the code, model card or evaluations describe, and the section of this page that explains it.</p>
+  {m.corrections.length > 0 && (
+    <section aria-labelledby="s-corr">
+      <SectionHead no={sec.corrections} title="Corrections" id="s-corr" />
+      <p class="lede">Statements of ours about this model that we later corrected. The struck text stays readable beside its replacement.</p>
+      {m.corrections.map((c) => <CorrectionBlock c={c} notes={notes} />)}
+    </section>
+  )}
+
+  <section aria-labelledby="s-cov">
+    <SectionHead no={sec.coverage} title="Coverage of the sources" id="s-cov" />
+    <p class="lede">Every element our research note gathers from the code, model card and evaluations, and the section of this page that explains it. Planned sections are still being written.</p>
     <div class="tbl-scroll" role="region" aria-label="Coverage list, scrollable" tabindex="0">
       <table class="coverage">
-        <thead><tr><th scope="col">Element</th><th scope="col">Section</th><th scope="col">Status</th><th scope="col">Source</th></tr></thead>
+        <thead><tr><th scope="col">Element</th><th scope="col">Section</th><th scope="col">Status</th></tr></thead>
         <tbody>
           {m.coverage.map((c) => (
             <tr>
-              <td>{c.element}</td>
-              <td>{c.section ?? c.reason}</td>
-              <td><span class={`status status-${c.status === 'n/a' ? 'na' : c.status}`}>{c.status}</span></td>
-              <td><span class="srcline" style="margin:0"><SourceLinks sources={[c.source]} refs={refs} /></span></td>
+              <td>{c.element}<Cite sources={[c.source]} notes={notes} /></td>
+              <td>{c.section ? SECTION_TITLE[c.section] ?? c.section : c.reason}</td>
+              <td><span class={`status status-${c.status === 'n/a' ? 'na' : c.status}`}>{c.status === 'planned' ? 'planned, not yet written' : c.status}</span></td>
             </tr>
           ))}
         </tbody>
@@ -86,17 +122,24 @@ const specKinds = [...new Set(m.spec.map((s) => s.provenance))];
     </div>
   </section>
 
-  <section aria-labelledby="s13">
-    <SectionHead no={13} title="Sources and verification" id="s13" />
-    <ul class="refs">
-      {m.references.map((r) => (
-        <li><code>{r.key.replace(/^repo:/, '')}</code> <a href={r.url}>{r.title}</a></li>
-      ))}
-    </ul>
-    <h3 class="label" style="margin-top:26px">Claims ledger</h3>
-    <ul class="notes">
+  <section aria-labelledby="s-src">
+    <SectionHead no={sec.sources} title="Sources and verification" id="s-src" />
+    <ol class="refs">
+      {notes.order.map((s, i) => {
+        const r = refs.get(s.key);
+        const name = r?.kind === 'repo' ? r.title : s.key;
+        return (
+          <li id={`src-${i + 1}`}>
+            {r ? <a href={r.url}>{r.kind === 'repo' ? <code>{name}</code> : r.title}</a> : <code>{name}</code>}
+            {s.at && <span class="at"> · {s.at}</span>}
+          </li>
+        );
+      })}
+    </ol>
+    <h3 class="label claims-h">Claims ledger: who verified what</h3>
+    <ul class="claims">
       {m.claims.map((c) => (
-        <li>{c.text}<div class="srcline"><span class="pv pv-code">verified: {c.verified_by}, {c.date}</span><SourceLinks sources={c.sources} refs={refs} /></div></li>
+        <li>{c.text}<Cite sources={c.sources} notes={notes} /><div class="verified">Verified by {c.verified_by}, {c.date}</div></li>
       ))}
     </ul>
   </section>

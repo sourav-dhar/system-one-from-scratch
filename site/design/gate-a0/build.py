@@ -1,7 +1,7 @@
 """Build the Gate A0 bake-off page: generate the axonometric architecture SVG and the cosine-gap
 ruler from real data, then splice both into template.html -> clm-bakeoff.html.
 
-Run from the repo:  uv run python <scratchpad>/gate-a0/build.py
+Run from the repo:  uv run python site/design/gate-a0/build.py
 """
 
 import gzip

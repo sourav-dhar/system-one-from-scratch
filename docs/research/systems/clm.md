@@ -205,7 +205,7 @@ Mid-training adds hard negatives to the state→action denominator only.
 
 Notes on these rows:
 
-- **Harness.** S1-Arena queried CLM through the official `clm.Engine.answer`, keeping the last 2,048 tokens ("the end that its training keeps") [@s1arena-repo]. Its low score is therefore not a harness or truncation artefact.
+- **Harness.** S1-Arena queried CLM through the official `clm.Engine.answer`, keeping the last 2,048 tokens ("the end that its training keeps") [@s1arena-repo]. Its low score is therefore not a harness artefact. Whether keeping only the tail costs CLM accuracy is untested, and the answer-token readout it is compared with saw full inputs *(inference)*.
 - **Size of the gap.** The paper's text says −17.8 pp; the Table 1 values differ by 17.9 *(inference: arithmetic)*.
 - **Ranking.** The landscape notes describe CLM as the lowest "of 10 System-1 models", and it is last among the key rows in our notes. We have not re-counted the Table 1 rows.
 - **Agentic.** All five System-1 models lose step accuracy against their base (−1.2 to −19.3); CLM loses the most (59.9 → 40.6).
@@ -334,4 +334,4 @@ Notes on these rows:
 - Related systems: [@sbert2s1] https://arxiv.org/html/2610.02486 · [@ndm] https://arxiv.org/html/2610.25553 · [@bongard] https://arxiv.org/html/2609.39111 · [@jev-hume] https://archerhume.com/posts/jevs-architecture-unmasked/
 - Foundations: [@cpc] arXiv 1807.03748 · [@guo2017] arXiv 1706.04599 · [@mrl] arXiv 2205.13147
 - Secondary: [VentureBeat](https://venturebeat.com/ai/stanford-and-nvidias-open-clm-8b-caches-reusable-agent-actions-and-runs-up-to-9x-faster-than-jev-in-tests) · [BenchLM](https://benchlm.ai/md/decision-models.md) · [pasqualepillitteri](https://pasqualepillitteri.it/en/news/19074/clm-8b-nvidia-stanford-jev-en) · [Miraheze](https://ai.miraheze.org/wiki/CLM) · [Kwok on X](https://x.com/jackyk02/status/2102905335925424285?lang=en)
-- This project: `results/benchmark/heads.json` (not yet in the repository on this branch).
+- This project: `results/benchmark/heads.json`.

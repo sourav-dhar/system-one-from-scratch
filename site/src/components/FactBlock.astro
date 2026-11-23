@@ -1,14 +1,12 @@
 ---
-import type { Fact, Reference } from '../lib/data';
+import type { Fact } from '../lib/data';
+import type { Notes } from '../lib/notes';
 import ProvTag from './ProvTag.astro';
-import SourceLinks from './SourceLinks.astro';
-interface Props { fact: Fact; refs: Map<string, Reference>; as?: 'p' | 'li' }
-const { fact, refs, as: Tag = 'p' } = Astro.props;
+import Cite from './Cite.astro';
+interface Props { fact: Fact; notes: Notes }
+const { fact, notes } = Astro.props;
 ---
 <div class="fact">
-  <Tag>{fact.text}</Tag>
-  <div class="srcline">
-    {fact.provenance.map((p) => <ProvTag kind={p} />)}
-    <SourceLinks sources={fact.sources} refs={refs} />
-  </div>
+  <p>{fact.text}<Cite sources={fact.sources} notes={notes} /></p>
+  <div class="tagline">{fact.provenance.map((p) => <ProvTag kind={p} />)}</div>
 </div>

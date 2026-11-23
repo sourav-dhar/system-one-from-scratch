@@ -38,6 +38,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
         var root = document.documentElement;
         var q = new URLSearchParams(location.search);
         var look = q.get('look'), theme = q.get('theme');
+        if (look === 'monochrome') look = 'cinema';
         try {
           if (!look) look = localStorage.getItem('s1.look');
           if (!theme) theme = localStorage.getItem('s1.theme');
@@ -104,8 +105,11 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
         sync();
         const main = document.getElementById('main');
         if (next === 'cinema' && was !== 'cinema' && !reduce && main?.animate) {
-          main.animate([{ clipPath: 'circle(0% at 50% 30%)' }, { clipPath: 'circle(150% at 50% 30%)' }],
-            { duration: 950, easing: 'cubic-bezier(.6,0,.2,1)' });
+          // Iris in, centred on the middle of the viewport rather than of the whole page.
+          const y = window.innerHeight / 2 - main.getBoundingClientRect().top;
+          const r = Math.hypot(window.innerWidth, window.innerHeight);
+          main.animate([{ clipPath: `circle(0px at 50% ${y}px)` }, { clipPath: `circle(${r}px at 50% ${y}px)` }],
+            { duration: 650, easing: 'cubic-bezier(.6,0,.2,1)' });
         }
       }));
       themeBtns.forEach((b) => b.addEventListener('click', () => {

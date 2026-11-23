@@ -10,18 +10,20 @@ export interface BenchRow {
   label: string; rank: string | null; readout: string;
   accuracy: number | null; accuracy_ci: [number, number] | null; brier: number | null; p50_ms: number | null;
   measured_on: string; provenance: Provenance; sources: Source[]; harness: string; focus: boolean; child: boolean;
+  /** Pre-formatted by site_data.py at the checked precision; the site never formats a figure itself. */
+  display: Partial<Record<'accuracy' | 'accuracy_ci' | 'brier' | 'p50_ms', string>>;
 }
 export interface BenchTable {
-  suite: string; title: string; caption: string;
-  reference_line: number | null; reference_label: string | null; notes: Fact[]; rows: BenchRow[];
+  suite: string; title: string; caption: string; caption_sources: Source[]; axis_max: number;
+  reference: { row: string; label: string; value: number } | null; notes: Fact[]; rows: BenchRow[];
 }
 export interface Segment { kind: 'keep' | 'del' | 'ins'; text: string }
-export interface Correction { date: string; commit: string; where: string; segments: Segment[]; provenance: Provenance; sources: Source[] }
+export interface Correction { date: string; commit: string; file: string; where: string; context: string | null; segments: Segment[]; provenance: Provenance; sources: Source[] }
 export interface Coverage { element: string; source: Source; status: 'covered' | 'planned' | 'n/a'; section: string | null; reason: string | null }
 export interface Reference { key: string; title: string; url: string; kind: 'arxiv' | 'link' | 'repo' }
 export interface ModelPage {
   id: string; name: string; version: string | null; full_name: string; tier: 'A' | 'B' | 'C'; family: string;
-  note: string; eyebrow: string[]; dek: string; spec: SpecItem[];
+  note: string; eyebrow: string[]; dek: string; dek_sources: Source[]; spec: SpecItem[];
   summary: { what: Fact[]; why: Fact[]; weakness: Fact[] };
   benchmarks: BenchTable[]; corrections: Correction[]; coverage: Coverage[];
   claims: { text: string; sources: Source[]; verified_by: string; date: string }[];
@@ -41,7 +43,7 @@ export const registry = registryJson as RegistryEntry[];
 export const PROVENANCE_LABEL: Record<Provenance, string> = {
   independent: 'independent measurement',
   'self-reported': "authors' own result",
-  code: "authors' code or config",
+  code: 'published code or config',
   ours: 'our run',
   inferred: 'our inference',
 };

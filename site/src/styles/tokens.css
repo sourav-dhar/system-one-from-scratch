@@ -42,7 +42,7 @@
 
 /* LOOK 2 · Blueprint engineering */
 :root[data-look="blueprint"] {
-  --bg: #EAF0F5; --panel: #F4F8FB; --ink: #0F3557; --ink2: #36597B; --ink3: #56718C;
+  --bg: #EAF0F5; --panel: #F4F8FB; --ink: #0F3557; --ink2: #36597B; --ink3: #4A6580;
   --rule: #B9CBDB; --rule-strong: #0F3557; --grid: #D3DFEA;
   --accent: #C8371D; --accent-text: #B0301A; --accent-soft: #F6DED7; --on-accent: #FFFFFF;
   --cool: #0B6E7F; --cool-soft: #D5E9EE; --margin-rule: transparent;
@@ -100,7 +100,7 @@
     --accent: #ECEAE4; --accent-text: #ECEAE4; --accent-soft: #2A2926; --on-accent: #0A0A0A;
     --cool: #ECEAE4; --cool-soft: #1C1B19; --film: #1E1E1C;
     --title-grad: linear-gradient(180deg, #FFFFFF 0%, #D9D6CF 45%, #8F8C86 100%);
-    --grain-op: .12; --vig: rgba(0, 0, 0, .62);
+    --grain-op: .12; --vig: rgba(0, 0, 0, .5);
     color-scheme: dark;
   }
 }
@@ -110,6 +110,6 @@
   --accent: #ECEAE4; --accent-text: #ECEAE4; --accent-soft: #2A2926; --on-accent: #0A0A0A;
   --cool: #ECEAE4; --cool-soft: #1C1B19; --film: #1E1E1C;
   --title-grad: linear-gradient(180deg, #FFFFFF 0%, #D9D6CF 45%, #8F8C86 100%);
-  --grain-op: .12; --vig: rgba(0, 0, 0, .62);
+  --grain-op: .12; --vig: rgba(0, 0, 0, .5);
   color-scheme: dark;
 }

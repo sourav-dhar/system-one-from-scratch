@@ -1,0 +1,137 @@
+# Shared glossary for the companion site. Model pages list the terms they use in `primer:`, and the site
+# shows those definitions before the page's content. Definitions follow the start-here research guide
+# (docs/research/README.md, §4 notation and §5 glossary); validated by scripts/site_data.py.
+
+terms:
+  - id: system-one-model
+    term: System One model
+    definition: >-
+      A model that takes a state and typed questions with options and returns a probability for every option
+      in one forward pass, without generating text.
+    sources: [{key: "repo:docs/research/README.md", at: "§5 Glossary: System One model"}]
+  - id: state
+    term: State
+    definition: >-
+      The input a decision is about: a text, or structured fields rendered as text. On the CLM page's routing
+      example, the state is the prompt that has to be routed.
+    sources: [{key: "repo:docs/research/README.md", at: "§1, §5"}]
+  - id: option
+    term: Option
+    definition: >-
+      One of the candidate answers a question lists. CLM's code calls an option an action, so its option-side
+      network is the "action head".
+    sources: [{key: clm-repo, at: "src/clm/schema.py"}]
+  - id: question-types
+    term: Question types
+    definition: >-
+      choice picks one of the listed options; noul is a yes-or-no question and returns the probability of yes;
+      score picks a level on an ordered scale and reports the expected level.
+    sources: [{key: "repo:docs/research/README.md", at: "§5 Glossary: choice / noul / score / box"}]
+  - id: backbone
+    term: Backbone, frozen
+    definition: >-
+      The backbone is the large pretrained network that turns text into vectors (here Qwen3-8B, an 8-billion-
+      parameter language model). Frozen means its weights are never changed by training.
+    sources: [{key: qwen3-8b}, {key: clm-repo, at: README}]
+  - id: bi-encoder
+    term: Bi-encoder (two towers)
+    definition: >-
+      The state and each option are encoded separately and compared only at the end, by a similarity score.
+      The option side never sees the state, which is what lets option vectors be computed once and cached.
+    sources: [{key: "repo:docs/research/README.md", at: "§3, CLM walk-through"}]
+  - id: head
+    term: Head (MLP)
+    definition: >-
+      A small trained network on top of the backbone. CLM's heads are multilayer perceptrons: stacked linear
+      layers with non-linear activations (GELU) that map 4,096 numbers to 512.
+    sources: [{key: clm-repo, at: "src/clm/heads.py"}]
+  - id: last-token-embedding
+    term: Last-token embedding
+    definition: >-
+      The backbone's internal vector at the last token of a text (4,096 numbers for Qwen3-8B), used as a
+      summary of the whole text. In a causal language model, only the last token has read every earlier token.
+    sources: [{key: clm-repo, at: "serve_qwen3_8b.sh (LAST pooling), src/clm/embedder.py"}]
+  - id: cosine
+    term: Unit vector, cosine
+    definition: >-
+      L2 normalisation rescales a vector to length 1, a unit vector. The cosine of two unit vectors is their
+      dot product: 1 when they point the same way, 0 when they are unrelated (perpendicular).
+    sources: [{key: "repo:docs/research/README.md", at: "§4 Notation"}]
+  - id: softmax
+    term: Logit, softmax, temperature
+    definition: >-
+      A logit is a raw score. Softmax turns a list of logits into probabilities that are positive and sum to
+      1; larger gaps between logits give more lopsided probabilities. Dividing every logit by a temperature T
+      greater than 1 softens the probabilities without changing which option is on top.
+    sources: [{key: "repo:docs/research/README.md", at: "§4 Notation; §5 Temperature scaling"}, {key: guo2017}]
+  - id: calibration
+    term: Calibration
+    definition: >-
+      Probabilities are calibrated when they match how often the model is right: of all answers given 70%,
+      about 70% should be correct. Temperature scaling fits one T on held-out data to improve this.
+    sources: [{key: guo2017}, {key: "repo:docs/research/README.md", at: "§5 ECE, Temperature scaling"}]
+  - id: brier
+    term: Brier score
+    definition: >-
+      The squared distance between the predicted probabilities and the gold answer, summed over the options.
+      It runs from 0 (all probability on the right answer) to 2 (all probability on one wrong option); lower is
+      better. It rewards both accuracy and calibration.
+    sources: [{key: "repo:docs/research/README.md", at: "§5 Glossary: Brier score"}, {key: s1arena}]
+  - id: answer-token-readout
+    term: Answer-token readout
+    definition: >-
+      Asking an ordinary language model the question with lettered options and reading its probabilities for
+      the answer letters, with no extra training (zero-shot). Comparing a System One model with a readout of
+      its own backbone shows what its design and training add or lose.
+    sources: [{key: s1arena}, {key: "repo:docs/research/README.md", at: "§5 Glossary: Answer-token readout"}]
+  - id: system1-arena
+    term: System1-Arena (S1-Arena)
+    definition: >-
+      An independent benchmark of System One models and language models, run on one public harness: 43,226
+      non-agentic requests over 13 domains, plus agentic tasks.
+    sources: [{key: s1arena}, {key: s1arena-repo}]
+  - id: leaves
+    term: Domains, leaves, tasks
+    definition: >-
+      System1-Arena groups requests into tasks (one source dataset each), tasks into 87 leaves, and leaves
+      into 13 domains. Its headline accuracy is the mean over the 87 leaves of each leaf's mean over its tasks.
+    sources: [{key: "repo:results/references/s1arena/ANCHORS.md"}, {key: s1arena-repo}]
+  - id: harness
+    term: Harness
+    definition: >-
+      The code that sends every request to a model and scores the answers. Numbers from the same harness are
+      comparable; numbers from different harnesses usually are not, which is why this site compares only
+      within one harness.
+    sources: [{key: "repo:docs/research/README.md", at: "§8 benchmark card"}]
+  - id: p50
+    term: p50 latency
+    definition: The median time to answer one request; half of the requests finish faster.
+    sources: [{key: s1arena-repo, at: "leaderboard/results.json: latency"}]
+  - id: bootstrap
+    term: Bootstrap interval
+    definition: >-
+      A 95% interval from re-scoring the test set 1,000 times on resampled tasks and items. It shows how much
+      the score could move with a different sample.
+    sources: [{key: "repo:results/references/s1arena/ANCHORS.md"}, {key: "repo:scripts/anchor_report.py"}]
+  - id: leave-one-domain-out
+    term: Leave-one-domain-out
+    definition: >-
+      Fitting a temperature on 12 of System1-Arena's 13 domains and applying it to the 13th, in turn, so that
+      no domain is calibrated on its own data.
+    sources: [{key: "repo:results/references/s1arena/CALIBRATION.md"}]
+  - id: lru-cache
+    term: LRU cache
+    definition: A fixed-size cache that evicts the least recently used entry when it is full.
+    sources: [{key: clm-repo, at: "src/clm/cache.py"}]
+  - id: vllm
+    term: vLLM
+    definition: >-
+      An open-source serving engine for language models. CLM's official server runs Qwen3-8B on vLLM in its
+      pooling (embedding) mode.
+    sources: [{key: clm-repo, at: serve_qwen3_8b.sh}]
+  - id: infonce
+    term: InfoNCE, hard negatives
+    definition: >-
+      InfoNCE is a contrastive loss that scores each correct pair against the other pairs in a batch. Hard
+      negatives are wrong candidates chosen to be close to the right one, which makes the task harder.
+    sources: [{key: cpc}, {key: "repo:docs/research/README.md", at: "§5 Glossary: InfoNCE, Hard negatives"}]

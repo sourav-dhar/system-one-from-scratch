@@ -105,6 +105,7 @@
           "type": "array"
         },
         "harness": {
+          "pattern": "^[a-z0-9-]+@[0-9a-f]{7,40}$",
           "title": "Harness",
           "type": "string"
         },
@@ -133,7 +134,8 @@
         "measured_on",
         "provenance",
         "sources",
-        "harness"
+        "harness",
+        "checks"
       ],
       "title": "BenchRow",
       "type": "object"
@@ -153,29 +155,29 @@
           "title": "Caption",
           "type": "string"
         },
-        "reference_line": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Reference Line"
+        "caption_sources": {
+          "items": {
+            "$ref": "#/$defs/Source"
+          },
+          "minItems": 1,
+          "title": "Caption Sources",
+          "type": "array"
         },
-        "reference_label": {
+        "axis_max": {
+          "default": 100.0,
+          "title": "Axis Max",
+          "type": "number"
+        },
+        "reference": {
           "anyOf": [
             {
-              "type": "string"
+              "$ref": "#/$defs/Reference"
             },
             {
               "type": "null"
             }
           ],
-          "default": null,
-          "title": "Reference Label"
+          "default": null
         },
         "notes": {
           "items": {
@@ -197,6 +199,7 @@
         "suite",
         "title",
         "caption",
+        "caption_sources",
         "rows"
       ],
       "title": "BenchTable",
@@ -204,7 +207,7 @@
     },
     "CheckRef": {
       "additionalProperties": false,
-      "description": "Ties a displayed number to the file it came from (required for `ours` rows, allowed for any row).\n\nEither ``pointer`` (a JSON pointer into ``file``; the value is multiplied by ``scale`` and rounded to\n``decimals``) or ``text`` (an exact string that must appear in ``file``, for figures that exist only in a\ngenerated report).",
+      "description": "Ties a displayed number to the tracked file it came from.\n\n``pointer`` mode: an RFC 6901 JSON pointer into ``file``; the value times ``scale`` must equal the shown\nnumber at the site's display precision. ``match`` (pointer -> expected value) checks identity on the entry\nthe value comes from: its pointers are relative to the last array element on ``pointer``'s path (or to the\ndocument root when the path has no array). A pointer through an array must give ``match``, so a row is\ntied to the right entry and not just to a position.\n\n``text`` mode: for figures that exist only in a generated report. The shown value, formatted exactly as\nthe site shows it, must occur in ``file`` as a whole number on a line that also contains ``line``.",
       "properties": {
         "file": {
           "title": "File",
@@ -227,19 +230,19 @@
           "title": "Scale",
           "type": "number"
         },
-        "decimals": {
-          "anyOf": [
-            {
-              "type": "integer"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Decimals"
+        "match": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Match",
+          "type": "object"
         },
         "text": {
+          "default": false,
+          "title": "Text",
+          "type": "boolean"
+        },
+        "line": {
           "anyOf": [
             {
               "type": "string"
@@ -249,7 +252,7 @@
             }
           ],
           "default": null,
-          "title": "Text"
+          "title": "Line"
         }
       },
       "required": [
@@ -294,7 +297,7 @@
     },
     "Correction": {
       "additionalProperties": false,
-      "description": "A published correction, shown in place: struck text stays readable beside its replacement.",
+      "description": "A published correction, shown in place: struck text stays readable beside its replacement.\n\n``keep`` + ``del`` must reproduce text in ``file`` before ``commit``; ``keep`` + ``ins`` text in it after.",
       "properties": {
         "date": {
           "format": "date",
@@ -302,12 +305,30 @@
           "type": "string"
         },
         "commit": {
+          "pattern": "^[0-9a-f]{7,40}$",
           "title": "Commit",
+          "type": "string"
+        },
+        "file": {
+          "title": "File",
           "type": "string"
         },
         "where": {
           "title": "Where",
           "type": "string"
+        },
+        "context": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "What the corrected passage is about.",
+          "title": "Context"
         },
         "segments": {
           "items": {
@@ -340,6 +361,7 @@
       "required": [
         "date",
         "commit",
+        "file",
         "where",
         "segments",
         "provenance",
@@ -350,7 +372,7 @@
     },
     "Coverage": {
       "additionalProperties": false,
-      "description": "One element of the primary sources and where the page explains it.\n\n``covered``: explained in ``section``. ``planned``: assigned to ``section`` but not written yet (allowed\nonly while the page is a draft). ``n/a``: deliberately left out, with a ``reason``.",
+      "description": "One element of the primary sources and where the page explains it.\n\n``covered``: explained in ``section``, which the site must render. ``planned``: assigned to ``section``\nbut not written yet (allowed only while the page is a draft). ``n/a``: left out, with a ``reason``.",
       "properties": {
         "element": {
           "title": "Element",
@@ -371,6 +393,21 @@
         "section": {
           "anyOf": [
             {
+              "enum": [
+                "spec",
+                "summary",
+                "architecture",
+                "inference",
+                "equations",
+                "training",
+                "data",
+                "calibration",
+                "benchmarks",
+                "hardware",
+                "try-it",
+                "limits",
+                "references"
+              ],
               "type": "string"
             },
             {
@@ -441,6 +478,26 @@
       "title": "Fact",
       "type": "object"
     },
+    "Reference": {
+      "additionalProperties": false,
+      "properties": {
+        "row": {
+          "description": "Label of a row in this table whose checked accuracy draws the reference line.",
+          "title": "Row",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "row",
+        "label"
+      ],
+      "title": "Reference",
+      "type": "object"
+    },
     "Segment": {
       "additionalProperties": false,
       "properties": {
@@ -467,7 +524,7 @@
     },
     "Source": {
       "additionalProperties": false,
-      "description": "Where a fact comes from: a library key, or ``repo:<path>`` for a file in this repository.",
+      "description": "Where a fact comes from: a library key, or ``repo:<path>`` for a tracked file in this repository.",
       "properties": {
         "key": {
           "title": "Key",
@@ -574,6 +631,7 @@
   "description": "``docs/models/<id>/model.yaml``.",
   "properties": {
     "id": {
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
       "title": "Id",
       "type": "string"
     },
@@ -638,6 +696,23 @@
       "title": "Dek",
       "type": "string"
     },
+    "dek_sources": {
+      "items": {
+        "$ref": "#/$defs/Source"
+      },
+      "minItems": 1,
+      "title": "Dek Sources",
+      "type": "array"
+    },
+    "primer": {
+      "description": "Glossary ids shown as 'Read this first'.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Primer",
+      "type": "array"
+    },
     "spec": {
       "items": {
         "$ref": "#/$defs/SpecItem"
@@ -688,6 +763,8 @@
     "family",
     "note",
     "dek",
+    "dek_sources",
+    "primer",
     "spec",
     "summary",
     "coverage",
