@@ -194,23 +194,35 @@ def summarize_run(model_id: str, scope: str, limit: int, responses_path: Path) -
 def answer(
     kind: str = "readout", spec: str = "Qwen/Qwen3-8B", scope: str = "static", limit: int = 0, shards: int = 4
 ) -> None:
-    """Answer every item on ``shards`` H100s, then collect. Run it with ``--detach``: the shards keep
-    going if this client disconnects, and ``collect`` merges and scores what is on the volume."""
+    """Spawn one call per shard and return. Run it with ``--detach``: spawned calls run to the end
+    whatever happens to this client. Merge and score afterwards with ``collect``.
+
+    (A ``starmap`` waited on by this client gets its inputs cancelled if the client is killed, even
+    with ``--detach``. That cost one run, so shards are spawned instead.)
+    """
     model_id = model_id_of(kind, spec)
-    print(f"{model_id} on S1-Arena {scope} (limit {limit or 'none'}) over {shards} H100 shard(s)")
-    for res in answer_shard.starmap([(kind, spec, scope, limit, i, shards) for i in range(shards)]):
-        print(
-            f"  shard {res['shard']}: {res['asked']:,} of {res['items']:,} asked in {res['minutes']:.1f} min"
-        )
-    collect(kind, spec, scope, limit)
+    calls = [answer_shard.spawn(kind, spec, scope, limit, i, shards) for i in range(shards)]
+    print(f"{model_id} on S1-Arena {scope} (limit {limit or 'none'}): spawned {len(calls)} H100 shard(s)")
+    for i, call in enumerate(calls):
+        print(f"  shard {i}: {call.object_id}")
+    collect_cmd = f"modal run cloud/harness_app.py::collect --kind {kind} --spec {spec} --scope {scope}"
+    print(f"when they finish: {collect_cmd}")
 
 
 @app.local_entrypoint()
 def collect(
-    kind: str = "readout", spec: str = "Qwen/Qwen3-8B", scope: str = "static", limit: int = 0
+    kind: str = "readout",
+    spec: str = "Qwen/Qwen3-8B",
+    scope: str = "static",
+    limit: int = 0,
+    allow_partial: bool = False,
 ) -> None:
-    """Merge a run's shard files from the volume into results/, score them and compare."""
-    from systemone.bench.runner import slug
+    """Merge a run's shard files from the volume into results/, score them and compare.
+
+    Refuses to write a summary while items are still unanswered (shards running or failed), unless
+    ``--allow-partial`` is given.
+    """
+    from systemone.bench.runner import read_responses, slug
 
     model_id = model_id_of(kind, spec)
     remote = _volume_dir(model_id, scope, limit)
@@ -225,6 +237,10 @@ def collect(
                 rows += text.count("\n")
                 f.write(text)
     print(f"merged {rows:,} rows from {remote} into {merged}")
+    missing = {i.id for i in _items(scope, limit)} - set(read_responses(merged))
+    if missing and not allow_partial:
+        print(f"{len(missing):,} items have no response yet; not scoring (shards still running or failed)")
+        return
     summary = summarize_run(model_id, scope, limit, merged)
     (out / "summary.json").write_text(json.dumps(summary, indent=1) + "\n", encoding="utf-8")
     o = summary["aggregate"]["overall"]
