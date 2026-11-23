@@ -127,6 +127,67 @@
      ]
     }
    }
+  },
+  {
+   "request": {
+    "state": "Please move my 3pm with Dana to Thursday, same time.",
+    "questions": {
+     "onprem": {
+      "type": "boolean",
+      "instructions": "Must this request go to the on-premise model?",
+      "criteria": {
+       "true": "It contains data that must stay on-premise.",
+       "false": ""
+      }
+     }
+    }
+   },
+   "texts": {
+    "onprem": {
+     "state": "Please move my 3pm with Dana to Thursday, same time.\n\nMust this request go to the on-premise model?",
+     "keys": [
+      "false",
+      "true"
+     ],
+     "candidates": [
+      "false: No. This is false: Must this request go to the on-premise model?",
+      "true: It contains data that must stay on-premise."
+     ]
+    }
+   }
+  },
+  {
+   "request": {
+    "state": [
+     {
+      "role": "user",
+      "content": "hi"
+     },
+     {
+      "role": "assistant",
+      "content": "hello!"
+     }
+    ],
+    "questions": {
+     "done": {
+      "type": "boolean",
+      "instructions": "Is the conversation over?"
+     }
+    }
+   },
+   "texts": {
+    "done": {
+     "state": "-\n  role: user\n  content: hi\n-\n  role: assistant\n  content: hello!\n\nIs the conversation over?",
+     "keys": [
+      "false",
+      "true"
+     ],
+     "candidates": [
+      "false: No. This is false: Is the conversation over?",
+      "true: Yes. This is true: Is the conversation over?"
+     ]
+    }
+   }
   }
  ]
 }
