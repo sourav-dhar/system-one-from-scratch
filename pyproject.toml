@@ -80,6 +80,7 @@ ignore = ["N812", "N806", "RUF001", "RUF002", "RUF003"]
 "scripts/readme_assets.py" = ["E501"]
 "scripts/anchor_report.py" = ["E501"]
 "scripts/calibration_report.py" = ["E501"]
+"scripts/run_bm25.py" = ["E501"]
 
 [tool.mypy]
 python_version = "3.11"
