@@ -1,0 +1,7 @@
+---
+// Wraps runs of digits so headings can set them in a face whose 1 never reads as l (see .fig in base.css).
+interface Props { text: string }
+const { text } = Astro.props;
+const parts = text.split(/(\d+)/).filter((p) => p !== '');
+---
+{parts.map((p) => (/^\d+$/.test(p) ? <span class="fig">{p}</span> : p))}

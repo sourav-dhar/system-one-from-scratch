@@ -35,7 +35,7 @@ const counted = registry.filter((s) => s.family !== 'ours').length;
     <p class="lede">{counted} entries from our research notes, plus our own model in development. Most are System One decision models; the reference cards also cover hosted decision APIs, whose architecture is undisclosed, and Inkling, a family of general-purpose LLMs rather than decision models. Pages are being written one at a time; names without a link are on the way.</p>
     {tiers.map(({ tier, title, note }) => (
       <div class="tier">
-        <h3>{title} <span class="label">{note}</span></h3>
+        <h3><span class="nw">{title}</span> <span class="label">{note}</span></h3>
         <ul class="syslist">
           {registry.filter((s) => s.tier === tier).map((s) => (
             <li>

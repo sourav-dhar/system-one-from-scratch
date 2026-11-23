@@ -16,6 +16,7 @@
   --f-body: "Instrument Sans Variable", "Instrument Sans", "Helvetica Neue", Arial, sans-serif;
   --f-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
   --f-label: var(--f-mono); --f-math: "Instrument Serif", Georgia, serif;
+  --f-fig: "Instrument Sans Variable", "Instrument Sans", "Helvetica Neue", Arial, sans-serif;
   --d-weight: 400; --d-style: normal; --d-transform: none; --d-track: -0.015em; --d-stretch: 100%;
   --d-size: clamp(54px, 10.5vw, 128px); --d-lh: .88;
   --h-font: var(--f-display); --h-weight: 400; --h-transform: none; --h-track: 0;

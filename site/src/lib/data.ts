@@ -44,7 +44,7 @@ export const PROVENANCE_LABEL: Record<Provenance, string> = {
   independent: 'independent measurement',
   'self-reported': "authors' own result",
   code: 'published code or config',
-  ours: 'our run',
+  ours: 'our measurement',
   inferred: 'our inference',
 };
 

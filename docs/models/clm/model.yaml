@@ -17,8 +17,8 @@ dek: >-
   probability.
 dek_sources: [{key: clm-repo, at: "src/clm/schema.py, heads.py, engine.py"}, {key: qwen3-8b, at: config.json}]
 primer: [system-one-model, state, option, question-types, backbone, bi-encoder, head, last-token-embedding, cosine,
-  softmax, calibration, brier, answer-token-readout, system1-arena, leaves, harness, p50, bootstrap,
-  leave-one-domain-out, lru-cache, vllm]
+  softmax, logit-scale, calibration, lru-cache, vllm, brier, native-probabilities, answer-token-readout,
+  system1-arena, leaves, harness, p50, bootstrap, leave-one-domain-out, modal]
 
 spec:
   - label: Backbone
@@ -104,7 +104,8 @@ summary:
     - text: >-
         Rescaling cannot change which option wins; on our run over the public subset, per-type temperatures
         move CLM's Brier from 0.741 to 0.607 at unchanged accuracy. The benchmark also kept only the last 2,048
-        tokens of each CLM input, while the readout saw full inputs.
+        tokens of each CLM input, while the readout's inputs were not shortened (prompts over its limit were
+        refused).
       provenance: [inferred, ours, independent]
       sources:
         - {key: "repo:results/references/s1arena/CALIBRATION.md"}
@@ -125,7 +126,7 @@ benchmarks:
       - {key: "repo:results/references/s1arena/leaderboard-2026-10-14.json"}
       - {key: "repo:results/references/s1arena/ANCHORS.md"}
     axis_max: 80
-    reference: {row: Qwen3-8B, label: "Qwen3-8B answer-token readout, 59.25%: CLM's own backbone, read zero-shot"}
+    reference: {row: Qwen3-8B, label: "Qwen3-8B answer-token readout: CLM's own backbone, read zero-shot"}
     notes:
       - text: >-
           Our runs use the pinned public dataset (ad05ed5, 41,183 of the 43,226 requests), which lacks 14
@@ -142,6 +143,7 @@ benchmarks:
         sources: [{key: "repo:results/references/s1arena/CALIBRATION.md"}]
     rows:
       - label: Decision-2.0-Vega-27B
+        entity: "Decision-2.0-Vega-27B"
         rank: 7 / 29
         readout: native
         accuracy: 73.03
@@ -156,6 +158,7 @@ benchmarks:
           brier: {file: results/references/s1arena/leaderboard-2026-10-14.json, pointer: /models/6/brier, match: {"/name": "Decision-2.0-Vega-27B"}}
           p50_ms: {file: results/references/s1arena/leaderboard-2026-10-14.json, pointer: /models/6/latency_ms, match: {"/name": "Decision-2.0-Vega-27B"}}
       - label: Jev 1.13
+        entity: "Jev 1.13"
         rank: 8 / 29
         readout: native
         accuracy: 72.57
@@ -170,6 +173,7 @@ benchmarks:
           brier: {file: results/references/s1arena/leaderboard-2026-10-14.json, pointer: /models/7/brier, match: {"/name": "Jev 1.13"}}
           p50_ms: {file: results/references/s1arena/leaderboard-2026-10-14.json, pointer: /models/7/latency_ms, match: {"/name": "Jev 1.13"}}
       - label: Qwen3-8B
+        entity: "Qwen3-8B"
         rank: 24 / 29
         readout: answer-token label probabilities
         accuracy: 59.25
@@ -184,6 +188,7 @@ benchmarks:
           brier: {file: results/references/s1arena/leaderboard-2026-10-14.json, pointer: /models/23/brier, match: {"/name": "Qwen3-8B"}}
           p50_ms: {file: results/references/s1arena/leaderboard-2026-10-14.json, pointer: /models/23/latency_ms, match: {"/name": "Qwen3-8B"}}
       - label: our run, raw
+        entity: "Qwen/Qwen3-8B@label-think0"
         child: true
         readout: same readout, our port
         accuracy: 59.50
@@ -198,6 +203,7 @@ benchmarks:
           accuracy_ci: {file: results/references/s1arena/ANCHORS.md, text: true, line: "Qwen/Qwen3-8B@label-think0"}
           brier: {file: "results/references/s1arena/Qwen__Qwen3-8B@label-think0/static/summary.json", pointer: /aggregate/overall/brier, match: {"/model": "Qwen/Qwen3-8B@label-think0"}}
       - label: our run, calibrated
+        entity: "Qwen/Qwen3-8B@label-think0"
         child: true
         readout: + T per question type
         accuracy: 59.50
@@ -210,6 +216,7 @@ benchmarks:
           accuracy: {file: results/references/s1arena/calibration.json, pointer: "/Qwen~1Qwen3-8B@label-think0/overall/per_type/accuracy", scale: 100}
           brier: {file: results/references/s1arena/calibration.json, pointer: "/Qwen~1Qwen3-8B@label-think0/overall/per_type/brier"}
       - label: Laya (421M)
+        entity: "Laya (421M)"
         rank: 27 / 29
         readout: native
         accuracy: 44.47
@@ -224,6 +231,7 @@ benchmarks:
           brier: {file: results/references/s1arena/leaderboard-2026-10-14.json, pointer: /models/26/brier, match: {"/name": "Laya (421M)"}}
           p50_ms: {file: results/references/s1arena/leaderboard-2026-10-14.json, pointer: /models/26/latency_ms, match: {"/name": "Laya (421M)"}}
       - label: CLM-v0.1-8B
+        entity: "CLM-v0.1-8B"
         rank: 28 / 29
         readout: native
         accuracy: 41.43
@@ -239,6 +247,7 @@ benchmarks:
           brier: {file: results/references/s1arena/leaderboard-2026-10-14.json, pointer: /models/27/brier, match: {"/name": "CLM-v0.1-8B"}}
           p50_ms: {file: results/references/s1arena/leaderboard-2026-10-14.json, pointer: /models/27/latency_ms, match: {"/name": "CLM-v0.1-8B"}}
       - label: our run, raw
+        entity: "Contrastive-LM/CLM-v0.1-8B"
         child: true
         readout: official heads, our encoder
         accuracy: 41.86
@@ -253,6 +262,7 @@ benchmarks:
           accuracy_ci: {file: results/references/s1arena/ANCHORS.md, text: true, line: "Contrastive-LM/CLM-v0.1-8B"}
           brier: {file: results/references/s1arena/Contrastive-LM__CLM-v0.1-8B/static/summary.json, pointer: /aggregate/overall/brier, match: {"/model": "Contrastive-LM/CLM-v0.1-8B"}}
       - label: our run, calibrated
+        entity: "Contrastive-LM/CLM-v0.1-8B"
         child: true
         readout: + T per question type
         accuracy: 41.86

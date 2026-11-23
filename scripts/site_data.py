@@ -79,6 +79,12 @@ Section = Literal[
 RENDERED: frozenset[str] = frozenset({"spec", "summary", "benchmarks", "references"})
 # The precision the site shows for each benchmark field. Checks compare at exactly this precision.
 DISPLAY: dict[str, int] = {"accuracy": 2, "accuracy_ci": 2, "brier": 4, "p50_ms": 1}
+# The JSON field a pointer check may end in, per column (so a Brier cannot be tied to an accuracy).
+FIELD_KEYS: dict[str, frozenset[str]] = {
+    "accuracy": frozenset({"accuracy"}),
+    "brier": frozenset({"brier"}),
+    "p50_ms": frozenset({"latency_ms", "p50_ms"}),
+}
 SLUG = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 
 
@@ -123,7 +129,7 @@ class CheckRef(Strict):
 
     file: str
     pointer: str | None = None
-    scale: float = 1.0
+    scale: Literal[1, 100] = 1
     match: dict[str, str] = Field(default_factory=dict)
     text: bool = False
     line: str | None = None
@@ -148,6 +154,7 @@ class BenchRow(Strict):
     measured_on: str
     provenance: Provenance
     sources: list[Source] = Field(min_length=1)
+    entity: str = Field(description="The model's identity in the tied files; every check must name it.")
     harness: str = Field(pattern=r"^[a-z0-9-]+@[0-9a-f]{7,40}$")
     checks: dict[str, CheckRef] = Field(
         description="Field name -> the file that must reproduce the shown number."
@@ -174,6 +181,27 @@ class BenchRow(Strict):
                 raise ValueError(f"row {self.label!r}: interval {self.accuracy_ci} must contain the accuracy")
         if self.rank is not None and not re.fullmatch(r"[1-9]\d* / [1-9]\d*", self.rank):
             raise ValueError(f"row {self.label!r}: rank must read 'N / M'")
+        for field, ref in self.checks.items():
+            if ref.text:
+                if ref.line != self.entity:
+                    raise ValueError(
+                        f"row {self.label!r}.{field}: `line` must be the row's entity {self.entity!r}"
+                    )
+                continue
+            assert ref.pointer is not None
+            try:
+                tokens = pointer_tokens(ref.pointer)
+            except ValueError as exc:
+                raise ValueError(f"row {self.label!r}.{field}: {exc}") from exc
+            if field == "accuracy_ci" or tokens[-1] not in FIELD_KEYS[field]:
+                raise ValueError(
+                    f"row {self.label!r}.{field}: pointer {ref.pointer} does not end in a {field} field"
+                )
+            if self.entity not in ref.match.values() and self.entity not in tokens:
+                where = f"row {self.label!r}.{field}"
+                raise ValueError(
+                    f"{where}: the check must identify {self.entity!r} in `match` or the pointer"
+                )
         return self
 
 
@@ -297,6 +325,9 @@ class ModelPage(Strict):
 
 class Term(Strict):
     id: str = Field(pattern=r"^[a-z0-9][a-z0-9-]*$")
+    kind: Literal["model", "measurement"] = Field(
+        description="Primer group: how the model works, or how it is measured."
+    )
     term: str
     definition: str
     sources: list[Source] = Field(min_length=1)
@@ -565,6 +596,11 @@ def check_correction(c: Correction) -> list[str]:
         errors.append(f"correction {c.commit}: struck text is not in {path} before the commit")
     if after not in new:
         errors.append(f"correction {c.commit}: corrected text is not in {path} after the commit")
+    # The commit must actually make the change: old text gone afterwards, new text absent before.
+    if before in new:
+        errors.append(f"correction {c.commit}: the struck text is still in {path} after the commit")
+    if after in old:
+        errors.append(f"correction {c.commit}: the corrected text was already in {path} before the commit")
     return errors
 
 

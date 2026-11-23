@@ -6,10 +6,11 @@ import ProvTag from '../../components/ProvTag.astro';
 import Cite from '../../components/Cite.astro';
 import BenchTable from '../../components/BenchTable.astro';
 import CorrectionBlock from '../../components/CorrectionBlock.astro';
+import Figures from '../../components/Figures.astro';
 import { models, registry, type ModelPage, type Provenance, type Source } from '../../lib/data';
 import { pageNotes } from '../../lib/notes';
 
-type Term = { id: string; term: string; definition: string; sources: Source[] };
+type Term = { id: string; kind: 'model' | 'measurement'; term: string; definition: string; sources: Source[] };
 type Page = ModelPage & { primer: Term[] };
 
 export function getStaticPaths() {
@@ -44,7 +45,7 @@ const sec = {
   <section class="mast" aria-labelledby="m-title">
     <div class="mast-frame">
       <div class="eyebrow">{m.eyebrow.map((e) => <span class="label">{e}</span>)}</div>
-      <h1 id="m-title">{m.name}{m.version && <span class="ver">{m.version}</span>}</h1>
+      <h1 id="m-title"><Figures text={m.name} />{m.version && <span class="ver"><Figures text={m.version} /></span>}</h1>
       <p class="full-name">{m.full_name}</p>
       <p class="dek">{m.dek}<Cite sources={m.dek_sources} notes={notes} /></p>
       <dl class="spec">
@@ -68,15 +69,20 @@ const sec = {
 
   <section aria-labelledby="s-primer">
     <SectionHead no={sec.primer} title="Read this first" id="s-primer" />
-    <p class="lede">The terms this page uses, in the order a newcomer needs them.</p>
-    <dl class="primer">
-      {m.primer.map((t) => (
-        <div id={`term-${t.id}`}>
-          <dt>{t.term}</dt>
-          <dd>{t.definition}<Cite sources={t.sources} notes={notes} /></dd>
-        </div>
-      ))}
-    </dl>
+    <p class="lede">The terms this page uses, in the order a newcomer needs them. Skip what you know.</p>
+    {([['model', 'How the model works'], ['measurement', 'How it is measured']] as const).map(([kind, heading]) => (
+      <>
+        <h3 class="label primer-h">{heading}</h3>
+        <dl class="primer">
+          {m.primer.filter((t) => t.kind === kind).map((t) => (
+            <div id={`term-${t.id}`}>
+              <dt>{t.term}</dt>
+              <dd>{t.definition}<Cite sources={t.sources} notes={notes} /></dd>
+            </div>
+          ))}
+        </dl>
+      </>
+    ))}
   </section>
 
   <section aria-labelledby="s-summary">

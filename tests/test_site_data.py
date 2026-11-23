@@ -145,8 +145,8 @@ def test_pointer_through_an_array_needs_identity() -> None:
     data = clm()
     for check in rows_raw(data)[0]["checks"].values():
         check.pop("match")
-    bad = site_data.ModelPage.model_validate(data).benchmarks[0].rows[0]
-    assert any("add `match`" in e for e in site_data.check_row(bad))
+    with pytest.raises(ValidationError, match="must identify"):
+        site_data.ModelPage.model_validate(data)
 
 
 def test_rank_is_checked() -> None:
@@ -305,3 +305,34 @@ def test_export_writes_resolved_references_and_formatted_numbers(
     assert data["benchmarks"][0]["reference"]["value"] == 59.25
     registry = json.loads((tmp_path / "registry.json").read_text(encoding="utf-8"))
     assert next(e for e in registry if e["id"] == "clm")["has_page"] is True
+
+
+# ---- second review round: identity bound to the row, column bound to the field ------------------
+def test_check_must_identify_the_rows_entity() -> None:
+    data = clm()
+    clm_row = rows_raw(data)[6]
+    for check in clm_row["checks"].values():
+        check["match"] = {"/family": "System-1 model"}  # shared by every System-1 entry
+    with pytest.raises(ValidationError, match="must identify"):
+        site_data.ModelPage.model_validate(data)
+
+
+def test_pointer_must_end_in_the_columns_field() -> None:
+    data = clm()
+    check = rows_raw(data)[6]["checks"]["brier"]
+    check["pointer"] = check["pointer"].replace("/brier", "/accuracy")
+    with pytest.raises(ValidationError, match="does not end in a brier field"):
+        site_data.ModelPage.model_validate(data)
+
+
+def test_scale_is_one_or_a_hundred() -> None:
+    data = clm()
+    rows_raw(data)[6]["checks"]["accuracy"]["scale"] = 120.68
+    with pytest.raises(ValidationError):
+        site_data.ModelPage.model_validate(data)
+
+
+def test_correction_must_be_a_change_the_commit_made() -> None:
+    good = page().corrections[0]
+    later = good.model_copy(update={"commit": "e7bfae9"})  # a commit that never touched README.md
+    assert site_data.check_correction(later)

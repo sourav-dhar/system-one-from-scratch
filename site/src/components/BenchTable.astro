@@ -15,6 +15,7 @@ const rows = table.rows.map((r) => {
   return { ...r, parent: r.child ? parent : '' };
 });
 const hasOurs = table.rows.some((r) => r.provenance === 'ours');
+const refShown = ref ? table.rows.find((r) => r.label === ref.row)?.display.accuracy : undefined;
 ---
 <p class="tbl-caption" id={`${id}-cap`}>{table.caption}<Cite sources={table.caption_sources} notes={notes} /></p>
 <div class="tbl-scroll" role="region" aria-label={`${table.title}, scrollable table`} tabindex="0">
@@ -56,7 +57,7 @@ const hasOurs = table.rows.some((r) => r.provenance === 'ours');
 </div>
 <p class="scroll-cue label" aria-hidden="true">Scroll the table sideways for all columns</p>
 <div class="key-line">
-  {ref && <span><span class="tick" aria-hidden="true"></span>{ref.label}</span>}
+  {ref && <span><span class="tick" aria-hidden="true"></span>{ref.label}, {refShown}%</span>}
   <span><span class="keybar" aria-hidden="true"></span>published rows</span>
   {hasOurs && <span><span class="keybar c" aria-hidden="true"></span>our runs (indented)</span>}
   <span>Rank: position by accuracy among the leaderboard's ranked rows</span>
